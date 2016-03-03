@@ -17,8 +17,6 @@
         <node>claudioyarprun</node>
         <dependencies>
             <port timeout="10.0">/icub/right_arm/state:o</port>
-            <port timeout="10.0">/viewleft</port>
-            <port timeout="10.0">/viewright</port>
         </dependencies>
     </module>
 

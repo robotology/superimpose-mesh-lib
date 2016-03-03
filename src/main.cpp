@@ -356,11 +356,11 @@ public:
         yInfo() << "Closing fingers.";
         raEncoder.resize(numRAEnc);
         raIEnc->getEncoders(raEncoder.data());
-        jointposMap = {{13, 90},
-                       {14, 180},
-                       {15, 270},
-                       {8, 90},
-                       {9, 0},
+        jointposMap = {{13, 80},
+                       {14, 150},
+                       {15, 180},
+                       {8, 80},
+                       {9, 10},
                        {10, 80}};
         for (auto num = jointposMap.cbegin(); num != jointposMap.cend(); ++num) {
             yInfo() << "Moving joint " << num->first << " to the position " << num->second << ".";

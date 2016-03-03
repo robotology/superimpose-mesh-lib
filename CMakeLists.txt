@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.9)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(SOURCE_FILES src/main.cpp)
 set(PROJECT_NAME movefinger)
@@ -17,6 +16,7 @@ list(APPEND CMAKE_MODULE_PATH ${ICUBCONTRIB_MODULE_PATH})
 
 include(YarpInstallationHelpers)
 include(ICUBcontribHelpers)
+include(ICUBcontribOptions)
 
 icubcontrib_set_default_prefix()
 
