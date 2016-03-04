@@ -1,14 +1,23 @@
 cmake_minimum_required(VERSION 2.8.9)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(SOURCE_FILES src/main.cpp)
-set(PROJECT_NAME movefinger)
+
+set(PROJECT_NAME        movefinger)
+
+set(SOURCE_FILES        src/main.cpp)
+
+set(PROGRAM_CONFIG      config/movefinger_config.ini)
+set(PROGRAM_SCRIPT      applications/movefinger.xml)
+
+set(SIM_PROGRAM_CONFIG  config/SIM_movefinger_config.ini)
+set(SIM_PROGRAM_SCRIPT  applications/SIM_movefinger.xml
+                        applications/SIM_Background_Apps.xml)
 
 project(${PROJECT_NAME})
 
-find_package(YARP REQUIRED)
-find_package(ICUB REQUIRED)
-find_package(ICUBcontrib REQUIRED)
+find_package(YARP           REQUIRED)
+find_package(ICUB           REQUIRED)
+find_package(ICUBcontrib    REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
 list(APPEND CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
@@ -22,13 +31,20 @@ icubcontrib_set_default_prefix()
 
 include_directories(${YARP_INCLUDE_DIRS} ${ICUB_INCLUDE_DIRS})
 
+option (IS_ICUB_SIM
+        "Choose to use the iCub_SIM and the associated application files" ON)
+
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ${ICUB_LIBRARIES} iKin)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-
-file(GLOB scripts ${CMAKE_CURRENT_SOURCE_DIR}/applications/*.xml)
-yarp_install(FILES ${scripts} DESTINATION ${ICUBCONTRIB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
+if (NOT IS_ICUB_SIM)
+    yarp_install(FILES  ${PROGRAM_SCRIPT}       DESTINATION     ${ICUBCONTRIB_APPLICATIONS_INSTALL_DIR})
+    yarp_install(FILES  ${PROGRAM_CONFIG}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/movefinger)
+else (IS_ICUB_SIM)
+    yarp_install(FILES  ${SIM_PROGRAM_SCRIPT}   DESTINATION     ${ICUBCONTRIB_APPLICATIONS_INSTALL_DIR})
+    yarp_install(FILES  ${SIM_PROGRAM_CONFIG}   DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/movefinger)
+endif (NOT IS_ICUB_SIM)
 
 icubcontrib_add_uninstall_target()

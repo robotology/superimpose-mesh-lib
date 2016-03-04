@@ -66,7 +66,12 @@ class MoveFinger : public RFModule
 {
 private:
     ConstString robot;
-    bool torsoDOF;
+    bool useGaze;
+    bool useTorsoDOF;
+    Vector armVel;
+    Vector armAcc;
+    Vector headVel;
+    Vector headAcc;
 
     Property cartOptions;
     PolyDriver *cartCtrlDriver;
@@ -261,20 +266,20 @@ private:
 
     bool setTorsoDOF()
     {
-        Vector curDof;
-        handICart->getDOF(curDof);
-        yInfo() << "Old DOF: [" + curDof.toString(0) + "].";
+        Vector curDOF;
+        handICart->getDOF(curDOF);
+        yInfo() << "Old DOF: [" + curDOF.toString(0) + "].";
         yInfo() << "Setting iCub to use the DOF from the torso.";
-        Vector newDof(curDof);
-        newDof[0] = 1;
-        newDof[1] = 2;
-        newDof[2] = 1;
-        if (!handICart->setDOF(newDof, curDof)) {
+        Vector newDOF(curDOF);
+        newDOF[0] = 1;
+        newDOF[1] = 2;
+        newDOF[2] = 1;
+        if (!handICart->setDOF(newDOF, curDOF)) {
             yError() << "Cannot use torso DOF.";
             return false;
         }
         yInfo() << "Setting the DOF done.";
-        yInfo() << "New DOF: [" + curDof.toString(0) + "]";
+        yInfo() << "New DOF: [" + curDOF.toString(0) + "]";
 
         return true;
     }
@@ -323,16 +328,24 @@ private:
 public:
     double getPeriod() { return 0.0; }
 
-    bool configure(yarp::os::ResourceFinder &rf)
+    bool configure(ResourceFinder &rf)
     {
         /* Setting default parameters */
         verbose = false;
         start = false;
         freerunning = false;
 
-        /* Parsing command line input */
-        robot = rf.check("robot", Value("icubSim")).asString();
-        torsoDOF = rf.check("torsodof", Value(false)).asBool();
+        /* Parsing parameters form config file */
+        robot = rf.findGroup("PARAMETERS").check("robot", Value("icub")).asString();
+        useGaze = rf.findGroup("PARAMETERS").check("usegaze", Value(false)).asBool();
+        useTorsoDOF = rf.findGroup("PARAMETERS").check("usetorsodof", Value(true)).asBool();
+        if (!rf.findGroup("ARMJOINT").findGroup("vel").isNull() && rf.findGroup("ARMJOINT").findGroup("vel").tail().size() == 16) {
+            armVel.resize(16);
+            for (int i = 0; i < rf.findGroup("ARMJOINT").findGroup("vel").tail().size(); ++i) {
+                armVel[i] = rf.findGroup("ARMJOINT").findGroup("vel").tail().get(i).asDouble();
+            }
+        }
+        yInfo() << armVel.toString();
 
         /* Right arm control board */
         if (!setRightArmRemoteControlboard()) return false;
@@ -344,10 +357,10 @@ public:
         if (!setHeadRemoteControlboard()) return false;
 
         /* Gaze control */
-        if (!setGazeController()) return false;
+        if (useGaze && !setGazeController()) return false;
 
         /* Enable torso DOF */
-        if (torsoDOF && !setTorsoDOF()) return false;
+        if (useTorsoDOF && !setTorsoDOF()) return false;
 
         /* Move reference framework to the right index tip */
         if (!setTipFrame()) return false;
@@ -377,9 +390,9 @@ public:
         yInfo() << "Fingers succesfully closed.";
         yInfo() << "Moving hand to the initial position.";
         R.resize(3, 3);
-        R(0,0)= -1.0;   R(0,1)=  0.0;   R(0,2)=  0.0;
-        R(1,0)=  0.0;   R(1,1)=  1.0;   R(1,2)=  0.0;
-        R(2,0)=  0.0;   R(2,1)=  0.0;   R(2,2)= -1.0;
+        R(0,0) = -1.0;   R(0,1) =  0.0;   R(0,2) =  0.0;
+        R(1,0) =  0.0;   R(1,1) =  1.0;   R(1,2) =  0.0;
+        R(2,0) =  0.0;   R(2,1) =  0.0;   R(2,2) = -1.0;
         init_o = dcm2axis(R);
         init_x.resize(3);
         init_x[0] = -0.35;
@@ -390,17 +403,19 @@ public:
         yInfo() << "The hand is in position.";
 
         /* Set initial fixation point */
-        Vector tmp;
-        headIGaze->getFixationPoint(tmp);
-        initFixation = init_x;
-        initFixation[0] -= 0.05;
-        initFixation[1] -= 0.05;
-        if (norm(tmp - initFixation) > 3) {
-            yInfo() << "Moving head to initial fixation point: [" << initFixation.toString() << "].";
-            headIGaze->lookAtFixationPoint(initFixation);
-            headIGaze->waitMotionDone();
+        if (useGaze) {
+            Vector tmp;
+            headIGaze->getFixationPoint(tmp);
+            initFixation = init_x;
+            initFixation[0] -= 0.05;
+            initFixation[1] -= 0.05;
+            if (norm(tmp - initFixation) > 3) {
+                yInfo() << "Moving head to initial fixation point: [" << initFixation.toString() << "].";
+                headIGaze->lookAtFixationPoint(initFixation);
+                headIGaze->waitMotionDone();
+            }
+            yInfo() << "Gaze motion done.";
         }
-        yInfo() << "Gaze motion done.";
 
         /* Set initial finger motion point */
         tipMotionAxis.resize(3);
@@ -526,15 +541,18 @@ int main(int argc, char *argv[])
     if (!yarp.checkNetwork())
     {
         yError() << "YARP seems unavailable.";
-        return 1;
+        return -1;
     }
 
-    MoveFinger module;
     ResourceFinder rf;
+    MoveFinger module;
+    yInfo() << "Configuring and starting module...";
+
     rf.setVerbose(true);
+    rf.setDefaultConfigFile("movefinger_config.ini");
+    rf.setDefaultContext("movefinger");
     rf.configure(argc, argv);
 
-    yInfo() << "Configuring and starting module...";
     module.runModule(rf);
 
     yInfo() << "Main returning.";

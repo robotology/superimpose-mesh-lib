@@ -4,8 +4,8 @@
 
     <!-- Generic information -->
     <name>movefinger</name>
-    <description>Move the iCub index finger in a circular path</description>
-    <version>1.1.0</version>
+    <description>Move the iCub_SIM index finger in a circular path</description>
+    <version>1.0.0</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
@@ -14,7 +14,7 @@
     <!-- Required modules -->
     <module>
         <name>movefinger</name>
-        <node>icub19</node>
+        <node>yarprun</node>
         <dependencies>
             <port>/cmdtomf</port>
         </dependencies>
@@ -22,7 +22,7 @@
 
     <module>
         <name>yarpdatadumper</name>
-        <node>icub19</node>
+        <node>yarprun</node>
         <parameters>--name /dumpmf</parameters>
         <dependencies>
             <port>/movefinger/tippose:o</port>
