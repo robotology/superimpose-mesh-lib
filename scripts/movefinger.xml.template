@@ -56,19 +56,19 @@
 
     <!-- Required connections -->
     <connection>
-        <from>/icubSim/cam/left</from>
+        <from>/icub/cam/left</from>
         <to>/viewleft</to>
         <protocol>tcp</protocol>
     </connection>
 
     <connection>
-        <from>/icubSim/cam/right</from>
+        <from>/icub/cam/right</from>
         <to>/viewright</to>
         <protocol>tcp</protocol>
     </connection>
 
     <connection>
-        <from>/icubSim/cam/left</from>
+        <from>/icub/cam/left</from>
         <to>/movefinger/img_skeleton_left:i</to>
         <protocol>udp</protocol>
     </connection>
@@ -80,7 +80,7 @@
     </connection>
 
     <connection>
-        <from>/icubSim/cam/right</from>
+        <from>/icub/cam/right</from>
         <to>/movefinger/img_skeleton_right:i</to>
         <protocol>udp</protocol>
     </connection>
