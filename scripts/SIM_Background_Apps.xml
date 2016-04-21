@@ -51,27 +51,5 @@
         <parameters>--from configSim.ini</parameters>
         <node>yarprun</node>
     </module>
-    
-    <module>
-        <name>yarpview</name>
-        <parameters>--name /viewleft</parameters>
-        <node>yarprun</node>
-    </module>
-    
-    <module>
-        <name>yarpview</name>
-        <parameters>--name /viewright</parameters>
-        <node>yarprun</node>
-    </module>
-    
-    <!-- Required connections -->
-    <connection>
-        <from>/icubSim/cam/left</from>
-        <to>/viewleft</to>
-    </connection>
-    
-    <connection>
-        <from>/icubSim/cam/right</from>
-        <to>/viewright</to>
-    </connection>
+
 </application>

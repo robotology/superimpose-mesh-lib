@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
+<application>
+
+    <!-- Generic information -->
+    <name>movefinger</name>
+    <description>Move the iCub index finger in a circular path</description>
+    <version>1.2.0</version>
+
+    <authors>
+        <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
+    </authors>
+
+    <!-- Required modules -->
+    <module>
+        <name>movefinger</name>
+        <node>icub21</node>
+        <dependencies>
+            <port>/icub/cam/left</port>
+            <port>/icub/cam/right</port>
+        </dependencies>
+    </module>
+
+    <module>
+        <name>yarpdatadumper</name>
+        <node>icub21</node>
+        <parameters>--name /datadumper</parameters>
+        <dependencies>
+            <port>/movefinger/tippose:o</port>
+        </dependencies>
+    </module>
+
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /viewleft</parameters>
+        <node>icub22</node>
+    </module>
+
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /viewright</parameters>
+        <node>icub22</node>
+    </module>
+
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /viewleft_skeleton</parameters>
+        <node>icub22</node>
+    </module>
+
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /viewright_skeleton</parameters>
+        <node>icub22</node>
+    </module>
+
+    <!-- Required connections -->
+    <connection>
+        <from>/icubSim/cam/left</from>
+        <to>/viewleft</to>
+        <protocol>tcp</protocol>
+    </connection>
+
+    <connection>
+        <from>/icubSim/cam/right</from>
+        <to>/viewright</to>
+        <protocol>tcp</protocol>
+    </connection>
+
+    <connection>
+        <from>/icubSim/cam/left</from>
+        <to>/movefinger/img_skeleton_left:i</to>
+        <protocol>udp</protocol>
+    </connection>
+
+    <connection>
+        <from>/movefinger/img_skeleton_right:o</from>
+        <to>/viewleft_skeleton</to>
+        <protocol>udp</protocol>
+    </connection>
+
+    <connection>
+        <from>/icubSim/cam/right</from>
+        <to>/movefinger/img_skeleton_right:i</to>
+        <protocol>udp</protocol>
+    </connection>
+
+    <connection>
+        <from>/movefinger/img_skeleton_right:o</from>
+        <to>/viewright_skeleton</to>
+        <protocol>udp</protocol>
+    </connection>
+
+    <connection>
+        <from>/movefinger/tippose:o</from>
+        <to>/datadumper</to>
+        <protocol>tcp</protocol>
+    </connection>
+
+</application>

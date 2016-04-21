@@ -54,3 +54,4 @@ Thumbs.db
 .idea/
 build/
 builddeb/
+buildmac/
