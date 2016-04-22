@@ -152,7 +152,7 @@ public:
                     else {
                         tip_finger.setAng(CTRL_DEG2RAD * tip_chain_joint);
 
-                        tip_frame = Ha * tip_finger.getH((M_PI / 180.0) * tip_chain_joint);
+                        tip_frame = Ha * tip_finger.getH((tip_finger.getN()-1), true);
                         tip_x = tip_frame.getCol(3);
                         tip_o = dcm2axis(tip_frame);
 
@@ -347,61 +347,42 @@ public:
     }
 };
 
-// TODO: scindere movefinger in un thread + un programma principale
 class MoveFinger : public RFModule
 {
 private:
     ConstString robot;
     bool usegaze;
     bool usetorsoDOF;
-    bool moveendeffectortotip;
-    Vector arm_vel;
+    bool start;
+//    bool viewhand;
+    bool freerunning;
+    bool dumpdata_ee;
+    bool dumpdata_finger;
+    bool showrightskeleton;
 
-    Property rightarm_remote_options;
     PolyDriver rightarm_remote_driver;
     IEncoders *itf_rightarm_enc;
     IPositionControl2 *itf_rightarm_pos;
     int num_rightarm_joint;
     int num_rightarm_enc;
 
-    Property rightarm_cartesian_options;
     PolyDriver rightarm_cartesian_driver;
     ICartesianControl *itf_rightarm_cart;
+//    int context_1;
+//    int context_2;
 
-    Property head_option;
     PolyDriver head_remote_driver;
     IPositionControl2 *itf_head_pos;
     int num_head_joint;
 
-    Property gaze_option;
     PolyDriver gaze_driver;
     IGazeControl *itf_head_gaze;
-
-    iCubFinger *tip_finger;
-    Vector tip_chain_joint;
-    Matrix tip_frame;
-    Vector tip_x;
-    Vector tip_o;
-
-    Vector rightarm_encoder;
-    list<pair<unsigned int, double>> joint_pos_map;
-    Matrix R;
-    Vector init_x;
-    Vector init_o;
-    Vector init_fixation;
 
     WriteEndEffectorPoseThread *thread_wtp;
     WriteFingerTipPoseThread *thread_wftp;
     DrawHandSkeletonThread *thread_dhs_right;
 
     Port port_command;
-
-    bool verbose;
-    bool start;
-    bool freerunning;
-    bool dumpdata_ee;
-    bool dumpdata_finger;
-    bool showrightskeleton;
 
     Vector tip_motion_axis;
     Vector tip_motion_angle;
@@ -413,6 +394,7 @@ private:
 
     bool setRightArmRemoteControlboard()
     {
+        Property rightarm_remote_options;
         rightarm_remote_options.put("device", "remote_controlboard");
         rightarm_remote_options.put("local", "/movefinger/control_right_arm");
         rightarm_remote_options.put("remote", "/"+robot+"/right_arm");
@@ -468,6 +450,7 @@ private:
 
     bool setRightArmCartesianController()
     {
+        Property rightarm_cartesian_options;
         rightarm_cartesian_options.put("device", "cartesiancontrollerclient");
         rightarm_cartesian_options.put("local", "/movefinger/cart_right_arm");
         rightarm_cartesian_options.put("remote", "/"+robot+"/cartesianController/right_arm");
@@ -490,6 +473,7 @@ private:
 
     bool setHeadRemoteControlboard()
     {
+        Property head_option;
         head_option.put("device", "remote_controlboard");
         head_option.put("local", "/movefinger/control_head");
         head_option.put("remote", "/"+robot+"/head");
@@ -536,6 +520,7 @@ private:
 
     bool setGazeController()
     {
+        Property gaze_option;
         gaze_option.put("device", "gazecontrollerclient");
         gaze_option.put("local", "/movefinger/gaze");
         gaze_option.put("remote", "/iKinGazeCtrl");
@@ -575,33 +560,34 @@ private:
         return true;
     }
 
-    bool setTipFrame()
-    {
-        yInfo() << "Moving the end effector reference frame to the right index tip.";
-
-        Vector encs(static_cast<size_t>(num_rightarm_enc));
-        if (!itf_rightarm_enc->getEncoders(encs.data())) {
-            yError() << "Cannot read from encoders.";
-            return false;
-        }
-
-        tip_finger = new iCubFinger("right_index");
-        if (!tip_finger->getChainJoints(encs, tip_chain_joint)) {
-            yError() << "Cannot get joint information to the finger tip.";
-            return false;
-        }
-
-        tip_frame = tip_finger->getH((M_PI / 180.0) * tip_chain_joint);
-        tip_x = tip_frame.getCol(3);
-        tip_o = dcm2axis(tip_frame);
-        if (!itf_rightarm_cart->attachTipFrame(tip_x, tip_o)) {
-            yError() << "Cannot attach reference frame to finger tip.";
-            return false;
-        }
-        yInfo() << "The end effector reference frame is now onto the right index tip.";
-
-        return true;
-    }
+//    bool setTipFrame()
+//    {
+//        yInfo() << "Moving the end effector reference frame to the right index tip.";
+//
+//        Vector encs(static_cast<size_t>(num_rightarm_enc));
+//        if (!itf_rightarm_enc->getEncoders(encs.data())) {
+//            yError() << "Cannot read from encoders.";
+//            return false;
+//        }
+//
+//        iCubFinger tip_finger("right_index");
+//        Vector tip_chain_joint;
+//        if (!tip_finger.getChainJoints(encs, tip_chain_joint)) {
+//            yError() << "Cannot get joint information to the finger tip.";
+//            return false;
+//        }
+//
+//        Matrix tip_frame = tip_finger.getH((M_PI / 180.0) * tip_chain_joint);
+//        Vector tip_x = tip_frame.getCol(3);
+//        Vector tip_o = dcm2axis(tip_frame);
+//        if (!itf_rightarm_cart->attachTipFrame(tip_x, tip_o)) {
+//            yError() << "Cannot attach reference frame to finger tip.";
+//            return false;
+//        }
+//        yInfo() << "The end effector reference frame is now onto the right index tip.";
+//
+//        return true;
+//    }
 
     bool setCommandPort()
     {
@@ -625,8 +611,8 @@ public:
     bool configure(ResourceFinder &rf)
     {
         /* Setting default parameters */
-        verbose = false;
         start = false;
+//        viewhand = false;
         freerunning = false;
         dumpdata_ee = false;
         dumpdata_finger = false;
@@ -635,14 +621,13 @@ public:
         robot = rf.findGroup("PARAMETER").check("robot", Value("icub")).asString();
         usegaze = rf.findGroup("PARAMETER").check("usegaze", Value(false)).asBool();
         usetorsoDOF = rf.findGroup("PARAMETER").check("usetorsodof", Value(true)).asBool();
-        moveendeffectortotip = rf.findGroup("PARAMETER").check("moveendeffectortotip", Value(false)).asBool();
         if (!rf.findGroup("ARMJOINT").findGroup("vel").isNull() && rf.findGroup("ARMJOINT").findGroup("vel").tail().size() == 16) {
-            arm_vel.resize(16);
+            Vector arm_vel(16);
             for (int i = 0; i < rf.findGroup("ARMJOINT").findGroup("vel").tail().size(); ++i) {
                 arm_vel[i] = rf.findGroup("ARMJOINT").findGroup("vel").tail().get(i).asDouble();
             }
+            yInfo() << arm_vel.toString();
         }
-        yInfo() << arm_vel.toString();
 
         /* Right arm control board */
         if (!setRightArmRemoteControlboard()) return false;
@@ -659,19 +644,66 @@ public:
         /* Enable torso DOF */
         if (usetorsoDOF && !setTorsoDOF()) return false;
 
-        /* Move reference framework to the right index tip */
-        if (moveendeffectortotip && !setTipFrame()) return false;
+        Matrix R(3, 3);
+        Vector init_x(3);
+        Vector init_o(4);
+        Vector init_fixation(3);
+        // TODO: implementare viewhand (mano aperta frontale)
+//        /* Set context_1: open hand in front of iCub */
+//        yInfo() << "Setting up context 1";
+//        /* Setting hand pose */
+//        yInfo() << "Moving hand to the initial position.";
+//        R(0,0) =  0.0;   R(0,1) = -1.0;   R(0,2) =  0.0;
+//        R(1,0) = -1.0;   R(1,1) =  0.0;   R(1,2) =  0.0;
+//        R(2,0) =  0.0;   R(2,1) =  0.0;   R(2,2) = -1.0;
+//        init_o = dcm2axis(R);
+//        init_x[0] = -0.25;
+//        init_x[1] = +0.00;
+//        init_x[2] = +0.20;
+//        itf_rightarm_cart->goToPoseSync(init_x, init_o);
+//        itf_rightarm_cart->waitMotionDone(0.1, 6.0);
+//        yInfo() << "The hand is in position.";
+//
+//        /* Set initial fixation point */
+//        if (usegaze) {
+//            Vector tmp;
+//            itf_head_gaze->getFixationPoint(tmp);
+//            init_fixation = init_x;
+//            init_fixation[0] -= 0.05;
+//            init_fixation[1] -= 0.05;
+//            if (norm(tmp - init_fixation) > 0.10) {
+//                yInfo() << "Moving head to initial fixation point: [" << init_fixation.toString() << "].";
+//                itf_head_gaze->lookAtFixationPoint(init_fixation);
+//                itf_head_gaze->waitMotionDone(0.1, 6.0);
+//            }
+//            yInfo() << "Gaze motion done.";
+//        }
+//
+//        /* Saving context */
+//        itf_rightarm_cart->storeContext(&context_1);
+//        yInfo() << "Context 1 set and saved.";
+
+        R.zero();
+        init_x.zero();
+        init_o.zero();
+        init_fixation.zero();
+        // TODO: implementare viewhand (mano aperta frontale)
+//        /* Set context_2: pointing hand in front of iCub */
+//        yInfo() << "Setting up context 2";
+        // TODO: tipframe rimosso, end effector rimane quello di default
+//        /* Move reference framework to the right index tip */
+//        if (!setTipFrame()) return false;
 
         /* Set hand configuration */
         yInfo() << "Closing fingers.";
-        rightarm_encoder.resize(static_cast<size_t>(num_rightarm_enc));
+        Vector rightarm_encoder(static_cast<size_t>(num_rightarm_enc));
         itf_rightarm_enc->getEncoders(rightarm_encoder.data());
-        joint_pos_map = {{13, 80},
-                         {14, 150},
-                         {15, 180},
-                         {8, 80},
-                         {9, 10},
-                         {10, 80}};
+        list<pair<unsigned int, double>> joint_pos_map = {{13, 80},
+                                                          {14, 150},
+                                                          {15, 180},
+                                                          {8, 80},
+                                                          {9, 10},
+                                                          {10, 80}};
         for (auto map = joint_pos_map.cbegin(); map != joint_pos_map.cend(); ++map) {
             yInfo() << "Moving joint" << map->first << "to the position" << map->second << ".";
             if (abs(rightarm_encoder[map->first] - map->second) > 5.0) {
@@ -681,33 +713,16 @@ public:
         }
         yInfo() << "Fingers succesfully closed.";
 
-        // TODO: sistemare la posizione della mano a seconda dell'end effector scelto: palmo o dito
-//        /* Set initial hand pose */
-//        yInfo() << "Moving hand to the initial position.";
-//        R.resize(3, 3);
-//        R(0,0) = -1.0;   R(0,1) =  0.0;   R(0,2) =  0.0;
-//        R(1,0) =  0.0;   R(1,1) =  1.0;   R(1,2) =  0.0;
-//        R(2,0) =  0.0;   R(2,1) =  0.0;   R(2,2) = -1.0;
-//        init_o = dcm2axis(R);
-//        init_x.resize(3);
-//        init_x[0] = -0.35;
-//        init_x[1] = +0.20;
-//        init_x[2] = +0.20;
-//        itf_rightarm_cart->goToPoseSync(init_x, init_o);
-//        itf_rightarm_cart->waitMotionDone(0.1, 6.0);
-//        yInfo() << "The hand is in position.";
-
-        /* Set initial hand pose */
+        /* Setting hand pose */
         yInfo() << "Moving hand to the initial position.";
-        R.resize(3, 3);
-        R(0,0) =  0.0;   R(0,1) = -1.0;   R(0,2) =  0.0;
-        R(1,0) = -1.0;   R(1,1) =  0.0;   R(1,2) =  0.0;
+        R(0,0) = -1.0;   R(0,1) =  0.0;   R(0,2) =  0.0;
+        R(1,0) =  0.0;   R(1,1) =  1.0;   R(1,2) =  0.0;
         R(2,0) =  0.0;   R(2,1) =  0.0;   R(2,2) = -1.0;
         init_o = dcm2axis(R);
         init_x.resize(3);
-        init_x[0] = -0.25;
-        init_x[1] = +0.00;
-        init_x[2] = +0.20;
+        init_x[0] = -0.30;
+        init_x[1] = +0.15;
+        init_x[2] = +0.10;
         itf_rightarm_cart->goToPoseSync(init_x, init_o);
         itf_rightarm_cart->waitMotionDone(0.1, 6.0);
         yInfo() << "The hand is in position.";
@@ -727,11 +742,16 @@ public:
             yInfo() << "Gaze motion done.";
         }
 
+        // TODO: implementare viewhand (mano aperta frontale)
+//        /* Saving context */
+//        itf_rightarm_cart->storeContext(&context_2);
+//        yInfo() << "Context 2 set and saved.";
+
         /* Set initial finger motion point */
         tip_motion_axis.resize(3);
         tip_motion_axis[2] = init_x[2];
         tip_motion_angle = init_o;
-        radius = 0.10;
+        radius = 0.08;
         center.resize(2);
         center[0] = init_x[0];
         center[1] = init_x[1] - radius;
@@ -751,13 +771,18 @@ public:
 
         if (command.get(0).asString() == "start") {
 
+        // TODO: implementare viewhand (mano aperta frontale)
+//            viewhand = false;
+//
+//            itf_rightarm_cart->restoreContext(context_2);
+
             start = true;
 
             if (command.get(1).asString() == "freerun") {
                 freerunning = true;
-                reply = Bottle("Starting freerunning motion mode.");
+                reply = Bottle("Movefinger context loaded. Starting freerunning motion mode.");
             } else {
-                reply = Bottle("Starting single finger motion.");
+                reply = Bottle("Movefinger context loaded. Starting single finger motion.");
             }
 
         }
@@ -766,9 +791,22 @@ public:
             start = false;
 
             if (freerunning) freerunning = false;
+
             reply = Bottle("Stopping finger motion.");
 
         }
+        // TODO: implementare viewhand (mano aperta frontale)
+//        else if (command.get(0).asString() == "viewhand") {
+//
+//            start = false;
+//
+//            itf_rightarm_cart->restoreContext(context_1);
+//
+//            viewhand = true;
+//
+//            reply = Bottle("Viewhand context loaded.");
+//
+//        }
         else if (command.get(0).asString() == "dumpdata"){
 
             if (!dumpdata_ee && command.get(1).asString() == "ee") {
@@ -872,28 +910,9 @@ public:
                 reply = Bottle("Wrong laterlaity option for hand skeleton drawing thread (available: left, right).");
             }
         }
-        else if (command.get(0).asString() == "verbose") {
-
-            if (command.get(1).asString() == "on") {
-
-                verbose = true;
-                reply = Bottle("Verbosity is on.");
-
-            }
-            else if (command.get(1).asString() == "off") {
-
-                verbose = false;
-                reply = Bottle("Verbosity is off.");
-
-            }
-            else {
-                reply = Bottle("Invalid verbose option (available: on, off).");
-            }
-
-        }
         else if (command.get(0).asString() == "quit") {
 
-            reply = Bottle("Quitting...\n");
+            reply = Bottle("Quitting...");
             return false;
 
         }
@@ -945,10 +964,7 @@ public:
     {
         yInfo() << "Calling close functions...";
 
-        if (moveendeffectortotip) {
-            itf_rightarm_cart->removeTipFrame();
-            delete tip_finger;
-        }
+        itf_rightarm_cart->removeTipFrame();
 
         if (rightarm_cartesian_driver.isValid()) rightarm_cartesian_driver.close();
         if (rightarm_remote_driver.isValid()) rightarm_remote_driver.close();
