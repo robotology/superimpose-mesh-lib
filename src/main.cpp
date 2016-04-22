@@ -592,7 +592,7 @@ private:
     bool setCommandPort()
     {
         yInfo() << "Opening command port.";
-        if (!port_command.open("/movefinger/command:i")) {
+        if (!port_command.open("/movefinger/rpc")) {
             yError() << "Cannot open the command port.";
             return false;
         }

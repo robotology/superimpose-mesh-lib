@@ -5,7 +5,7 @@
     <!-- Generic information -->
     <name>SIM_movefinger</name>
     <description>Move the iCub_SIM index finger in a circular path</description>
-    <version>1.1.0</version>
+    <version>1.3.0</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
@@ -24,9 +24,36 @@
     <module>
         <name>yarpdatadumper</name>
         <node>yarprun</node>
-        <parameters>--name /datadumper</parameters>
+        <parameters>--name /datadumper_endeffector_pose:i</parameters>
         <dependencies>
-            <port>/movefinger/tippose:o</port>
+            <port>/movefinger/endeffector_pose:o</port>
+        </dependencies>
+    </module>
+
+    <module>
+        <name>yarpdatadumper</name>
+        <node>yarprun</node>
+        <parameters>--name /datadumper_finger_tip_pose:i</parameters>
+        <dependencies>
+            <port>/movefinger/finger_tip_pose:o</port>
+        </dependencies>
+    </module>
+
+    <module>
+        <name>yarpdatadumper</name>
+        <node>yarprun</node>
+        <parameters>--name /datadumper_skeleton_left:i</parameters>
+        <dependencies>
+            <port>/movefinger/img_skeleton_left:o</port>
+        </dependencies>
+    </module>
+
+    <module>
+        <name>yarpdatadumper</name>
+        <node>yarprun</node>
+        <parameters>--name /datadumper_skeleton_right:i</parameters>
+        <dependencies>
+            <port>/movefinger/img_skeleton_right:o</port>
         </dependencies>
     </module>
 
@@ -92,9 +119,23 @@
     </connection>
 
     <connection>
-        <from>/movefinger/tippose:o</from>
-        <to>/datadumper</to>
-        <protocol>tcp</protocol>
+        <from>/movefinger/endeffector_pose:o</from>
+        <to>/datadumper_endeffector_pose:i</to>
+    </connection>
+
+    <connection>
+        <from>/movefinger/finger_tip_pose:o</from>
+        <to>--name /datadumper_finger_tip_pose:i</to>
+    </connection>
+
+    <connection>
+        <from>/movefinger/img_skeleton_left:o</from>
+        <to>--name /datadumper_skeleton_left:i</to>
+    </connection>
+
+    <connection>
+        <from>/movefinger/img_skeleton_right:o</from>
+        <to>/datadumper_skeleton_right:i</to>
     </connection>
 
 </application>
