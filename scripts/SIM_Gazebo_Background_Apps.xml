@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
 <application>
-
+    
     <!-- Required -->
     <dependencies>
         <port>/yarprun</port>
     </dependencies>
-
+    
     <!-- Generic information-->
-    <name>SIM_Background_Apps</name>
-    <description>Background applications for iCubSim-based simulations</description>
-    <version>1.2.0</version>
-
+    <name>SIM_Gazebo_Background_Apps</name>
+    <description>Background applications for Gazebo-based simulations</description>
+    <version>1.0.0</version>
+    
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
     </authors>
-
+    
     <!-- Required modules. -->
     <module>
         <name>yarplogger</name>
         <node>yarprun</node>
         <parameters>--start</parameters>
-	</module>
-	  
+    </module>
+    
     <module>
-        <name>iCub_SIM</name>
-		<node>yarprun</node>
+        <name>gazebo</name>
+        <node>yarprun</node>
     </module>
     
     <module>
         <name>simCartesianControl</name>
-        <parameters>--robot icubSim</parameters>
+        <parameters>--robot icubGazeboSim</parameters>
         <node>yarprun</node>
         <dependencies>
-        	<port>/icubSim/right_arm/state:o</port>
+            <port>/icubGazeboSim/right_arm/state:o</port>
         </dependencies>
     </module>
     
@@ -42,14 +42,14 @@
         <parameters>--part right_arm</parameters>
         <node>yarprun</node>
         <dependencies>
-        	<port>/icubSim/right_arm/state:o</port>
+            <port>/icubGazeboSim/right_arm/state:o</port>
         </dependencies>
     </module>
     
     <module>
         <name>iKinGazeCtrl</name>
-        <parameters>--from configSim.ini</parameters>
+        <parameters>--from configGazebo.ini</parameters>
         <node>yarprun</node>
     </module>
-
+    
 </application>

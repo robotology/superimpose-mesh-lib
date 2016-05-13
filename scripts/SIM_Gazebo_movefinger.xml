@@ -1,141 +1,141 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
 <application>
-
+    
     <!-- Generic information -->
-    <name>movefinger</name>
-    <description>Move the iCub index finger in a circular path</description>
-    <version>1.4.0</version>
-
+    <name>SIM_Gazebo_movefinger</name>
+    <description>Move the iCubGazebo index finger in a circular path</description>
+    <version>1.0.0</version>
+    
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
     </authors>
-
+    
     <!-- Required modules -->
     <module>
         <name>movefinger</name>
-        <node>icub21</node>
+        <node>yarprun</node>
         <dependencies>
-            <port>/icub/cam/left</port>
-            <port>/icub/cam/right</port>
+            <port>/icubGazeboSim/cam/left</port>
+            <port>/icubGazeboSim/cam/right</port>
         </dependencies>
     </module>
-
+    
     <module>
         <name>yarpdatadumper</name>
-        <node>icub21</node>
-        <parameters>--name /datadumper_endeffector_pose:i --type bottle</parameters>
+        <node>yarprun</node>
+        <parameters>--name /datadumper_endeffector_pose:i</parameters>
         <dependencies>
             <port>/movefinger/endeffector_pose:o</port>
         </dependencies>
     </module>
-
+    
     <module>
         <name>yarpdatadumper</name>
-        <node>icub21</node>
-        <parameters>--name /datadumper_finger_tip_pose:i --type bottle</parameters>
+        <node>yarprun</node>
+        <parameters>--name /datadumper_finger_tip_pose:i</parameters>
         <dependencies>
             <port>/movefinger/finger_tip_pose:o</port>
         </dependencies>
     </module>
-
+    
     <module>
         <name>yarpdatadumper</name>
-        <node>icub21</node>
-        <parameters>--name /datadumper_skeleton_left:i --type image --addVideo --videoType mkv</parameters>
+        <node>yarprun</node>
+        <parameters>--name /datadumper_skeleton_left:i</parameters>
         <dependencies>
             <port>/movefinger/img_skeleton_left:o</port>
         </dependencies>
     </module>
-
+    
     <module>
         <name>yarpdatadumper</name>
-        <node>icub21</node>
-        <parameters>--name /datadumper_skeleton_right:i --type image --addVideo --videoType mkv</parameters>
+        <node>yarprun</node>
+        <parameters>--name /datadumper_skeleton_right:i</parameters>
         <dependencies>
             <port>/movefinger/img_skeleton_right:o</port>
         </dependencies>
     </module>
-
+    
     <module>
         <name>yarpview</name>
         <parameters>--name /viewleft</parameters>
-        <node>icub22</node>
+        <node>yarprun</node>
     </module>
-
+    
     <module>
         <name>yarpview</name>
         <parameters>--name /viewright</parameters>
-        <node>icub22</node>
+        <node>yarprun</node>
     </module>
-
+    
     <module>
         <name>yarpview</name>
         <parameters>--name /viewleft_skeleton</parameters>
-        <node>icub22</node>
+        <node>yarprun</node>
     </module>
-
+    
     <module>
         <name>yarpview</name>
         <parameters>--name /viewright_skeleton</parameters>
-        <node>icub22</node>
+        <node>yarprun</node>
     </module>
-
+    
     <!-- Required connections -->
     <connection>
-        <from>/icub/camcalib/left/out</from>
+        <from>/icubGazeboSim/cam/left</from>
         <to>/viewleft</to>
         <protocol>tcp</protocol>
     </connection>
-
+    
     <connection>
-        <from>/icub/camcalib/right/out</from>
+        <from>/icubGazeboSim/cam/right</from>
         <to>/viewright</to>
         <protocol>tcp</protocol>
     </connection>
-
+    
     <connection>
-        <from>/icub/camcalib/left/out</from>
+        <from>/icubGazeboSim/cam/left</from>
         <to>/movefinger/img_skeleton_left:i</to>
         <protocol>udp</protocol>
     </connection>
-
+    
     <connection>
         <from>/movefinger/img_skeleton_right:o</from>
         <to>/viewleft_skeleton</to>
         <protocol>udp</protocol>
     </connection>
-
+    
     <connection>
-        <from>/icub/camcalib/right/out</from>
+        <from>/icubGazeboSim/cam/right</from>
         <to>/movefinger/img_skeleton_right:i</to>
         <protocol>udp</protocol>
     </connection>
-
+    
     <connection>
         <from>/movefinger/img_skeleton_right:o</from>
         <to>/viewright_skeleton</to>
         <protocol>udp</protocol>
     </connection>
-
+    
     <connection>
         <from>/movefinger/endeffector_pose:o</from>
         <to>/datadumper_endeffector_pose:i</to>
     </connection>
-
+    
     <connection>
         <from>/movefinger/finger_tip_pose:o</from>
         <to>--name /datadumper_finger_tip_pose:i</to>
     </connection>
-
+    
     <connection>
         <from>/movefinger/img_skeleton_left:o</from>
         <to>--name /datadumper_skeleton_left:i</to>
     </connection>
-
+    
     <connection>
         <from>/movefinger/img_skeleton_right:o</from>
         <to>/datadumper_skeleton_right:i</to>
     </connection>
-
+    
 </application>

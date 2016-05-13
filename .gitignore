@@ -55,3 +55,4 @@ Thumbs.db
 build/
 builddeb/
 buildmac/
+buildx/
