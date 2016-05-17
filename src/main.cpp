@@ -595,10 +595,8 @@ private:
             yInfo() << "Moving joint" << map->first << "to the position" << map->second << ".";
             if (std::abs(rightarm_encoder[map->first] - map->second) > 5.0) {
                 rightarm_encoder[map->first] = map->second;
-                if (itf_rightarm_pos->positionMove(rightarm_encoder.data())) {
-                    return false;
-                }
-                Time::delay(0.15);
+                itf_rightarm_pos->positionMove(rightarm_encoder.data());
+                Time::delay(2.0);
             }
         }
         yInfo() << "Fingers succesfully closed.";
@@ -627,9 +625,7 @@ private:
             init_fixation[1] -= 0.05;
             if (norm(tmp - init_fixation) > 0.10) {
                 yInfo() << "Moving head to initial fixation point: [" << init_fixation.toString() << "].";
-                if (!itf_head_gaze->lookAtFixationPoint(init_fixation)) {
-                    return false;
-                }
+                itf_head_gaze->lookAtFixationPoint(init_fixation);
                 itf_head_gaze->waitMotionDone(0.1, 6.0);
             }
             yInfo() << "Gaze motion done.";
@@ -683,19 +679,19 @@ public:
         table_view_x[1] = +0.15;
         table_view_x[2] = +0.10;
         
-        open_hand_joints[0] = 80;
-        open_hand_joints[1] = 150;
-        open_hand_joints[2] = 180;
-        open_hand_joints[3] = 80;
-        open_hand_joints[4] = 10;
-        open_hand_joints[5] = 80;
+        open_hand_joints[0] = 0;
+        open_hand_joints[1] = 0;
+        open_hand_joints[2] = 0;
+        open_hand_joints[3] = 10;
+        open_hand_joints[4] = 0;
+        open_hand_joints[5] = 0;
         
-        closed_hand_joints[0] = 0;
-        closed_hand_joints[1] = 0;
-        closed_hand_joints[2] = 0;
-        closed_hand_joints[3] = 10;
-        closed_hand_joints[4] = 0;
-        closed_hand_joints[5] = 0;
+        closed_hand_joints[0] = 80;
+        closed_hand_joints[1] = 150;
+        closed_hand_joints[2] = 180;
+        closed_hand_joints[3] = 80;
+        closed_hand_joints[4] = 10;
+        closed_hand_joints[5] = 80;
 
         /* Right arm control board. */
         if (!setRightArmRemoteControlboard()) return false;
@@ -790,7 +786,7 @@ public:
                 moveFingers(open_hand_joints);
                 reply = Bottle("Hand opened!.");
             }
-            else if (command.get(2).asString() == "close") {
+            else if (command.get(1).asString() == "close") {
                 moveFingers(closed_hand_joints);
                 reply = Bottle("Hand closed (...but the index finger)!");
             }

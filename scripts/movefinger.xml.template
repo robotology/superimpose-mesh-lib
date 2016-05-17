@@ -23,38 +23,26 @@
 
     <module>
         <name>yarpdatadumper</name>
-        <node>icub21</node>
-        <parameters>--name /datadumper_endeffector_pose:i --type bottle</parameters>
-        <dependencies>
-            <port>/movefinger/endeffector_pose:o</port>
-        </dependencies>
+        <node>localhost</node>
+        <parameters>--name /datadumper_endeffector_pose:i --txTime --type bottle</parameters>
     </module>
 
     <module>
         <name>yarpdatadumper</name>
-        <node>icub21</node>
-        <parameters>--name /datadumper_finger_tip_pose:i --type bottle</parameters>
-        <dependencies>
-            <port>/movefinger/finger_tip_pose:o</port>
-        </dependencies>
+        <node>localhost</node>
+        <parameters>--name /datadumper_finger_tip_pose:i --txTime --type bottle</parameters>
     </module>
 
     <module>
         <name>yarpdatadumper</name>
-        <node>icub21</node>
-        <parameters>--name /datadumper_skeleton_left:i --type image --addVideo --videoType mkv</parameters>
-        <dependencies>
-            <port>/movefinger/img_skeleton_left:o</port>
-        </dependencies>
+        <node>localhost</node>
+        <parameters>--name /datadumper_skeleton_left:i --txTime --type image --addVideo --videoType mkv</parameters>
     </module>
 
     <module>
         <name>yarpdatadumper</name>
-        <node>icub21</node>
-        <parameters>--name /datadumper_skeleton_right:i --type image --addVideo --videoType mkv</parameters>
-        <dependencies>
-            <port>/movefinger/img_skeleton_right:o</port>
-        </dependencies>
+        <node>localhost</node>
+        <parameters>--name /datadumper_skeleton_right:i --txTime --type image --addVideo --videoType mkv</parameters>
     </module>
 
     <module>
@@ -125,12 +113,12 @@
 
     <connection>
         <from>/movefinger/finger_tip_pose:o</from>
-        <to>--name /datadumper_finger_tip_pose:i</to>
+        <to>/datadumper_finger_tip_pose:i</to>
     </connection>
 
     <connection>
         <from>/movefinger/img_skeleton_left:o</from>
-        <to>--name /datadumper_skeleton_left:i</to>
+        <to>/datadumper_skeleton_left:i</to>
     </connection>
 
     <connection>

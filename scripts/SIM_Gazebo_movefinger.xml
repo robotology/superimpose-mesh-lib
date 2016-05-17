@@ -24,45 +24,33 @@
     <module>
         <name>yarpdatadumper</name>
         <node>yarprun</node>
-        <parameters>--name /datadumper_endeffector_pose:i</parameters>
-        <dependencies>
-            <port>/movefinger/endeffector_pose:o</port>
-        </dependencies>
+        <parameters>--name /datadumper_endeffector_pose:i --txTime --type bottle</parameters>
     </module>
-    
+
     <module>
         <name>yarpdatadumper</name>
         <node>yarprun</node>
-        <parameters>--name /datadumper_finger_tip_pose:i</parameters>
-        <dependencies>
-            <port>/movefinger/finger_tip_pose:o</port>
-        </dependencies>
+        <parameters>--name /datadumper_finger_tip_pose:i --txTime --type bottle</parameters>
     </module>
-    
+
     <module>
         <name>yarpdatadumper</name>
         <node>yarprun</node>
-        <parameters>--name /datadumper_skeleton_left:i</parameters>
-        <dependencies>
-            <port>/movefinger/img_skeleton_left:o</port>
-        </dependencies>
+        <parameters>--name /datadumper_skeleton_left:i --txTime --type image --addVideo --videoType mkv</parameters>
     </module>
-    
+
     <module>
         <name>yarpdatadumper</name>
         <node>yarprun</node>
-        <parameters>--name /datadumper_skeleton_right:i</parameters>
-        <dependencies>
-            <port>/movefinger/img_skeleton_right:o</port>
-        </dependencies>
+        <parameters>--name /datadumper_skeleton_right:i --txTime --type image --addVideo --videoType mkv</parameters>
     </module>
-    
+
     <module>
         <name>yarpview</name>
         <parameters>--name /viewleft</parameters>
         <node>yarprun</node>
     </module>
-    
+
     <module>
         <name>yarpview</name>
         <parameters>--name /viewright</parameters>
@@ -97,25 +85,25 @@
     <connection>
         <from>/icubGazeboSim/cam/left</from>
         <to>/movefinger/img_skeleton_left:i</to>
-        <protocol>udp</protocol>
+        <protocol>tcp</protocol>
     </connection>
     
     <connection>
         <from>/movefinger/img_skeleton_right:o</from>
         <to>/viewleft_skeleton</to>
-        <protocol>udp</protocol>
+        <protocol>tcp</protocol>
     </connection>
     
     <connection>
         <from>/icubGazeboSim/cam/right</from>
         <to>/movefinger/img_skeleton_right:i</to>
-        <protocol>udp</protocol>
+        <protocol>tcp</protocol>
     </connection>
     
     <connection>
         <from>/movefinger/img_skeleton_right:o</from>
         <to>/viewright_skeleton</to>
-        <protocol>udp</protocol>
+        <protocol>tcp</protocol>
     </connection>
     
     <connection>
@@ -125,12 +113,12 @@
     
     <connection>
         <from>/movefinger/finger_tip_pose:o</from>
-        <to>--name /datadumper_finger_tip_pose:i</to>
+        <to>/datadumper_finger_tip_pose:i</to>
     </connection>
     
     <connection>
         <from>/movefinger/img_skeleton_left:o</from>
-        <to>--name /datadumper_skeleton_left:i</to>
+        <to>/datadumper_skeleton_left:i</to>
     </connection>
     
     <connection>

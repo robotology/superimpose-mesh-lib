@@ -56,3 +56,4 @@ build/
 builddeb/
 buildmac/
 buildx/
+xcodeenvvar.txt
