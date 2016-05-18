@@ -41,8 +41,8 @@ source_group("Resource\\Configuration files"    FILES ${PROGRAM_CONFIG} ${SIM_PR
 source_group("Resource\\Script files"           FILES ${PROGRAM_SCRIPT} ${SIM_PROGRAM_SCRIPT})
 
 add_executable(${PROJECT_NAME}  ${SOURCE_FILES}
-                                ${PROGRAM_CONFIG} ${SIM_PROGRAM_CONFIG}
-                                ${PROGRAM_SCRIPT} ${SIM_PROGRAM_SCRIPT})
+                                ${PROGRAM_CONFIG}   ${SIM_PROGRAM_CONFIG}
+                                ${PROGRAM_SCRIPT}   ${SIM_PROGRAM_SCRIPT})
 
 target_link_libraries(${PROJECT_NAME}   ${YARP_LIBRARIES}
                                         ${ICUB_LIBRARIES}

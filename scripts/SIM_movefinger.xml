@@ -5,7 +5,7 @@
     <!-- Generic information -->
     <name>SIM_movefinger</name>
     <description>Move the iCub_SIM index finger in a circular path</description>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
@@ -36,7 +36,7 @@
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /viewright</parameters>
+        <parameters>--name /viewleft</parameters>
         <node>yarprun</node>
     </module>
 
@@ -48,13 +48,13 @@
 
     <!-- Required connections -->
     <connection>
-        <from>/icubSim/cam/right</from>
-        <to>/viewright</to>
+        <from>/icubSim/cam/left</from>
+        <to>/viewleft</to>
         <protocol>tcp</protocol>
     </connection>
 
     <connection>
-        <from>/icubSim/cam/right</from>
+        <from>/icubSim/cam/left</from>
         <to>/movefinger/img_skeleton_right:i</to>
         <protocol>tcp</protocol>
     </connection>

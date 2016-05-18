@@ -24,6 +24,7 @@ class DumpHandSkeletonEndeffectorThread : public Thread
 private:
     unsigned int thread_ID;
     ConstString laterality;
+    ConstString camera;
     int camsel;
     
     PolyDriver &arm_remote_driver;
@@ -47,6 +48,7 @@ public:
     DumpHandSkeletonEndeffectorThread(const unsigned int thread_ID, const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {
         this->thread_ID = thread_ID;
         this->laterality = laterality;
+        this->camera = camera;
         this->camsel = (camera == "left")? 0:1;
     }
     
@@ -97,12 +99,12 @@ public:
         yInfo() << "Joint bound for finger set!";
         
         yInfo() << "Opening ports for skeleton images.";
-        if (!inport_skeleton_img.open("/movefinger/img_skeleton_"+laterality+":i")) {
-            yError() << "Cannot open skeleton image input port for "+laterality+" camera" << "in thread" << thread_ID << ".";
+        if (!inport_skeleton_img.open("/movefinger/img_skeleton_"+camera+":i")) {
+            yError() << "Cannot open skeleton image input port for "+camera+" camera" << "in thread" << thread_ID << ".";
             return false;
         }
-        if (!outport_skeleton_img.open("/movefinger/img_skeleton_"+laterality+":o")) {
-            yError() << "Cannot open skeleton image output port for "+laterality+" camera" << "in thread" << thread_ID << ".";
+        if (!outport_skeleton_img.open("/movefinger/img_skeleton_"+camera+":o")) {
+            yError() << "Cannot open skeleton image output port for "+camera+" camera" << "in thread" << thread_ID << ".";
             return false;
         }
         
@@ -342,7 +344,7 @@ private:
             yError() << "Error opening head remote_controlboard device.";
             return false;
         }
-
+        
         num_head_joint = 0;
         itf_head_pos->getAxes(&num_head_joint);
         yInfo() << "Total number of head joints: " << num_head_joint << ".";
@@ -644,7 +646,7 @@ public:
         else if (command.get(0).asString() == "dumpdata"){
             
             if (!dumping_data && command.get(1).asString() == "on") {
-                thread_dump_hand_ee = new DumpHandSkeletonEndeffectorThread(1, "right", "right", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
+                thread_dump_hand_ee = new DumpHandSkeletonEndeffectorThread(1, "right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
                 
                 if (thread_dump_hand_ee != NULL) {
                     reply = Bottle("Starting hand skeleton and end effector data dumping thread.");
