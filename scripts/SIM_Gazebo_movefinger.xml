@@ -5,7 +5,7 @@
     <!-- Generic information -->
     <name>SIM_Gazebo_movefinger</name>
     <description>Move the iCubGazebo index finger in a circular path</description>
-    <version>1.0.0</version>
+    <version>1.4.0</version>
     
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
@@ -15,6 +15,7 @@
     <module>
         <name>movefinger</name>
         <node>yarprun</node>
+        <parameters>--from SIM_Gazebo_movefinger_config.ini</parameters>
         <dependencies>
             <port>/icubGazeboSim/cam/left</port>
             <port>/icubGazeboSim/cam/right</port>
@@ -30,36 +31,12 @@
     <module>
         <name>yarpdatadumper</name>
         <node>yarprun</node>
-        <parameters>--name /datadumper_finger_tip_pose:i --txTime --type bottle</parameters>
-    </module>
-
-    <module>
-        <name>yarpdatadumper</name>
-        <node>yarprun</node>
-        <parameters>--name /datadumper_skeleton_left:i --txTime --type image --addVideo --videoType mkv</parameters>
-    </module>
-
-    <module>
-        <name>yarpdatadumper</name>
-        <node>yarprun</node>
         <parameters>--name /datadumper_skeleton_right:i --txTime --type image --addVideo --videoType mkv</parameters>
     </module>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /viewleft</parameters>
-        <node>yarprun</node>
-    </module>
-
-    <module>
-        <name>yarpview</name>
         <parameters>--name /viewright</parameters>
-        <node>yarprun</node>
-    </module>
-    
-    <module>
-        <name>yarpview</name>
-        <parameters>--name /viewleft_skeleton</parameters>
         <node>yarprun</node>
     </module>
     
@@ -71,26 +48,8 @@
     
     <!-- Required connections -->
     <connection>
-        <from>/icubGazeboSim/cam/left</from>
-        <to>/viewleft</to>
-        <protocol>tcp</protocol>
-    </connection>
-    
-    <connection>
         <from>/icubGazeboSim/cam/right</from>
         <to>/viewright</to>
-        <protocol>tcp</protocol>
-    </connection>
-    
-    <connection>
-        <from>/icubGazeboSim/cam/left</from>
-        <to>/movefinger/img_skeleton_left:i</to>
-        <protocol>tcp</protocol>
-    </connection>
-    
-    <connection>
-        <from>/movefinger/img_skeleton_right:o</from>
-        <to>/viewleft_skeleton</to>
         <protocol>tcp</protocol>
     </connection>
     
@@ -109,16 +68,6 @@
     <connection>
         <from>/movefinger/endeffector_pose:o</from>
         <to>/datadumper_endeffector_pose:i</to>
-    </connection>
-    
-    <connection>
-        <from>/movefinger/finger_tip_pose:o</from>
-        <to>/datadumper_finger_tip_pose:i</to>
-    </connection>
-    
-    <connection>
-        <from>/movefinger/img_skeleton_left:o</from>
-        <to>/datadumper_skeleton_left:i</to>
     </connection>
     
     <connection>

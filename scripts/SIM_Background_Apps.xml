@@ -10,7 +10,7 @@
     <!-- Generic information-->
     <name>SIM_Background_Apps</name>
     <description>Background applications for iCubSim-based simulations</description>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>

@@ -19,278 +19,73 @@ using namespace iCub::iKin;
 using namespace iCub::ctrl;
 
 
-class WriteEndEffectorPoseThread : public Thread
-{
-private:
-    unsigned int threadID;
-    ICartesianControl *itf_arm_cart;
-
-    Vector tip_x;
-    Vector tip_o;
-    BufferedPort<Bottle> port_tip_pose;
-
-public:
-
-    WriteEndEffectorPoseThread(unsigned int threadID, ICartesianControl *itf_arm_cart) {
-        this->threadID = threadID;
-        this->itf_arm_cart = itf_arm_cart;
-    }
-
-    bool threadInit() {
-        yInfo() << "Initializing end effector pose dumping thread (worker:" << threadID << ").";
-
-        /* Open buffered port for sending the current tip pose */
-        if (!port_tip_pose.open("/movefinger/endeffector_pose:o")) {
-            yError() << "Cannot open /movefinger/endeffector_pose:o port.";
-            return false;
-        }
-
-        tip_x.resize(3);
-        tip_o.resize(4);
-
-        yInfo() << "Initialization completed for worker" << threadID << ".";
-
-        return true;
-    }
-
-    void run() {
-        while(!isStopping()) {
-
-            Bottle &tipPoseBottle = port_tip_pose.prepare();
-
-            itf_arm_cart->getPose(tip_x, tip_o);
-
-            tipPoseBottle.clear();
-            tipPoseBottle.addString(tip_x.toString() + " " + tip_o.toString());
-
-            port_tip_pose.write();
-
-        }
-    }
-
-    void threadRelease() {
-        yInfo() << "Deallocating resource of end effector pose dumping thread (worker:" << threadID << ").";
-
-        if (!port_tip_pose.isClosed()) port_tip_pose.close();
-
-        yInfo() << "Deallocation completed for worker:" << threadID << ".";
-    }
-};
-
-class WriteFingerTipPoseThread : public Thread
-{
-private:
-    unsigned int threadID;
-    ConstString finger;
-    IEncoders *itf_arm_enc;
-    ICartesianControl *itf_arm_cart;
-
-    int num_rightarm_enc;
-    Vector encs;
-    Vector xa;
-    Vector oa;
-    Matrix Ha;
-    Vector tip_chain_joint;
-    iCubFinger tip_finger;
-    Matrix tip_frame;
-    Vector tip_x;
-    Vector tip_o;
-    BufferedPort<Bottle> port_tip_pose;
-
-public:
-
-    WriteFingerTipPoseThread(unsigned int threadID, ConstString finger, IEncoders *itf_arm_enc, ICartesianControl *itf_arm_cart) {
-        this->threadID = threadID;
-        this->finger = finger;
-        this->itf_arm_enc = itf_arm_enc;
-        this->itf_arm_cart = itf_arm_cart;
-    }
-
-    bool threadInit() {
-        yInfo() << "Initializing tip pose dumping thread (worker:" << threadID << ").";
-
-        num_rightarm_enc = 0;
-        itf_arm_enc->getAxes(&num_rightarm_enc);
-
-        /* Open buffered port for sending the current tip pose */
-        if (!port_tip_pose.open("/movefinger/finger_tip_pose:o")) {
-            yError() << "Cannot open /movefinger/finger_tip_pose:o port.";
-            return false;
-        }
-
-        encs.resize(static_cast<size_t>(num_rightarm_enc));
-        tip_finger = iCubFinger(finger);
-        tip_x.resize(4);
-        tip_o.resize(4);
-
-        yInfo() << "Initialization completed for worker" << threadID << ".";
-
-        return true;
-    }
-
-    void run() {
-        while(!isStopping()) {
-
-            Bottle &tipPoseBottle = port_tip_pose.prepare();
-
-            if (!itf_arm_cart->getPose(xa, oa)) {
-                yError() << "Thread" << threadID << ": cannot read end effector position.";
-            }
-            else {
-                Ha = axis2dcm(oa);
-                xa.push_back(1.0);
-                Ha.setCol(3, xa);
-
-                if (!itf_arm_enc->getEncoders(encs.data())) {
-                    yError() << "Thread" << threadID << ": cannot read from encoders.";
-                }
-                else {
-                    if (!tip_finger.getChainJoints(encs, tip_chain_joint)) {
-                        yError() << "Thread" << threadID << ": cannot get joint information to the" << finger << "tip.";
-                    }
-                    else {
-                        tip_finger.setAng(CTRL_DEG2RAD * tip_chain_joint);
-
-                        tip_frame = Ha * tip_finger.getH((tip_finger.getN()-1), true);
-                        tip_x = tip_frame.getCol(3);
-                        tip_o = dcm2axis(tip_frame);
-
-                        tipPoseBottle.clear();
-                        tipPoseBottle.addString(tip_x.subVector(0, 2).toString() + " " + tip_o.toString());
-
-                        port_tip_pose.write();
-                    }
-                }
-            }
-        }
-    }
-
-    void threadRelease() {
-        yInfo() << "Deallocating resource of tip pose dumping thread (worker:" << threadID << ").";
-
-        if (!port_tip_pose.isClosed()) port_tip_pose.close();
-
-        yInfo() << "Deallocation completed for worker:" << threadID << ".";
-    }
-};
-
-class DrawHandSkeletonThread : public Thread
+class DumpHandSkeletonEndeffectorThread : public Thread
 {
 private:
     unsigned int thread_ID;
     ConstString laterality;
+    int camsel;
+    
     PolyDriver &arm_remote_driver;
     PolyDriver &arm_cartesian_driver;
     PolyDriver &gaze_driver;
-
-    IControlLimits *itf_fingers_lim;
+    
     IEncoders *itf_arm_encoders;
     int num_arm_enc;
     ICartesianControl *itf_arm_cart;
+    Vector ee_x;
+    Vector ee_o;
     IGazeControl *itf_head_gaze;
+    
     iCubFinger finger[3];
-    BufferedPort<ImageOf<PixelRgb>> inport_skeleton_img_left;
-    BufferedPort<ImageOf<PixelRgb>> outport_skeleton_img_left;
-    BufferedPort<ImageOf<PixelRgb>> inport_skeleton_img_right;
-    BufferedPort<ImageOf<PixelRgb>> outport_skeleton_img_right;
-
-    void drawHandSkeleton(ConstString camera, BufferedPort<ImageOf<PixelRgb>> &inport, BufferedPort<ImageOf<PixelRgb>> &outport) {
-        ImageOf<PixelRgb> *imgin = inport.read(false);
-        if (imgin != NULL) {
-
-            int camSel = (camera == "left")? 0:1;
-
-            ImageOf<PixelRgb> &imgout = outport.prepare();
-            imgout = *imgin;
-
-            cv::Mat img = cv::cvarrToMat(imgout.getIplImage());
-
-            Vector xa;
-            Vector oa;
-            itf_arm_cart->getPose(xa, oa);
-            Matrix Ha = axis2dcm(oa);
-            xa.push_back(1.0);
-            Ha.setCol(3, xa);
-
-            Vector endeffector_pixel;
-            itf_head_gaze->get2DPixel(camSel, xa, endeffector_pixel);
-
-            cv::Point endeffector_point((int) endeffector_pixel[0], (int) endeffector_pixel[1]);
-            cv::circle(img, endeffector_point, 4, cv::Scalar(0, 255, 0), 4);
-
-            Vector encs(static_cast<size_t>(num_arm_enc));
-            Vector chainjoints;
-            itf_arm_encoders->getEncoders(encs.data());
-            for (unsigned int i = 0; i < 3; ++i) {
-                finger[i].getChainJoints(encs, chainjoints);
-                finger[i].setAng(CTRL_DEG2RAD * chainjoints);
-            }
-
-            for (unsigned int fng = 0; fng < 3; ++fng) {
-                std::deque<cv::Point> current_joint_point;
-
-                for (unsigned int i = 0; i < finger[fng].getN(); ++i) {
-                    Vector current_joint_pixel;
-                    itf_head_gaze->get2DPixel(camSel, Ha*(finger[fng].getH(i, true).getCol(3)), current_joint_pixel);
-
-                    current_joint_point.push_front(cv::Point((int) current_joint_pixel[0], (int) current_joint_pixel[1]));
-                    cv::circle(img, current_joint_point.front(), 3, cv::Scalar(0, 0, 255), 4);
-
-                    if (i > 0) {
-                        cv::line(img, current_joint_point.front(), current_joint_point.back(), cv::Scalar(255, 255, 255), 2);
-                        current_joint_point.pop_back();
-                    }
-                    else {
-                        cv::line(img, endeffector_point, current_joint_point.front(), cv::Scalar(255, 0, 0), 2);
-                    }
-                }
-            }
-
-            outport.write();
-        }
-    }
-
+    
+    BufferedPort<ImageOf<PixelRgb>> inport_skeleton_img;
+    BufferedPort<ImageOf<PixelRgb>> outport_skeleton_img;
+    BufferedPort<Bottle> port_ee_pose;
+    
 public:
-    DrawHandSkeletonThread(unsigned int thread_ID, ConstString laterality, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver){
+    DumpHandSkeletonEndeffectorThread(const unsigned int thread_ID, const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {
         this->thread_ID = thread_ID;
         this->laterality = laterality;
+        this->camsel = (camera == "left")? 0:1;
     }
-
+    
     bool threadInit() {
         yInfo() << "Initializing hand skeleton drawing thread (worker:" << thread_ID << ").";
-
+        
         yInfo() << "Setting interfaces.";
+        IControlLimits *itf_fingers_lim;
         arm_remote_driver.view(itf_fingers_lim);
         if (!itf_fingers_lim) {
             yError() << "Error getting IControlLimits interface in thread" << thread_ID << ".";
             return false;
         }
-
+        
         arm_remote_driver.view(itf_arm_encoders);
         if (!itf_arm_encoders) {
             yError() << "Error getting IEncoders interface in thread" << thread_ID << ".";
             return false;
         }
         itf_arm_encoders->getAxes(&num_arm_enc);
-
+        
         arm_cartesian_driver.view(itf_arm_cart);
         if (!itf_arm_cart) {
             yError() << "Error getting ICartesianControl interface in thread" << thread_ID << ".";
             return false;
         }
-
+        
         gaze_driver.view(itf_head_gaze);
         if (!itf_head_gaze) {
             yError() << "Error getting IGazeControl interface in thread" << thread_ID << ".";
             return false;
         }
-
+        
         yInfo() << "Setting joint bounds for the fingers.";
-
+        
         finger[0] = iCubFinger(laterality+"_thumb");
         finger[1] = iCubFinger(laterality+"_index");
         finger[2] = iCubFinger(laterality+"_middle");
-
+        
         std::deque<IControlLimits*> temp_lim;
         temp_lim.push_front(itf_fingers_lim);
         for (int i = 0; i < 3; ++i) {
@@ -300,51 +95,107 @@ public:
             }
         }
         yInfo() << "Joint bound for finger set!";
-
+        
         yInfo() << "Opening ports for skeleton images.";
-        if (!inport_skeleton_img_left.open("/movefinger/img_skeleton_left:i")) {
-            yError() << "Cannot open skeleton image input port for left camera" << "in thread" << thread_ID << ".";
+        if (!inport_skeleton_img.open("/movefinger/img_skeleton_"+laterality+":i")) {
+            yError() << "Cannot open skeleton image input port for "+laterality+" camera" << "in thread" << thread_ID << ".";
             return false;
         }
-        if (!outport_skeleton_img_left.open("/movefinger/img_skeleton_left:o")) {
-            yError() << "Cannot open skeleton image output port for left camera" << "in thread" << thread_ID << ".";
+        if (!outport_skeleton_img.open("/movefinger/img_skeleton_"+laterality+":o")) {
+            yError() << "Cannot open skeleton image output port for "+laterality+" camera" << "in thread" << thread_ID << ".";
             return false;
         }
-
-        if (!inport_skeleton_img_right.open("/movefinger/img_skeleton_right:i")) {
-            yError() << "Cannot open skeleton image input port for right camera" << "in thread" << thread_ID << ".";
-            return false;
-        }
-        if (!outport_skeleton_img_right.open("/movefinger/img_skeleton_right:o")) {
-            yError() << "Cannot open skeleton image output port for right camera" << "in thread" << thread_ID << ".";
-            return false;
-        }
-
+        
         yInfo() << "Skeleton image ports succesfully opened.";
-
+        
+        yInfo() << "Initializing end effector pose dumping thread (worker:" << thread_ID << ").";
+        
+        if (!port_ee_pose.open("/movefinger/endeffector_pose:o")) {
+            yError() << "Cannot open /movefinger/endeffector_pose:o port.";
+            return false;
+        }
+        
+        ee_x.resize(3);
+        ee_o.resize(4);
+        
+        yInfo() << "End effector ports succesfully opened.";
+        
         yInfo() << "Initialization completed for worker" << thread_ID << ".";
-
+        
         return true;
     }
-
+    
     void run() {
         while (!isStopping()) {
-            drawHandSkeleton("left", inport_skeleton_img_left, outport_skeleton_img_left);
-            drawHandSkeleton("right", inport_skeleton_img_right, outport_skeleton_img_right);
+            
+            ImageOf<PixelRgb> *imgin = inport_skeleton_img.read(true);
+            itf_arm_cart->getPose(ee_x, ee_o);
+            
+            if (imgin != NULL) {
+                ImageOf<PixelRgb> &imgout = outport_skeleton_img.prepare();
+                imgout = *imgin;
+                
+                cv::Mat img = cv::cvarrToMat(imgout.getIplImage());
+                
+                Matrix Ha = axis2dcm(ee_o);
+                ee_x.push_back(1.0);
+                Ha.setCol(3, ee_x);
+                
+                Vector endeffector_pixel;
+                itf_head_gaze->get2DPixel(camsel, ee_x, endeffector_pixel);
+                
+                cv::Point endeffector_point(static_cast<int>(endeffector_pixel[0]), static_cast<int>(endeffector_pixel[1]));
+                cv::circle(img, endeffector_point, 4, cv::Scalar(0, 255, 0), 4);
+                
+                Vector encs(static_cast<size_t>(num_arm_enc));
+                Vector chainjoints;
+                itf_arm_encoders->getEncoders(encs.data());
+                for (unsigned int i = 0; i < 3; ++i) {
+                    finger[i].getChainJoints(encs, chainjoints);
+                    finger[i].setAng(CTRL_DEG2RAD * chainjoints);
+                }
+                
+                for (unsigned int fng = 0; fng < 3; ++fng) {
+                    std::deque<cv::Point> current_joint_point;
+                    
+                    for (unsigned int i = 0; i < finger[fng].getN(); ++i) {
+                        Vector current_joint_pixel;
+                        itf_head_gaze->get2DPixel(camsel, Ha*(finger[fng].getH(i, true).getCol(3)), current_joint_pixel);
+                        
+                        current_joint_point.push_front(cv::Point(static_cast<int>(current_joint_pixel[0]), static_cast<int>(current_joint_pixel[1])));
+                        cv::circle(img, current_joint_point.front(), 3, cv::Scalar(0, 0, 255), 4);
+                        
+                        if (i > 0) {
+                            cv::line(img, current_joint_point.front(), current_joint_point.back(), cv::Scalar(255, 255, 255), 2);
+                            current_joint_point.pop_back();
+                        }
+                        else {
+                            cv::line(img, endeffector_point, current_joint_point.front(), cv::Scalar(255, 0, 0), 2);
+                        }
+                    }
+                }
+                
+                Bottle &tipPoseBottle = port_ee_pose.prepare();
+                
+                tipPoseBottle.clear();
+                tipPoseBottle.addString(ee_x.toString() + "    " + ee_o.toString());
+                
+                port_ee_pose.write();
+                outport_skeleton_img.write();
+            }
         }
     }
-
+    
     void threadRelease() {
         yInfo() << "Deallocating resource of hand skeleton drawing thread (worker:" << thread_ID << ").";
-
-        if (!outport_skeleton_img_left.isClosed()) outport_skeleton_img_left.close();
-        if (!inport_skeleton_img_left.isClosed()) inport_skeleton_img_left.close();
-        if (!outport_skeleton_img_right.isClosed()) outport_skeleton_img_right.close();
-        if (!inport_skeleton_img_right.isClosed()) inport_skeleton_img_right.close();
-
+        
+        if (!inport_skeleton_img.isClosed()) inport_skeleton_img.close();
+        if (!outport_skeleton_img.isClosed()) outport_skeleton_img.close();
+        
         yInfo() << "Deallocation completed for worker:" << thread_ID << ".";
     }
 };
+
 
 class MoveFinger : public RFModule
 {
@@ -355,9 +206,7 @@ private:
     bool start;
     bool viewhand;
     bool freerunning;
-    bool dumpdata_ee;
-    bool dumpdata_finger;
-    bool showrightskeleton;
+    bool dumping_data;
 
     PolyDriver rightarm_remote_driver;
     IEncoders *itf_rightarm_enc;
@@ -375,9 +224,7 @@ private:
     PolyDriver gaze_driver;
     IGazeControl *itf_head_gaze;
 
-    WriteEndEffectorPoseThread *thread_wtp;
-    WriteFingerTipPoseThread *thread_wftp;
-    DrawHandSkeletonThread *thread_dhs_right;
+    DumpHandSkeletonEndeffectorThread *thread_dump_hand_ee;
 
     Port port_command;
 
@@ -643,8 +490,7 @@ public:
         start = false;
         viewhand = false;
         freerunning = false;
-        dumpdata_ee = false;
-        dumpdata_finger = false;
+        dumping_data = false;
 
         /* Parsing parameters from config file. */
         robot = rf.findGroup("PARAMETER").check("robot", Value("icub")).asString();
@@ -784,7 +630,7 @@ public:
             
             if (command.get(1).asString() == "open") {
                 moveFingers(open_hand_joints);
-                reply = Bottle("Hand opened!.");
+                reply = Bottle("Hand opened!");
             }
             else if (command.get(1).asString() == "close") {
                 moveFingers(closed_hand_joints);
@@ -796,107 +642,32 @@ public:
             
         }
         else if (command.get(0).asString() == "dumpdata"){
-
-            if (!dumpdata_ee && command.get(1).asString() == "ee") {
-
-                if (command.get(2).asString() == "on") {
-                    thread_wtp = new WriteEndEffectorPoseThread(1, itf_rightarm_cart);
-
-                    if (thread_wtp != NULL) {
-                        reply = Bottle("Starting end effector data dumping thread.");
-                        thread_wtp->start();
-
-                        dumpdata_ee = true;
-                    }
-                    else {
-                        reply = Bottle("Could not initialize end effector dumping thread.");
-                    }
-
-                }
-                else if (command.get(2).asString() == "off") {
-
-                    reply = Bottle("Stopping end effector data dumping thread.");
-
-                    thread_wtp->stop();
-                    delete thread_wtp;
-
-                    dumpdata_ee = false;
+            
+            if (!dumping_data && command.get(1).asString() == "on") {
+                thread_dump_hand_ee = new DumpHandSkeletonEndeffectorThread(1, "right", "right", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
+                
+                if (thread_dump_hand_ee != NULL) {
+                    reply = Bottle("Starting hand skeleton and end effector data dumping thread.");
+                    thread_dump_hand_ee->start();
+                    
+                    dumping_data = true;
                 }
                 else {
-                    reply = Bottle("Option not available for end effector dumping thread operations (available: on, off).");
+                    reply = Bottle("Could not initialize hand skeleton and end effector data dumping thread.");
                 }
-
+                
             }
-            else if (!dumpdata_finger && command.get(1).asString() == "finger") {
-
-                if (command.get(2).asString() == "on") {
-
-                    thread_wftp = new WriteFingerTipPoseThread(11, "right_index", itf_rightarm_enc, itf_rightarm_cart);
-
-                    if (thread_wftp != NULL) {
-                        reply = Bottle("Starting tip pose data dumping thread.");
-                        thread_wftp->start();
-
-                        dumpdata_finger = true;
-                    }
-                    else {
-                        reply = Bottle("Could not initialize tip pose dumping thread.");
-                    }
-
-                }
-                else if (command.get(2).asString() == "off") {
-
-                    reply = Bottle("Stopping tip pose data dumping thread.");
-
-                    thread_wftp->stop();
-                    delete thread_wftp;
-
-                    dumpdata_finger = false;
-                }
-
+            else if (dumping_data && command.get(2).asString() == "off") {
+                reply = Bottle("Stopping end effector data dumping thread.");
+                
+                thread_dump_hand_ee->stop();
+                dumping_data = false;
+                delete thread_dump_hand_ee;
             }
             else {
-                reply = Bottle("Option not available for tip pose dumping thread operations (available: on, off).");
+                reply = Bottle("Option not available for end effector dumping thread operations (available: on, off).");
             }
-        }
-        else if (command.get(0).asString() == "showskeleton"){
-
-            if (command.get(1).asString() == "left") {
-                // TODO: implement left hand skeleton.
-                reply = Bottle("Not implemented yet! Use 'right' instead.");
-            }
-            else if (command.get(1).asString() == "right") {
-
-                if (command.get(2).asString() == "on") {
-
-                    thread_dhs_right = new DrawHandSkeletonThread(2, "right", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
-
-                    if (thread_dhs_right != NULL) {
-                        reply = Bottle("Starting right hand skeleton drawing thread.");
-                        thread_dhs_right->start();
-                        showrightskeleton = true;
-                    }
-                    else {
-                        reply = Bottle("Could not initialize right hand skeleton drawing thread.");
-                    }
-
-                }
-                else if (command.get(1).asString() == "off") {
-
-                    reply = Bottle("Stopping right hand skeleton drawing thread.");
-
-                    thread_dhs_right->stop();
-                    delete thread_dhs_right;
-                    showrightskeleton = false;
-
-                }
-                else {
-                    reply = Bottle("Option not available for hand skeleton drawing thread operations (available: on, off).");
-                }
-            }
-            else {
-                reply = Bottle("Wrong laterlaity option for hand skeleton drawing thread (available: left, right).");
-            }
+            
         }
         else if (command.get(0).asString() == "quit") {
 
@@ -939,17 +710,9 @@ public:
     {
         yInfo() << "Interrupting the module...\nStopping threads...";
 
-        if (dumpdata_ee) {
-            thread_wtp->stop();
-            delete thread_wtp;
-        }
-        if (dumpdata_finger) {
-            thread_wftp->stop();
-            delete thread_wftp;
-        }
-        if (showrightskeleton) {
-            thread_dhs_right->stop();
-            delete thread_dhs_right;
+        if (dumping_data) {
+            thread_dump_hand_ee->stop();
+            delete thread_dump_hand_ee;
         }
 
         return true;
