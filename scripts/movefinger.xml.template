@@ -5,7 +5,7 @@
     <!-- Generic information -->
     <name>movefinger</name>
     <description>Move the iCub index finger in a circular path</description>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
@@ -30,37 +30,43 @@
     <module>
         <name>yarpdatadumper</name>
         <node>localhost</node>
-        <parameters>--name /datadumper_skeleton_right:i --txTime --type image --addVideo --videoType mkv</parameters>
+        <parameters>--name /datadumper_skeleton_left:i --txTime --type image --addVideo --videoType mkv</parameters>
+    </module>
+
+    <module>
+        <name>yarpdatadumper</name>
+        <node>localhost</node>
+        <parameters>--name /datadumper_leftcam_pose:i --txTime --type bottle</parameters>
     </module>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /viewright</parameters>
+        <parameters>--name /viewleft</parameters>
         <node>icub22</node>
     </module>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /viewright_skeleton</parameters>
+        <parameters>--name /viewleft_skeleton</parameters>
         <node>icub22</node>
     </module>
 
     <!-- Required connections -->
     <connection>
-        <from>/icub/camcalib/right/out</from>
-        <to>/viewright</to>
+        <from>/icub/camcalib/left/out</from>
+        <to>/viewleft</to>
         <protocol>tcp</protocol>
     </connection>
 
     <connection>
-        <from>/icub/camcalib/right/out</from>
-        <to>/movefinger/img_skeleton_right:i</to>
+        <from>/icub/camcalib/left/out</from>
+        <to>/movefinger/img_skeleton_left:i</to>
         <protocol>udp</protocol>
     </connection>
 
     <connection>
-        <from>/movefinger/img_skeleton_right:o</from>
-        <to>/viewright_skeleton</to>
+        <from>/movefinger/img_skeleton_left:o</from>
+        <to>/viewleft_skeleton</to>
         <protocol>udp</protocol>
     </connection>
 
@@ -70,8 +76,13 @@
     </connection>
 
     <connection>
-        <from>/movefinger/img_skeleton_right:o</from>
-        <to>/datadumper_skeleton_right:i</to>
+        <from>/movefinger/img_skeleton_left:o</from>
+        <to>/datadumper_skeleton_left:i</to>
+    </connection>
+
+    <connection>
+        <from>/movefinger/left_camera_pose:o</from>
+        <to>/datadumper_leftcam_pose:i</to>
     </connection>
 
 </application>

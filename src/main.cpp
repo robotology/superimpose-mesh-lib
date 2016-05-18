@@ -37,12 +37,15 @@ private:
     Vector ee_x;
     Vector ee_o;
     IGazeControl *itf_head_gaze;
+    Vector cam_x;
+    Vector cam_o;
     
     iCubFinger finger[3];
     
     BufferedPort<ImageOf<PixelRgb>> inport_skeleton_img;
     BufferedPort<ImageOf<PixelRgb>> outport_skeleton_img;
     BufferedPort<Bottle> port_ee_pose;
+    BufferedPort<Bottle> port_cam_pose;
     
 public:
     DumpHandSkeletonEndeffectorThread(const unsigned int thread_ID, const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {
@@ -55,7 +58,7 @@ public:
     bool threadInit() {
         yInfo() << "Initializing hand skeleton drawing thread (worker:" << thread_ID << ").";
         
-        yInfo() << "Setting interfaces.";
+        yInfo() << "Setting interfaces (worker:" << thread_ID << ").";
         IControlLimits *itf_fingers_lim;
         arm_remote_driver.view(itf_fingers_lim);
         if (!itf_fingers_lim) {
@@ -81,9 +84,9 @@ public:
             yError() << "Error getting IGazeControl interface in thread" << thread_ID << ".";
             return false;
         }
+        yInfo() << "Interfaces set (worker:" << thread_ID << ")!";
         
-        yInfo() << "Setting joint bounds for the fingers.";
-        
+        yInfo() << "Setting joint bounds for the fingers (worker:" << thread_ID << ").";
         finger[0] = iCubFinger(laterality+"_thumb");
         finger[1] = iCubFinger(laterality+"_index");
         finger[2] = iCubFinger(laterality+"_middle");
@@ -92,13 +95,13 @@ public:
         temp_lim.push_front(itf_fingers_lim);
         for (int i = 0; i < 3; ++i) {
             if (!finger[i].alignJointsBounds(temp_lim)) {
-                yError() << "Cannot set joint bound for finger" << i << "in thread" << thread_ID << ".";
+                yError() << "Cannot set joint bound for finger" << i << "(worker:" << thread_ID << ").";
                 return false;
             }
         }
-        yInfo() << "Joint bound for finger set!";
+        yInfo() << "Joint bound for finger set (worker:" << thread_ID << ")!";
         
-        yInfo() << "Opening ports for skeleton images.";
+        yInfo() << "Opening ports for skeleton images (worker:" << thread_ID << ").";
         if (!inport_skeleton_img.open("/movefinger/img_skeleton_"+camera+":i")) {
             yError() << "Cannot open skeleton image input port for "+camera+" camera" << "in thread" << thread_ID << ".";
             return false;
@@ -107,20 +110,31 @@ public:
             yError() << "Cannot open skeleton image output port for "+camera+" camera" << "in thread" << thread_ID << ".";
             return false;
         }
-        
-        yInfo() << "Skeleton image ports succesfully opened.";
+        yInfo() << "Skeleton image ports succesfully opened (worker:" << thread_ID << ")!";
         
         yInfo() << "Initializing end effector pose dumping thread (worker:" << thread_ID << ").";
-        
         if (!port_ee_pose.open("/movefinger/endeffector_pose:o")) {
-            yError() << "Cannot open /movefinger/endeffector_pose:o port.";
+            yError() << "Cannot open /movefinger/endeffector_pose:o port (worker:" << thread_ID << ").";
             return false;
         }
         
         ee_x.resize(3);
         ee_o.resize(4);
+        yInfo() << "End effector port succesfully opened (worker:" << thread_ID << ").";
         
-        yInfo() << "End effector ports succesfully opened.";
+        yInfo() << "Initializing"+camera+"camera pose dumping thread (worker:" << thread_ID << ").";
+        if (!port_cam_pose.open("/movefinger/"+camera+"_camera_pose:o")) {
+            yError() << "Cannot open /movefinger/"+camera+"_camera_pose:o port (worker:" << thread_ID << ").";
+            return false;
+        }
+        
+        cam_x.resize(3);
+        cam_o.resize(4);
+        yInfo() << "Port for "+camera+" camera succesfully opened (worker:" << thread_ID << ").";
+        
+        Bottle bottle;
+        itf_head_gaze->getInfo(bottle);
+        yInfo() << "Camera Info:"<< bottle.toString();
         
         yInfo() << "Initialization completed for worker" << thread_ID << ".";
         
@@ -132,6 +146,7 @@ public:
             
             ImageOf<PixelRgb> *imgin = inport_skeleton_img.read(true);
             itf_arm_cart->getPose(ee_x, ee_o);
+            itf_head_gaze->getLeftEyePose(cam_x, cam_o);
             
             if (imgin != NULL) {
                 ImageOf<PixelRgb> &imgout = outport_skeleton_img.prepare();
@@ -177,24 +192,30 @@ public:
                     }
                 }
                 
-                Bottle &tipPoseBottle = port_ee_pose.prepare();
+                Bottle &eePoseBottle = port_ee_pose.prepare();
+                eePoseBottle.clear();
+                eePoseBottle.addString(ee_x.toString() + "    " + ee_o.toString());
                 
-                tipPoseBottle.clear();
-                tipPoseBottle.addString(ee_x.toString() + "    " + ee_o.toString());
+                Bottle &camPoseBottle = port_cam_pose.prepare();
+                camPoseBottle.clear();
+                camPoseBottle.addString(cam_x.toString() + "    " + cam_o.toString());
                 
-                port_ee_pose.write();
                 outport_skeleton_img.write();
+                port_ee_pose.write();
+                port_cam_pose.write();
             }
         }
     }
     
     void threadRelease() {
-        yInfo() << "Deallocating resource of hand skeleton drawing thread (worker:" << thread_ID << ").";
+        yInfo() << "Deallocating resource of hand skeleton drawing thread for worker " << thread_ID << ".";
         
         if (!inport_skeleton_img.isClosed()) inport_skeleton_img.close();
         if (!outport_skeleton_img.isClosed()) outport_skeleton_img.close();
+        if (!port_ee_pose.isClosed()) port_ee_pose.close();
+        if (!port_cam_pose.isClosed()) port_cam_pose.close();
         
-        yInfo() << "Deallocation completed for worker:" << thread_ID << ".";
+        yInfo() << "Deallocation completed for worker " << thread_ID << ".";
     }
 };
 
@@ -659,7 +680,7 @@ public:
                 }
                 
             }
-            else if (dumping_data && command.get(2).asString() == "off") {
+            else if (dumping_data && command.get(1).asString() == "off") {
                 reply = Bottle("Stopping end effector data dumping thread.");
                 
                 thread_dump_hand_ee->stop();

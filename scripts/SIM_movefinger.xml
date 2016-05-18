@@ -31,7 +31,13 @@
     <module>
         <name>yarpdatadumper</name>
         <node>yarprun</node>
-        <parameters>--name /datadumper_skeleton_right:i --txTime --type image --addVideo --videoType mkv</parameters>
+        <parameters>--name /datadumper_skeleton_left:i --txTime --type image --addVideo --videoType mkv</parameters>
+    </module>
+
+    <module>
+        <name>yarpdatadumper</name>
+        <node>yarprun</node>
+        <parameters>--name /datadumper_leftcam_pose:i --txTime --type bottle</parameters>
     </module>
 
     <module>
@@ -42,7 +48,7 @@
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /viewright_skeleton</parameters>
+        <parameters>--name /viewleft_skeleton</parameters>
         <node>yarprun</node>
     </module>
 
@@ -55,13 +61,13 @@
 
     <connection>
         <from>/icubSim/cam/left</from>
-        <to>/movefinger/img_skeleton_right:i</to>
+        <to>/movefinger/img_skeleton_left:i</to>
         <protocol>tcp</protocol>
     </connection>
 
     <connection>
-        <from>/movefinger/img_skeleton_right:o</from>
-        <to>/viewright_skeleton</to>
+        <from>/movefinger/img_skeleton_left:o</from>
+        <to>/viewleft_skeleton</to>
         <protocol>tcp</protocol>
     </connection>
 
@@ -71,8 +77,13 @@
     </connection>
 
     <connection>
-        <from>/movefinger/img_skeleton_right:o</from>
-        <to>/datadumper_skeleton_right:i</to>
+        <from>/movefinger/img_skeleton_left:o</from>
+        <to>/datadumper_skeleton_left:i</to>
+    </connection>
+
+    <connection>
+        <from>/movefinger/left_camera_pose:o</from>
+        <to>/datadumper_leftcam_pose:i</to>
     </connection>
 
 </application>
