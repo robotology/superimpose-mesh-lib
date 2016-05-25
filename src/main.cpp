@@ -544,8 +544,8 @@ public:
         table_view_R(2,0) =  0.0;   table_view_R(2,1) =  0.0;   table_view_R(2,2) = -1.0;
         
         table_view_x.resize(3);
-        table_view_x[0] = -0.30;
-        table_view_x[1] = +0.15;
+        table_view_x[0] = -0.40;
+        table_view_x[1] = +0.10;
         table_view_x[2] = +0.10;
         
         open_hand_joints[0] = 0;
@@ -578,7 +578,7 @@ public:
         if (usetorsoDOF && !setTorsoDOF()) return false;
 
         /* Set default right hand configuration (closed). */
-        if (!moveFingers(closed_hand_joints)) return false;
+        if (!moveFingers(open_hand_joints)) return false;
 
         /* Set deafult initial pose of the hand (table view). */
         if (!moveHand(table_view_R, table_view_x)) return false;
