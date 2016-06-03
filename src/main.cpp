@@ -664,7 +664,7 @@ public:
             }
             
         }
-        else if (command.get(0).asString() == "dumpdata"){
+        else if (command.get(0).asString() == "datadump"){
             
             if (!dumping_data && command.get(1).asString() == "on") {
                 thread_dump_hand_ee = new DumpHandSkeletonEndeffectorThread(1, "right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
