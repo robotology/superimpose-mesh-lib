@@ -761,8 +761,7 @@ public:
 int main(int argc, char *argv[])
 {
     Network yarp;
-    if (!yarp.checkNetwork())
-    {
+    if (!yarp.checkNetwork()) {
         yError() << "YARP seems unavailable.";
         return -1;
     }
