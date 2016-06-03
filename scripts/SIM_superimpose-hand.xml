@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
 <application>
-    
+
     <!-- Generic information -->
-    <name>SIM_Gazebo_movefinger</name>
-    <description>Move the iCubGazebo index finger in a circular path</description>
-    <version>1.4.1</version>
-    
+    <name>SIM_superimpose-hand</name>
+    <description>Superimpose the hand skeleton or 3D CAD model on top of iCub hand</description>
+    <version>2.0.0</version>
+
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
     </authors>
-    
+
     <!-- Required modules -->
     <module>
-        <name>movefinger</name>
+        <name>superimpose-hand</name>
         <node>yarprun</node>
-        <parameters>--from SIM_Gazebo_movefinger_config.ini</parameters>
+        <parameters>--from SIM_superimpose-hand_config.ini</parameters>
         <dependencies>
-            <port>/icubGazeboSim/cam/left</port>
-            <port>/icubGazeboSim/cam/right</port>
+            <port>/icubSim/cam/left</port>
+            <port>/icubSim/cam/right</port>
         </dependencies>
     </module>
-    
+
     <module>
         <name>yarpdatadumper</name>
         <node>yarprun</node>
@@ -45,44 +45,44 @@
         <parameters>--name /viewleft</parameters>
         <node>yarprun</node>
     </module>
-    
+
     <module>
         <name>yarpview</name>
         <parameters>--name /viewleft_skeleton</parameters>
         <node>yarprun</node>
     </module>
-    
+
     <!-- Required connections -->
     <connection>
-        <from>/icubGazeboSim/cam/left</from>
+        <from>/icubSim/cam/left</from>
         <to>/viewleft</to>
         <protocol>tcp</protocol>
     </connection>
-    
+
     <connection>
-        <from>/icubGazeboSim/cam/left</from>
-        <to>/movefinger/img_skeleton_left:i</to>
+        <from>/icubSim/cam/left</from>
+        <to>/superimpose_hand/img_skeleton_left:i</to>
         <protocol>tcp</protocol>
     </connection>
-    
+
     <connection>
-        <from>/movefinger/img_skeleton_left:o</from>
+        <from>/superimpose_hand/img_skeleton_left:o</from>
         <to>/viewleft_skeleton</to>
         <protocol>tcp</protocol>
     </connection>
-    
+
     <connection>
-        <from>/movefinger/endeffector_pose:o</from>
+        <from>/superimpose_hand/endeffector_pose:o</from>
         <to>/datadumper_endeffector_pose:i</to>
     </connection>
-    
+
     <connection>
-        <from>/movefinger/img_skeleton_left:o</from>
+        <from>/superimpose_hand/img_skeleton_left:o</from>
         <to>/datadumper_skeleton_left:i</to>
     </connection>
 
     <connection>
-        <from>/movefinger/left_camera_pose:o</from>
+        <from>/superimpose_hand/left_camera_pose:o</from>
         <to>/datadumper_leftcam_pose:i</to>
     </connection>
 

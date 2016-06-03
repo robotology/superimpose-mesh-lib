@@ -3,9 +3,9 @@
 <application>
 
     <!-- Generic information -->
-    <name>movefinger</name>
-    <description>Move the iCub index finger in a circular path</description>
-    <version>1.4.1</version>
+    <name>superimpose-hand</name>
+    <description>Superimpose the hand skeleton or 3D CAD model on top of iCub hand</description>
+    <version>2.0.0</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
@@ -13,7 +13,7 @@
 
     <!-- Required modules -->
     <module>
-        <name>movefinger</name>
+        <name>superimpose-hand</name>
         <node>icub21</node>
         <dependencies>
             <port>/icub/cam/left</port>
@@ -60,28 +60,28 @@
 
     <connection>
         <from>/icub/camcalib/left/out</from>
-        <to>/movefinger/img_skeleton_left:i</to>
+        <to>/superimpose_hand/img_skeleton_left:i</to>
         <protocol>udp</protocol>
     </connection>
 
     <connection>
-        <from>/movefinger/img_skeleton_left:o</from>
+        <from>/superimpose_hand/img_skeleton_left:o</from>
         <to>/viewleft_skeleton</to>
         <protocol>udp</protocol>
     </connection>
 
     <connection>
-        <from>/movefinger/endeffector_pose:o</from>
+        <from>/superimpose_hand/endeffector_pose:o</from>
         <to>/datadumper_endeffector_pose:i</to>
     </connection>
 
     <connection>
-        <from>/movefinger/img_skeleton_left:o</from>
+        <from>/superimpose_hand/img_skeleton_left:o</from>
         <to>/datadumper_skeleton_left:i</to>
     </connection>
 
     <connection>
-        <from>/movefinger/left_camera_pose:o</from>
+        <from>/superimpose_hand/left_camera_pose:o</from>
         <to>/datadumper_leftcam_pose:i</to>
     </connection>
 

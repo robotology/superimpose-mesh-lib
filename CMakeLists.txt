@@ -2,17 +2,17 @@ cmake_minimum_required(VERSION 2.8.9)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-project(movefinger)
+project(superimpose-hand)
 
 set(SOURCE_FILES        src/main.cpp)
 
-set(PROGRAM_CONFIG      config/movefinger_config.ini)
-set(PROGRAM_SCRIPT      scripts/movefinger.xml.template)
+set(PROGRAM_CONFIG      config/superimpose-hand_config.ini)
+set(PROGRAM_SCRIPT      scripts/superimpose-hand.xml.template)
 
-set(SIM_PROGRAM_CONFIG  config/SIM_movefinger_config.ini
-                        config/SIM_Gazebo_movefinger_config.ini)
-set(SIM_PROGRAM_SCRIPT  scripts/SIM_movefinger.xml
-                        scripts/SIM_Gazebo_movefinger.xml
+set(SIM_PROGRAM_CONFIG  config/SIM_superimpose-hand_config.ini
+                        config/SIM_Gazebo_superimpose-hand_config.ini)
+set(SIM_PROGRAM_SCRIPT  scripts/SIM_superimpose-hand.xml
+                        scripts/SIM_Gazebo_superimpose-hand.xml
                         scripts/SIM_Background_Apps.xml
                         scripts/SIM_Gazebo_Background_Apps.xml)
 

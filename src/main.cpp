@@ -26,11 +26,11 @@ private:
     ConstString laterality;
     ConstString camera;
     int camsel;
-    
+
     PolyDriver &arm_remote_driver;
     PolyDriver &arm_cartesian_driver;
     PolyDriver &gaze_driver;
-    
+
     IEncoders *itf_arm_encoders;
     int num_arm_enc;
     ICartesianControl *itf_arm_cart;
@@ -39,14 +39,14 @@ private:
     IGazeControl *itf_head_gaze;
     Vector cam_x;
     Vector cam_o;
-    
+
     iCubFinger finger[3];
-    
+
     BufferedPort<ImageOf<PixelRgb>> inport_skeleton_img;
     BufferedPort<ImageOf<PixelRgb>> outport_skeleton_img;
     BufferedPort<Bottle> port_ee_pose;
     BufferedPort<Bottle> port_cam_pose;
-    
+
 public:
     DumpHandSkeletonEndeffectorThread(const unsigned int thread_ID, const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {
         this->thread_ID = thread_ID;
@@ -54,10 +54,10 @@ public:
         this->camera = camera;
         this->camsel = (camera == "left")? 0:1;
     }
-    
+
     bool threadInit() {
         yInfo() << "Initializing hand skeleton drawing thread (worker:" << thread_ID << ").";
-        
+
         yInfo() << "Setting interfaces (worker:" << thread_ID << ").";
         IControlLimits *itf_fingers_lim;
         arm_remote_driver.view(itf_fingers_lim);
@@ -65,32 +65,32 @@ public:
             yError() << "Error getting IControlLimits interface in thread" << thread_ID << ".";
             return false;
         }
-        
+
         arm_remote_driver.view(itf_arm_encoders);
         if (!itf_arm_encoders) {
             yError() << "Error getting IEncoders interface in thread" << thread_ID << ".";
             return false;
         }
         itf_arm_encoders->getAxes(&num_arm_enc);
-        
+
         arm_cartesian_driver.view(itf_arm_cart);
         if (!itf_arm_cart) {
             yError() << "Error getting ICartesianControl interface in thread" << thread_ID << ".";
             return false;
         }
-        
+
         gaze_driver.view(itf_head_gaze);
         if (!itf_head_gaze) {
             yError() << "Error getting IGazeControl interface in thread" << thread_ID << ".";
             return false;
         }
         yInfo() << "Interfaces set (worker:" << thread_ID << ")!";
-        
+
         yInfo() << "Setting joint bounds for the fingers (worker:" << thread_ID << ").";
         finger[0] = iCubFinger(laterality+"_thumb");
         finger[1] = iCubFinger(laterality+"_index");
         finger[2] = iCubFinger(laterality+"_middle");
-        
+
         std::deque<IControlLimits*> temp_lim;
         temp_lim.push_front(itf_fingers_lim);
         for (int i = 0; i < 3; ++i) {
@@ -100,70 +100,70 @@ public:
             }
         }
         yInfo() << "Joint bound for finger set (worker:" << thread_ID << ")!";
-        
+
         yInfo() << "Opening ports for skeleton images (worker:" << thread_ID << ").";
-        if (!inport_skeleton_img.open("/movefinger/img_skeleton_"+camera+":i")) {
+        if (!inport_skeleton_img.open("/superimpose_hand/img_skeleton_"+camera+":i")) {
             yError() << "Cannot open skeleton image input port for "+camera+" camera" << "in thread" << thread_ID << ".";
             return false;
         }
-        if (!outport_skeleton_img.open("/movefinger/img_skeleton_"+camera+":o")) {
+        if (!outport_skeleton_img.open("/superimpose_hand/img_skeleton_"+camera+":o")) {
             yError() << "Cannot open skeleton image output port for "+camera+" camera" << "in thread" << thread_ID << ".";
             return false;
         }
         yInfo() << "Skeleton image ports succesfully opened (worker:" << thread_ID << ")!";
-        
+
         yInfo() << "Initializing end effector pose dumping thread (worker:" << thread_ID << ").";
-        if (!port_ee_pose.open("/movefinger/endeffector_pose:o")) {
-            yError() << "Cannot open /movefinger/endeffector_pose:o port (worker:" << thread_ID << ").";
+        if (!port_ee_pose.open("/superimpose_hand/endeffector_pose:o")) {
+            yError() << "Cannot open /superimpose_hand/endeffector_pose:o port (worker:" << thread_ID << ").";
             return false;
         }
-        
+
         ee_x.resize(3);
         ee_o.resize(4);
         yInfo() << "End effector port succesfully opened (worker:" << thread_ID << ").";
-        
+
         yInfo() << "Initializing"+camera+"camera pose dumping thread (worker:" << thread_ID << ").";
-        if (!port_cam_pose.open("/movefinger/"+camera+"_camera_pose:o")) {
-            yError() << "Cannot open /movefinger/"+camera+"_camera_pose:o port (worker:" << thread_ID << ").";
+        if (!port_cam_pose.open("/superimpose_hand/"+camera+"_camera_pose:o")) {
+            yError() << "Cannot open /superimpose_hand/"+camera+"_camera_pose:o port (worker:" << thread_ID << ").";
             return false;
         }
-        
+
         cam_x.resize(3);
         cam_o.resize(4);
         yInfo() << "Port for "+camera+" camera succesfully opened (worker:" << thread_ID << ").";
-        
+
         Bottle bottle;
         itf_head_gaze->getInfo(bottle);
         yInfo() << "Camera Info:"<< bottle.toString();
-        
+
         yInfo() << "Initialization completed for worker" << thread_ID << ".";
-        
+
         return true;
     }
-    
+
     void run() {
         while (!isStopping()) {
-            
+
             ImageOf<PixelRgb> *imgin = inport_skeleton_img.read(true);
             itf_arm_cart->getPose(ee_x, ee_o);
             itf_head_gaze->getLeftEyePose(cam_x, cam_o);
-            
+
             if (imgin != NULL) {
                 ImageOf<PixelRgb> &imgout = outport_skeleton_img.prepare();
                 imgout = *imgin;
-                
+
                 cv::Mat img = cv::cvarrToMat(imgout.getIplImage());
-                
+
                 Matrix Ha = axis2dcm(ee_o);
                 ee_x.push_back(1.0);
                 Ha.setCol(3, ee_x);
-                
+
                 Vector endeffector_pixel;
                 itf_head_gaze->get2DPixel(camsel, ee_x, endeffector_pixel);
-                
+
                 cv::Point endeffector_point(static_cast<int>(endeffector_pixel[0]), static_cast<int>(endeffector_pixel[1]));
                 cv::circle(img, endeffector_point, 4, cv::Scalar(0, 255, 0), 4);
-                
+
                 Vector encs(static_cast<size_t>(num_arm_enc));
                 Vector chainjoints;
                 itf_arm_encoders->getEncoders(encs.data());
@@ -171,17 +171,17 @@ public:
                     finger[i].getChainJoints(encs, chainjoints);
                     finger[i].setAng(CTRL_DEG2RAD * chainjoints);
                 }
-                
+
                 for (unsigned int fng = 0; fng < 3; ++fng) {
                     std::deque<cv::Point> current_joint_point;
-                    
+
                     for (unsigned int i = 0; i < finger[fng].getN(); ++i) {
                         Vector current_joint_pixel;
                         itf_head_gaze->get2DPixel(camsel, Ha*(finger[fng].getH(i, true).getCol(3)), current_joint_pixel);
-                        
+
                         current_joint_point.push_front(cv::Point(static_cast<int>(current_joint_pixel[0]), static_cast<int>(current_joint_pixel[1])));
                         cv::circle(img, current_joint_point.front(), 3, cv::Scalar(0, 0, 255), 4);
-                        
+
                         if (i > 0) {
                             cv::line(img, current_joint_point.front(), current_joint_point.back(), cv::Scalar(255, 255, 255), 2);
                             current_joint_point.pop_back();
@@ -191,36 +191,36 @@ public:
                         }
                     }
                 }
-                
+
                 Bottle &eePoseBottle = port_ee_pose.prepare();
                 eePoseBottle.clear();
                 eePoseBottle.addString(ee_x.toString() + "    " + ee_o.toString());
-                
+
                 Bottle &camPoseBottle = port_cam_pose.prepare();
                 camPoseBottle.clear();
                 camPoseBottle.addString(cam_x.toString() + "    " + cam_o.toString());
-                
+
                 outport_skeleton_img.write();
                 port_ee_pose.write();
                 port_cam_pose.write();
             }
         }
     }
-    
+
     void threadRelease() {
         yInfo() << "Deallocating resource of hand skeleton drawing thread for worker " << thread_ID << ".";
-        
+
         if (!inport_skeleton_img.isClosed()) inport_skeleton_img.close();
         if (!outport_skeleton_img.isClosed()) outport_skeleton_img.close();
         if (!port_ee_pose.isClosed()) port_ee_pose.close();
         if (!port_cam_pose.isClosed()) port_cam_pose.close();
-        
+
         yInfo() << "Deallocation completed for worker " << thread_ID << ".";
     }
 };
 
 
-class MoveFinger : public RFModule
+class SuperimposeHand : public RFModule
 {
 private:
     ConstString robot;
@@ -253,13 +253,13 @@ private:
 
     Matrix frontal_view_R;
     Vector frontal_view_x;
-    
+
     Matrix table_view_R;
     Vector table_view_x;
-    
+
     double open_hand_joints[6];
     double closed_hand_joints[6];
-    
+
     double radius;
     int angle_ratio;
     double motion_time;
@@ -269,7 +269,7 @@ private:
     {
         Property rightarm_remote_options;
         rightarm_remote_options.put("device", "remote_controlboard");
-        rightarm_remote_options.put("local", "/movefinger/control_right_arm");
+        rightarm_remote_options.put("local", "/superimpose_hand/control_right_arm");
         rightarm_remote_options.put("remote", "/"+robot+"/right_arm");
 
         rightarm_remote_driver.open(rightarm_remote_options);
@@ -325,7 +325,7 @@ private:
     {
         Property rightarm_cartesian_options;
         rightarm_cartesian_options.put("device", "cartesiancontrollerclient");
-        rightarm_cartesian_options.put("local", "/movefinger/cart_right_arm");
+        rightarm_cartesian_options.put("local", "/superimpose_hand/cart_right_arm");
         rightarm_cartesian_options.put("remote", "/"+robot+"/cartesianController/right_arm");
 
         rightarm_cartesian_driver.open(rightarm_cartesian_options);
@@ -348,7 +348,7 @@ private:
     {
         Property head_option;
         head_option.put("device", "remote_controlboard");
-        head_option.put("local", "/movefinger/control_head");
+        head_option.put("local", "/superimpose_hand/control_head");
         head_option.put("remote", "/"+robot+"/head");
 
         head_remote_driver.open(head_option);
@@ -365,7 +365,7 @@ private:
             yError() << "Error opening head remote_controlboard device.";
             return false;
         }
-        
+
         num_head_joint = 0;
         itf_head_pos->getAxes(&num_head_joint);
         yInfo() << "Total number of head joints: " << num_head_joint << ".";
@@ -395,7 +395,7 @@ private:
     {
         Property gaze_option;
         gaze_option.put("device", "gazecontrollerclient");
-        gaze_option.put("local", "/movefinger/gaze");
+        gaze_option.put("local", "/superimpose_hand/gaze");
         gaze_option.put("remote", "/iKinGazeCtrl");
 
         gaze_driver.open(gaze_option);
@@ -436,7 +436,7 @@ private:
     bool setCommandPort()
     {
         yInfo() << "Opening command port.";
-        if (!port_command.open("/movefinger/rpc")) {
+        if (!port_command.open("/superimpose_hand/rpc")) {
             yError() << "Cannot open the command port.";
             return false;
         }
@@ -448,7 +448,7 @@ private:
 
         return true;
     }
-    
+
     bool moveFingers(const double (&joint)[6])
     {
         /* Close iCub hand. */
@@ -470,22 +470,22 @@ private:
             }
         }
         yInfo() << "Fingers succesfully closed.";
-        
+
         return true;
     }
-    
+
     bool moveHand(const Matrix &R, const Vector &init_x)
     {
         /* Setting hand pose */
         yInfo() << "Moving hand to the initial position.";
-        
+
         Vector init_o(dcm2axis(R));
-        
+
         itf_rightarm_cart->goToPoseSync(init_x, init_o);
         itf_rightarm_cart->waitMotionDone(0.1, 6.0);
-        
+
         yInfo() << "The hand is in position.";
-        
+
         /* Set initial fixation point */
         if (usegaze) {
             Vector tmp;
@@ -500,7 +500,7 @@ private:
             }
             yInfo() << "Gaze motion done.";
         }
-        
+
         return true;
     }
 
@@ -526,35 +526,35 @@ public:
             }
             yInfo() << arm_vel.toString();
         }
-        
+
         /* Initializing useful pose matrices and vectors for the hand. */
         frontal_view_R.resize(3, 3);
         frontal_view_R(0,0) =  0.0;   frontal_view_R(0,1) =  0.0;   frontal_view_R(0,2) =  1.0;
         frontal_view_R(1,0) = -1.0;   frontal_view_R(1,1) =  0.0;   frontal_view_R(1,2) =  0.0;
         frontal_view_R(2,0) =  0.0;   frontal_view_R(2,1) = -1.0;   frontal_view_R(2,2) =  0.0;
-        
+
         frontal_view_x.resize(3);
         frontal_view_x[0] = -0.25;
         frontal_view_x[1] = +0.00;
         frontal_view_x[2] = +0.20;
-        
+
         table_view_R.resize(3, 3);
         table_view_R(0,0) = -1.0;   table_view_R(0,1) =  0.0;   table_view_R(0,2) =  0.0;
         table_view_R(1,0) =  0.0;   table_view_R(1,1) =  1.0;   table_view_R(1,2) =  0.0;
         table_view_R(2,0) =  0.0;   table_view_R(2,1) =  0.0;   table_view_R(2,2) = -1.0;
-        
+
         table_view_x.resize(3);
         table_view_x[0] = -0.40;
         table_view_x[1] = +0.10;
         table_view_x[2] = +0.10;
-        
+
         open_hand_joints[0] = 0;
         open_hand_joints[1] = 0;
         open_hand_joints[2] = 0;
         open_hand_joints[3] = 10;
         open_hand_joints[4] = 0;
         open_hand_joints[5] = 0;
-        
+
         closed_hand_joints[0] = 80;
         closed_hand_joints[1] = 150;
         closed_hand_joints[2] = 180;
@@ -582,7 +582,7 @@ public:
 
         /* Set deafult initial pose of the hand (table view). */
         if (!moveHand(table_view_R, table_view_x)) return false;
-        
+
         /* Set initial finger motion point */
         radius = 0.08;
         angle_ratio = 12;
@@ -600,12 +600,12 @@ public:
         yInfo() << "Got something: " << command.toString();
 
         if (command.get(0).asString() == "start") {
-            
+
             if (viewhand) {
                 Bottle("Can't move hand in this settings! Use tablehand command before using start command again.");
             } else {
                 start = true;
-                
+
                 if (command.get(1).asString() == "freerun") {
                     freerunning = true;
                     reply = Bottle("Starting freerunning motion mode.");
@@ -624,17 +624,17 @@ public:
 
         }
         else if (command.get(0).asString() == "tablehand") {
-            
+
             if (!viewhand) {
                 reply = Bottle("Already in tablehand settings!");
             } else {
                 viewhand = false;
-                
+
                 reply = Bottle("Tablehand enabled, iCub can move the hand in this settings.");
-                
+
                 moveHand(table_view_R, table_view_x);
             }
-            
+
         }
         else if (command.get(0).asString() == "viewhand") {
 
@@ -642,15 +642,15 @@ public:
                 reply = Bottle("Can't move hand while moving it!");
             } else {
                 viewhand = true;
-                
+
                 reply = Bottle("Viewhand enabled, iCub can't move hand in this settings.");
-                
+
                 moveHand(frontal_view_R, frontal_view_x);
             }
 
         }
         else if (command.get(0).asString() == "fingers") {
-            
+
             if (command.get(1).asString() == "open") {
                 moveFingers(open_hand_joints);
                 reply = Bottle("Hand opened!");
@@ -662,27 +662,27 @@ public:
             else {
                 reply = Bottle("Option not available for fingers settings (available: open, close).");
             }
-            
+
         }
         else if (command.get(0).asString() == "datadump"){
-            
+
             if (!dumping_data && command.get(1).asString() == "on") {
                 thread_dump_hand_ee = new DumpHandSkeletonEndeffectorThread(1, "right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
-                
+
                 if (thread_dump_hand_ee != NULL) {
                     reply = Bottle("Starting hand skeleton and end effector data dumping thread.");
                     thread_dump_hand_ee->start();
-                    
+
                     dumping_data = true;
                 }
                 else {
                     reply = Bottle("Could not initialize hand skeleton and end effector data dumping thread.");
                 }
-                
+
             }
             else if (dumping_data && command.get(1).asString() == "off") {
                 reply = Bottle("Stopping end effector data dumping thread.");
-                
+
                 thread_dump_hand_ee->stop();
                 dumping_data = false;
                 delete thread_dump_hand_ee;
@@ -690,7 +690,7 @@ public:
             else {
                 reply = Bottle("Option not available for end effector dumping thread operations (available: on, off).");
             }
-            
+
         }
         else if (command.get(0).asString() == "quit") {
 
@@ -714,7 +714,7 @@ public:
             Vector center(2);
             center[0] = motion_axis[0];
             center[1] = motion_axis[1] - radius;
-            
+
             yInfo() << "Starting finger motion.";
             for (double alpha = 0.0; alpha < (2* M_PI); alpha += M_PI / angle_ratio) {
                 motion_axis[0] = (center[0] - (radius * sin(alpha)));
@@ -767,12 +767,12 @@ int main(int argc, char *argv[])
     }
 
     ResourceFinder rf;
-    MoveFinger module;
+    SuperimposeHand module;
     yInfo() << "Configuring and starting module...";
 
     rf.setVerbose(true);
-    rf.setDefaultConfigFile("movefinger_config.ini");
-    rf.setDefaultContext("movefinger");
+    rf.setDefaultConfigFile("superimpose-hand_config.ini");
+    rf.setDefaultContext("superimpose_hand");
     rf.configure(argc, argv);
 
     module.runModule(rf);
