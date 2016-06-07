@@ -1,5 +1,8 @@
-#include <list>
 #include <cmath>
+#include <iostream>
+#include <list>
+#include <sstream>
+#include <vector>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -11,6 +14,35 @@
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/ctrl/math.h>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#ifndef GL_H
+#define GL_H
+#include <GL/glew.h>
+#endif
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+//#include <SOIL/SOIL.h> //TODO: controllare se è possibile rimuovere questa libreria. Eliminarla anche da CMAKE.
+
+#include "model.h"
+#include "shader.h"
+
+#define PROJECT_NAME ConstString("superimpose_hand")
+
+#define WIDTH 320.0f
+#define HEIGHT 240.0f
+#define NEAR 0.001f
+#define FAR 1000.0f
+//#define EYE_L_FX 232.921f
+//#define EYE_L_FY 232.43f
+//#define EYE_L_CX 162.202f
+//#define EYE_L_CY 125.738f
+
+GLFWwindow *window;
+
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
@@ -19,7 +51,7 @@ using namespace iCub::iKin;
 using namespace iCub::ctrl;
 
 
-class DumpHandSkeletonEndeffectorThread : public Thread
+class SuperimposeHandSkeletonThread : public Thread
 {
 private:
     unsigned int thread_ID;
@@ -48,7 +80,7 @@ private:
     BufferedPort<Bottle> port_cam_pose;
 
 public:
-    DumpHandSkeletonEndeffectorThread(const unsigned int thread_ID, const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {
+    SuperimposeHandSkeletonThread(const unsigned int thread_ID, const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {
         this->thread_ID = thread_ID;
         this->laterality = laterality;
         this->camera = camera;
@@ -56,37 +88,41 @@ public:
     }
 
     bool threadInit() {
-        yInfo() << "Initializing hand skeleton drawing thread (worker:" << thread_ID << ").";
+        ConstString log_id = "Worker " + std::to_string(thread_ID) + ":";
+        yInfo() << log_id << "Initializing hand skeleton drawing thread.";
 
-        yInfo() << "Setting interfaces (worker:" << thread_ID << ").";
+        yInfo() << log_id << "Setting interfaces";
+        
         IControlLimits *itf_fingers_lim;
         arm_remote_driver.view(itf_fingers_lim);
         if (!itf_fingers_lim) {
-            yError() << "Error getting IControlLimits interface in thread" << thread_ID << ".";
+            yError() << log_id << "Error getting IControlLimits interface in thread.";
             return false;
         }
 
         arm_remote_driver.view(itf_arm_encoders);
         if (!itf_arm_encoders) {
-            yError() << "Error getting IEncoders interface in thread" << thread_ID << ".";
+            yError() << log_id << "Error getting IEncoders interface.";
             return false;
         }
         itf_arm_encoders->getAxes(&num_arm_enc);
 
         arm_cartesian_driver.view(itf_arm_cart);
         if (!itf_arm_cart) {
-            yError() << "Error getting ICartesianControl interface in thread" << thread_ID << ".";
+            yError() << log_id << "Error getting ICartesianControl interface in thread.";
             return false;
         }
 
         gaze_driver.view(itf_head_gaze);
         if (!itf_head_gaze) {
-            yError() << "Error getting IGazeControl interface in thread" << thread_ID << ".";
+            yError() << log_id << "Error getting IGazeControl interface.";
             return false;
         }
-        yInfo() << "Interfaces set (worker:" << thread_ID << ")!";
+        
+        yInfo() << log_id << "Interfaces set!";
 
-        yInfo() << "Setting joint bounds for the fingers (worker:" << thread_ID << ").";
+        yInfo() << log_id << "Setting joint bounds for the fingers.";
+        
         finger[0] = iCubFinger(laterality+"_thumb");
         finger[1] = iCubFinger(laterality+"_index");
         finger[2] = iCubFinger(laterality+"_middle");
@@ -95,48 +131,49 @@ public:
         temp_lim.push_front(itf_fingers_lim);
         for (int i = 0; i < 3; ++i) {
             if (!finger[i].alignJointsBounds(temp_lim)) {
-                yError() << "Cannot set joint bound for finger" << i << "(worker:" << thread_ID << ").";
+                yError() << log_id << "Cannot set joint bound for finger " + std::to_string(i) + ".";
                 return false;
             }
         }
-        yInfo() << "Joint bound for finger set (worker:" << thread_ID << ")!";
+        
+        yInfo() << log_id << "Joint bound for finger set!";
 
-        yInfo() << "Opening ports for skeleton images (worker:" << thread_ID << ").";
-        if (!inport_skeleton_img.open("/superimpose_hand/img_skeleton_"+camera+":i")) {
-            yError() << "Cannot open skeleton image input port for "+camera+" camera" << "in thread" << thread_ID << ".";
+        yInfo() << log_id << "Opening ports for skeleton images.";
+        
+        if (!inport_skeleton_img.open("/"+PROJECT_NAME+"/skeleton/cam/"+camera+":i")) {
+            yError() << log_id << "Cannot open input image port for "+camera+".";
             return false;
         }
-        if (!outport_skeleton_img.open("/superimpose_hand/img_skeleton_"+camera+":o")) {
-            yError() << "Cannot open skeleton image output port for "+camera+" camera" << "in thread" << thread_ID << ".";
+        if (!outport_skeleton_img.open("/"+PROJECT_NAME+"/skeleton/cam/"+camera+":o")) {
+            yError() << log_id << "Cannot open output image port for "+camera+".";
             return false;
         }
-        yInfo() << "Skeleton image ports succesfully opened (worker:" << thread_ID << ")!";
+        
+        yInfo() << log_id << "Skeleton image ports succesfully opened!";
 
-        yInfo() << "Initializing end effector pose dumping thread (worker:" << thread_ID << ").";
-        if (!port_ee_pose.open("/superimpose_hand/endeffector_pose:o")) {
-            yError() << "Cannot open /superimpose_hand/endeffector_pose:o port (worker:" << thread_ID << ").";
+        yInfo() << log_id << "Opening port for end effector pose.";
+        
+        if (!port_ee_pose.open("/"+PROJECT_NAME+"/skeleton/endeffector/pose:o")) {
+            yError() << log_id << "Cannot open end effector pose output port.";
             return false;
         }
-
         ee_x.resize(3);
         ee_o.resize(4);
-        yInfo() << "End effector port succesfully opened (worker:" << thread_ID << ").";
+        
+        yInfo() << log_id << "End effector port succesfully opened!";
 
-        yInfo() << "Initializing"+camera+"camera pose dumping thread (worker:" << thread_ID << ").";
-        if (!port_cam_pose.open("/superimpose_hand/"+camera+"_camera_pose:o")) {
-            yError() << "Cannot open /superimpose_hand/"+camera+"_camera_pose:o port (worker:" << thread_ID << ").";
+        yInfo() << log_id << "Opening ports for "+camera+" camera pose.";
+        
+        if (!port_cam_pose.open("/"+PROJECT_NAME+"/skeleton/cam/"+camera+"/pose:o")) {
+            yError() << log_id << "Cannot open "+camera+" camera pose output port.";
             return false;
         }
-
         cam_x.resize(3);
         cam_o.resize(4);
-        yInfo() << "Port for "+camera+" camera succesfully opened (worker:" << thread_ID << ").";
+        
+        yInfo() << log_id << "Port for "+camera+" camera succesfully opened!";
 
-        Bottle bottle;
-        itf_head_gaze->getInfo(bottle);
-        yInfo() << "Camera Info:"<< bottle.toString();
-
-        yInfo() << "Initialization completed for worker" << thread_ID << ".";
+        yInfo() << log_id << "Initialization completed!";
 
         return true;
     }
@@ -208,17 +245,354 @@ public:
     }
 
     void threadRelease() {
-        yInfo() << "Deallocating resource of hand skeleton drawing thread for worker " << thread_ID << ".";
+        ConstString log_id = "Worker " + std::to_string(thread_ID) + ":";
+        yInfo() << log_id << "Deallocating resource of hand skeleton drawing thread.";
 
         if (!inport_skeleton_img.isClosed()) inport_skeleton_img.close();
         if (!outport_skeleton_img.isClosed()) outport_skeleton_img.close();
         if (!port_ee_pose.isClosed()) port_ee_pose.close();
         if (!port_cam_pose.isClosed()) port_cam_pose.close();
 
-        yInfo() << "Deallocation completed for worker " << thread_ID << ".";
+        yInfo() << log_id << "Deallocation completed!";
     }
 };
 
+class SuperimposeHandCADThread : public Thread
+{
+private:
+    unsigned int thread_ID;
+    ConstString laterality;
+    ConstString camera;
+    int camsel;
+    
+    PolyDriver &arm_cartesian_driver;
+    PolyDriver &gaze_driver;
+    
+    ICartesianControl *itf_arm_cart;
+    Vector ee_x;
+    Vector ee_o;
+    IGazeControl *itf_head_gaze;
+    Vector cam_x;
+    Vector cam_o;
+    float EYE_L_FX;
+    float EYE_L_FY;
+    float EYE_L_CX;
+    float EYE_L_CY;
+    
+    BufferedPort<ImageOf<PixelRgb>> inport_renderer_img;
+    BufferedPort<Bottle> port_ee_pose;
+    BufferedPort<Bottle> port_cam_pose;
+    
+//    GLFWwindow *window;
+    GLuint texture;
+    GLuint VAO;
+    GLuint EBO;
+    GLuint VBO;
+    Shader *shader_background;
+    Shader *shader_cad;
+    Model *cad_hand;
+    glm::mat4 root_to_ogl;
+    glm::mat4 align_ee_to_ogl;
+    glm::mat4 back_proj;
+    
+public:
+    SuperimposeHandCADThread(const unsigned int thread_ID, const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {
+        this->thread_ID = thread_ID;
+        this->laterality = laterality;
+        this->camera = camera;
+        this->camsel = (camera == "left")? 0:1;
+    }
+    
+    bool threadInit() {
+        ConstString log_id = "Worker " + std::to_string(thread_ID) + ":";
+        yInfo() << log_id << "Initializing hand skeleton drawing thread.";
+        
+        yInfo() << log_id << "Setting interfaces";
+        
+        arm_cartesian_driver.view(itf_arm_cart);
+        if (!itf_arm_cart) {
+            yError() << log_id << "Error getting ICartesianControl interface in thread.";
+            return false;
+        }
+        
+        gaze_driver.view(itf_head_gaze);
+        if (!itf_head_gaze) {
+            yError() << log_id << "Error getting IGazeControl interface.";
+            return false;
+        }
+        
+        yInfo() << log_id << "Interfaces set!";
+        
+        yInfo() << log_id << "Opening ports for skeleton images.";
+        
+        if (!inport_renderer_img.open("/"+PROJECT_NAME+"/cad/cam/"+camera+":i")) {
+            yError() << log_id << "Cannot open input image port for "+camera+".";
+            return false;
+        }
+        
+        yInfo() << log_id << "Skeleton image ports succesfully opened!";
+        
+        yInfo() << log_id << "Opening port for end effector pose.";
+        
+        if (!port_ee_pose.open("/"+PROJECT_NAME+"/cad/endeffector/pose:o")) {
+            yError() << log_id << "Cannot open end effector pose output port.";
+            return false;
+        }
+        ee_x.resize(3);
+        ee_o.resize(4);
+        
+        yInfo() << log_id << "End effector port succesfully opened!";
+        
+        yInfo() << log_id << "Opening ports for "+camera+" camera pose.";
+        
+        if (!port_cam_pose.open("/"+PROJECT_NAME+"/cad/"+camera+"/pose:o")) {
+            yError() << log_id << "Cannot open "+camera+" camera pose output port.";
+            return false;
+        }
+        cam_x.resize(3);
+        cam_o.resize(4);
+        
+        yInfo() << log_id << "Port for "+camera+" camera succesfully opened!";
+        
+        Bottle btl_cam_left_info;
+        itf_head_gaze->getInfo(btl_cam_left_info);
+        Bottle *cam_left_info = btl_cam_left_info.findGroup("camera_intrinsics_left").get(1).asList();
+        yInfo() << log_id << "Camera Info: [" + cam_left_info->toString() + "].";
+        EYE_L_FX = static_cast<float>(cam_left_info->get(0).asDouble());
+        EYE_L_CX = static_cast<float>(cam_left_info->get(2).asDouble());
+        EYE_L_FY = static_cast<float>(cam_left_info->get(5).asDouble());
+        EYE_L_CY = static_cast<float>(cam_left_info->get(6).asDouble());
+        
+        /************************************************************************************************************************/
+//        yInfo() << log_id << "Setting up OpenGL.";
+//        
+//        /* Initialize GLFW. */
+//        if (glfwInit() == GL_FALSE) {
+//            yError() << log_id << "Failed to initialize GLFW.";
+//            return false;
+//        }
+//        
+//        /* Set context properties by "hinting" specific (property, value) pairs. */
+//        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+//        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+//        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+//#ifdef GLFW_MAC
+//        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+//#endif
+//        
+//        /* Create a window. */
+//        window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL Window", nullptr, nullptr);
+//        if (window == nullptr) {
+//            yError() << log_id << "Failed to create GLFW window.";
+//            glfwTerminate();
+//            return false;
+//        }
+//        /* Make the context of our window the current one handled by OpenGL. */
+        glfwMakeContextCurrent(window);
+//
+//        /* Initialize GLEW to use the OpenGL implementation provided by the videocard manufacturer. */
+//        /* Note: remember that the OpenGL are only specifications, the implementation is provided by the manufacturers. */
+//        glewExperimental = GL_TRUE;
+//        if (glewInit() != GLEW_OK) {
+//            yError() << log_id << "Failed to initialize GLEW.";
+//            return false;
+//        }
+//        
+//        /* Set OpenGL rendering frame for the current window. */
+//        /* Note that the real monitor width and height may differ w.r.t. the choosen one in hdpi monitors. */
+//        int hdpi_width;
+//        int hdpi_height;
+//        glfwGetFramebufferSize(window, &hdpi_width, &hdpi_height);
+//        glViewport(0, 0, hdpi_width, hdpi_height);
+//        
+//        /* Set GL property. */
+//        glEnable(GL_DEPTH_TEST);
+        
+        /* Create a background texture. */
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        
+        /* Set the texture wrapping/filtering options (on the currently bound texture object). */
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        /* Crate the squared support for the backround texture. */
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+        GLfloat vertices[] = {//Positions      //Colors            //Texture Coords
+                                1.0f,  1.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Top Right
+                                1.0f, -1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Bottom Right
+                               -1.0f, -1.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Bottom Left
+                               -1.0f,  1.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Top Left
+        };
+        
+        GLuint indices[] = { 0, 1, 3,   // First Triangle
+                             1, 2, 3 }; // Second Triangle
+        
+        /* Create and bind an element buffer object. */
+        glGenBuffers(1, &EBO);
+
+        glGenBuffers(1, &VBO);
+        
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
+        
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        
+        glBindVertexArray(0);
+        
+        /* Crate shader program. */
+        shader_background = new Shader("shader_background.vert", "shader_background.frag");
+        shader_cad = new Shader("shader_model.vert", "shader_simple.frag"); // TODO: add light to the model
+        
+        /* Load models. */
+        cad_hand = new Model("r_palm_cad.obj");
+        
+        /* Predefined rotation matrices. */
+        root_to_ogl = glm::mat4(0.0f, 0.0f, 1.0f, 0.0f,
+                                1.0f, 0.0f, 0.0f, 0.0f,
+                                0.0f, 1.0f, 0.0f, 0.0f,
+                                0.0f, 0.0f, 0.0f, 1.0f);
+        
+        /* Initial orientation discrepancies from loading the model in OpenGL rotated in ROOT coordinate w.r.t. the real orientation from the ROOT in the real robot settings. */
+        align_ee_to_ogl = glm::rotate(glm::mat4(1.0f), glm::half_pi<GLfloat>(), glm::vec3(0.0f, 1.0f, 0.0f));
+        align_ee_to_ogl = glm::rotate(align_ee_to_ogl, glm::half_pi<GLfloat>(), glm::vec3(0.0f, 0.0f, 1.0f));
+        align_ee_to_ogl = glm::rotate(align_ee_to_ogl, glm::pi<GLfloat>(), glm::vec3(1.0f, 0.0f, 0.0f));
+        
+        back_proj = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, FAR*100.f);
+        
+        glfwMakeContextCurrent(NULL);
+        
+        yInfo() << log_id << "OpenGL succesfully set up!";
+        
+        /************************************************************************************************************************/
+        
+        yInfo() << log_id << "Initialization completed!";
+        
+        return true;
+    }
+    
+    void run() {
+        glfwMakeContextCurrent(window);
+        while (!isStopping()) {
+            
+            ImageOf<PixelRgb> *imgin = inport_renderer_img.read(true);
+            itf_arm_cart->getPose(ee_x, ee_o);
+            itf_head_gaze->getLeftEyePose(cam_x, cam_o);
+            
+            if (imgin != NULL) {
+                /************************************************************************************************************************/
+                
+                /* Load and generate the texture. */
+                glBindTexture(GL_TEXTURE_2D, texture);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgin->width(), imgin->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, imgin->getRawImage());
+                glGenerateMipmap(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, 0);
+                
+                /* Clear the colorbuffer. */
+                glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                
+                /* Draw the background picture. */
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                shader_background->Use();
+                glUniformMatrix4fv(glGetUniformLocation(shader_background->Program, "projection"), 1, GL_FALSE, glm::value_ptr(back_proj));
+                glBindTexture(GL_TEXTURE_2D, texture);
+                glBindVertexArray(VAO);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                glBindVertexArray(0);
+                
+                /* Draw in wireframe. */
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                
+                /* Use/Activate the shader. */
+                shader_cad->Use();
+                
+                /* Model transformation matrix. */
+                /* ROOT reference frame is different than the one used by OpenGL. */
+                glm::mat4 root_ee_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(ee_x[0]), static_cast<float>(ee_x[1]), static_cast<float>(ee_x[2])));
+                glm::mat4 root_ee_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(ee_o[3]), glm::vec3(static_cast<float>(ee_o[0]), static_cast<float>(ee_o[1]), static_cast<float>(ee_o[2])));
+
+                glm::mat4 model = root_to_ogl * (root_ee_t * root_ee_o) * align_ee_to_ogl;
+                
+                glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                
+                /* View transformation matrix. */
+                /* Extrinsic camera matrix: */
+                glm::mat4 root_eye_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
+                glm::mat4 root_eye_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])));
+                
+                glm::mat4 view = glm::lookAt(glm::mat3(root_to_ogl) * glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z),
+                                             glm::mat3(root_to_ogl) * (glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z) + glm::mat3(root_eye_o) * glm::vec3(0.0f, 0.0f, 1.0f)),
+                                             glm::mat3(root_to_ogl) * glm::mat3(root_eye_o) * glm::vec3(0.0f, -1.0f, 0.0f));
+                
+                glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+                
+                /* Projection matrix. */
+                /* Intrinsic camera matrix: (232.921 0.0     162.202 0.0
+                                             0.0     232.43  125.738 0.0
+                                             0.0     0.0     1.0     0.0) */
+                glm::mat4 projection(2.0f*EYE_L_FX/WIDTH,       0,                          0,                          0,
+                                     0,                         2.0f*EYE_L_FY/HEIGHT,       0,                          0,
+                                     2.0f*(EYE_L_CX/WIDTH)-1,   2.0f*(EYE_L_CY/HEIGHT)-1,   -(FAR+NEAR)/(FAR-NEAR),     -1,
+                                     0,                         0,                          -2.0f*FAR*NEAR/(FAR-NEAR),  0);
+                
+                glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+                
+                cad_hand->Draw(*shader_cad);
+                
+                /* Swap the buffers. */
+                glfwSwapBuffers(window);
+                
+                /************************************************************************************************************************/
+                
+                Bottle &eePoseBottle = port_ee_pose.prepare();
+                eePoseBottle.clear();
+                eePoseBottle.addString(ee_x.toString() + "    " + ee_o.toString());
+                
+                Bottle &camPoseBottle = port_cam_pose.prepare();
+                camPoseBottle.clear();
+                camPoseBottle.addString(cam_x.toString() + "    " + cam_o.toString());
+                
+                port_ee_pose.write();
+                port_cam_pose.write();
+            }
+        }
+        glfwMakeContextCurrent(NULL);
+    }
+    
+    void threadRelease() {
+        ConstString log_id = "Worker " + std::to_string(thread_ID) + ":";
+        yInfo() << log_id << "Deallocating resource of renderer thread.";
+        
+        if (!inport_renderer_img.isClosed()) inport_renderer_img.close();
+        if (!port_ee_pose.isClosed()) port_ee_pose.close();
+        if (!port_cam_pose.isClosed()) port_cam_pose.close();
+        
+        glfwSetWindowShouldClose(window, GL_TRUE);
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &EBO);
+        glDeleteBuffers(1, &VBO);
+        delete shader_background;
+        delete shader_cad;
+        delete cad_hand;
+        
+        yInfo() << log_id << "Deallocation completed!";
+    }
+};
 
 class SuperimposeHand : public RFModule
 {
@@ -229,7 +603,8 @@ private:
     bool start;
     bool viewhand;
     bool freerunning;
-    bool dumping_data;
+    bool superimpose_skeleton;
+    bool superimpose_cad;
 
     PolyDriver rightarm_remote_driver;
     IEncoders *itf_rightarm_enc;
@@ -247,7 +622,8 @@ private:
     PolyDriver gaze_driver;
     IGazeControl *itf_head_gaze;
 
-    DumpHandSkeletonEndeffectorThread *thread_dump_hand_ee;
+    SuperimposeHandSkeletonThread *trd_left_cam_skeleton;
+    SuperimposeHandCADThread *trd_left_cam_cad;
 
     Port port_command;
 
@@ -269,7 +645,7 @@ private:
     {
         Property rightarm_remote_options;
         rightarm_remote_options.put("device", "remote_controlboard");
-        rightarm_remote_options.put("local", "/superimpose_hand/control_right_arm");
+        rightarm_remote_options.put("local", "/"+PROJECT_NAME+"/control_right_arm");
         rightarm_remote_options.put("remote", "/"+robot+"/right_arm");
 
         rightarm_remote_driver.open(rightarm_remote_options);
@@ -325,7 +701,7 @@ private:
     {
         Property rightarm_cartesian_options;
         rightarm_cartesian_options.put("device", "cartesiancontrollerclient");
-        rightarm_cartesian_options.put("local", "/superimpose_hand/cart_right_arm");
+        rightarm_cartesian_options.put("local", "/"+PROJECT_NAME+"/cart_right_arm");
         rightarm_cartesian_options.put("remote", "/"+robot+"/cartesianController/right_arm");
 
         rightarm_cartesian_driver.open(rightarm_cartesian_options);
@@ -348,7 +724,7 @@ private:
     {
         Property head_option;
         head_option.put("device", "remote_controlboard");
-        head_option.put("local", "/superimpose_hand/control_head");
+        head_option.put("local", "/"+PROJECT_NAME+"/control_head");
         head_option.put("remote", "/"+robot+"/head");
 
         head_remote_driver.open(head_option);
@@ -395,7 +771,7 @@ private:
     {
         Property gaze_option;
         gaze_option.put("device", "gazecontrollerclient");
-        gaze_option.put("local", "/superimpose_hand/gaze");
+        gaze_option.put("local", "/"+PROJECT_NAME+"/gaze");
         gaze_option.put("remote", "/iKinGazeCtrl");
 
         gaze_driver.open(gaze_option);
@@ -436,7 +812,7 @@ private:
     bool setCommandPort()
     {
         yInfo() << "Opening command port.";
-        if (!port_command.open("/superimpose_hand/rpc")) {
+        if (!port_command.open("/"+PROJECT_NAME+"/rpc")) {
             yError() << "Cannot open the command port.";
             return false;
         }
@@ -462,7 +838,7 @@ private:
                                                                     { 9, joint[4]},
                                                                     {10, joint[5]}};
         for (auto map = joint_pos_map.cbegin(); map != joint_pos_map.cend(); ++map) {
-            yInfo() << "Moving joint" << map->first << "to the position" << map->second << ".";
+            yInfo() << "Moving joint "+std::to_string(map->first)+" to the position "+std::to_string(map->second)+".";
             if (std::abs(rightarm_encoder[map->first] - map->second) > 5.0) {
                 rightarm_encoder[map->first] = map->second;
                 itf_rightarm_pos->positionMove(rightarm_encoder.data());
@@ -513,7 +889,8 @@ public:
         start = false;
         viewhand = false;
         freerunning = false;
-        dumping_data = false;
+        superimpose_skeleton = false;
+        superimpose_cad = false;
 
         /* Parsing parameters from config file. */
         robot = rf.findGroup("PARAMETER").check("robot", Value("icub")).asString();
@@ -664,33 +1041,61 @@ public:
             }
 
         }
-        else if (command.get(0).asString() == "datadump"){
+        else if (command.get(0).asString() == "skeleton"){
 
-            if (!dumping_data && command.get(1).asString() == "on") {
-                thread_dump_hand_ee = new DumpHandSkeletonEndeffectorThread(1, "right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
+            if (!superimpose_skeleton && command.get(1).asString() == "on") {
+                trd_left_cam_skeleton = new SuperimposeHandSkeletonThread(1, "right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
 
-                if (thread_dump_hand_ee != NULL) {
-                    reply = Bottle("Starting hand skeleton and end effector data dumping thread.");
-                    thread_dump_hand_ee->start();
+                if (trd_left_cam_skeleton != NULL) {
+                    reply = Bottle("Starting hand skeleton superimposing thread.");
+                    trd_left_cam_skeleton->start();
 
-                    dumping_data = true;
+                    superimpose_skeleton = true;
                 }
                 else {
-                    reply = Bottle("Could not initialize hand skeleton and end effector data dumping thread.");
+                    reply = Bottle("Could not initialize hand skeleton superimposing .");
                 }
 
             }
-            else if (dumping_data && command.get(1).asString() == "off") {
-                reply = Bottle("Stopping end effector data dumping thread.");
+            else if (superimpose_skeleton && command.get(1).asString() == "off") {
+                reply = Bottle("Stopping hand skeleton superimposing thread.");
 
-                thread_dump_hand_ee->stop();
-                dumping_data = false;
-                delete thread_dump_hand_ee;
+                trd_left_cam_skeleton->stop();
+                superimpose_skeleton = false;
+                delete trd_left_cam_skeleton;
             }
             else {
-                reply = Bottle("Option not available for end effector dumping thread operations (available: on, off).");
+                reply = Bottle("Option not available for hand skeleton superimposing thread operations (available: on, off).");
             }
 
+        }
+        else if (command.get(0).asString() == "cad"){
+            
+            if (!superimpose_cad && command.get(1).asString() == "on") {
+                trd_left_cam_cad = new SuperimposeHandCADThread(1, "right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
+                
+                if (trd_left_cam_cad != NULL) {
+                    reply = Bottle("Starting hand CAD superimposing thread.");
+                    trd_left_cam_cad->start();
+                    
+                    superimpose_cad = true;
+                }
+                else {
+                    reply = Bottle("Could not initialize hand CAD superimposing thread.");
+                }
+                
+            }
+            else if (superimpose_cad && command.get(1).asString() == "off") {
+                reply = Bottle("Stopping hand CAD superimposing thread.");
+                
+                trd_left_cam_cad->stop();
+                superimpose_cad = false;
+                delete trd_left_cam_cad;
+            }
+            else {
+                reply = Bottle("Option not available for hand CAD superimposing thread operations (available: on, off).");
+            }
+            
         }
         else if (command.get(0).asString() == "quit") {
 
@@ -733,9 +1138,13 @@ public:
     {
         yInfo() << "Interrupting the module...\nStopping threads...";
 
-        if (dumping_data) {
-            thread_dump_hand_ee->stop();
-            delete thread_dump_hand_ee;
+        if (superimpose_skeleton) {
+            trd_left_cam_skeleton->stop();
+            delete trd_left_cam_skeleton;
+        }
+        if (superimpose_cad) {
+            trd_left_cam_cad->stop();
+            delete trd_left_cam_cad;
         }
 
         return true;
@@ -766,16 +1175,73 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    /************************************************************************************************************************/
+    ConstString log_id = "Main:";
+    yInfo() << log_id << "Setting up OpenGL.";
+    
+    /* Initialize GLFW. */
+    if (glfwInit() == GL_FALSE) {
+        yError() << log_id << "Failed to initialize GLFW.";
+        return false;
+    }
+    
+    /* Set context properties by "hinting" specific (property, value) pairs. */
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+#ifdef GLFW_MAC
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+    
+    /* Create a window. */
+    window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL Window", nullptr, nullptr);
+    if (window == nullptr) {
+        yError() << log_id << "Failed to create GLFW window.";
+        glfwTerminate();
+        return false;
+    }
+    /* Make the context of our window the current one handled by OpenGL. */
+    glfwMakeContextCurrent(window);
+    
+    /* Initialize GLEW to use the OpenGL implementation provided by the videocard manufacturer. */
+    /* Note: remember that the OpenGL are only specifications, the implementation is provided by the manufacturers. */
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK) {
+        yError() << log_id << "Failed to initialize GLEW.";
+        return false;
+    }
+    
+    /* Set OpenGL rendering frame for the current window. */
+    /* Note that the real monitor width and height may differ w.r.t. the choosen one in hdpi monitors. */
+    int hdpi_width;
+    int hdpi_height;
+    glfwGetFramebufferSize(window, &hdpi_width, &hdpi_height);
+    glViewport(0, 0, hdpi_width, hdpi_height);
+    
+    /* Set GL property. */
+    glEnable(GL_DEPTH_TEST);
+    
+    glfwPollEvents();
+    
+    /************************************************************************************************************************/
+    
     ResourceFinder rf;
     SuperimposeHand module;
     yInfo() << "Configuring and starting module...";
 
     rf.setVerbose(true);
     rf.setDefaultConfigFile("superimpose-hand_config.ini");
-    rf.setDefaultContext("superimpose_hand");
+    rf.setDefaultContext("superimpose-hand");
     rf.configure(argc, argv);
 
     module.runModule(rf);
+    
+    /************************************************************************************************************************/
+    
+    glfwTerminate();
+    
+    /************************************************************************************************************************/
 
     yInfo() << "Main returning.";
     yInfo() << "Application closed.";

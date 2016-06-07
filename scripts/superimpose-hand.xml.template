@@ -5,11 +5,12 @@
     <!-- Generic information -->
     <name>superimpose-hand</name>
     <description>Superimpose the hand skeleton or 3D CAD model on top of iCub hand</description>
-    <version>2.0.0</version>
+    <version>2.2.0</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
     </authors>
+
 
     <!-- Required modules -->
     <module>
@@ -23,66 +24,108 @@
 
     <module>
         <name>yarpdatadumper</name>
-        <node>localhost</node>
-        <parameters>--name /datadumper_endeffector_pose:i --txTime --type bottle</parameters>
+        <node>icub22</node>
+        <parameters>--name /datadumper/endeffector/pose:i --txTime --type bottle</parameters>
     </module>
 
     <module>
         <name>yarpdatadumper</name>
-        <node>localhost</node>
-        <parameters>--name /datadumper_skeleton_left:i --txTime --type image --addVideo --videoType mkv</parameters>
+        <node>icub22</node>
+        <parameters>--name /datadumper/skeleton/camera/left:i --txTime --type image --addVideo --videoType mkv</parameters>
     </module>
 
     <module>
         <name>yarpdatadumper</name>
-        <node>localhost</node>
-        <parameters>--name /datadumper_leftcam_pose:i --txTime --type bottle</parameters>
+        <node>icub22</node>
+        <parameters>--name /datadumper/cad/camera/left:i --txTime --type image --addVideo --videoType mkv</parameters>
+    </module>
+
+    <module>
+        <name>yarpdatadumper</name>
+        <node>icub22</node>
+        <parameters>--name /datadumper/camera/left/pose:i --txTime --type bottle</parameters>
     </module>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /viewleft</parameters>
+        <parameters>--name /view/cam_left</parameters>
         <node>icub22</node>
     </module>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /viewleft_skeleton</parameters>
+        <parameters>--name /view/cam_left/skeleton</parameters>
         <node>icub22</node>
     </module>
+
+    <module>
+        <name>icub22</name>
+        <parameters>--name /view/cam_left/cad</parameters>
+        <node>yarprun</node>
+    </module>
+
 
     <!-- Required connections -->
     <connection>
-        <from>/icub/camcalib/left/out</from>
-        <to>/viewleft</to>
+        <from>/icub/cam/left</from>
+        <to>/view/cam_left</to>
+        <protocol>tcp</protocol>
+    </connection>
+
+    <!-- Skeleton -->
+    <connection>
+        <from>/icub/cam/left</from>
+        <to>/superimpose_hand/skeleton/cam/left:i</to>
+        <protocol>udp</protocol>
+    </connection>
+
+    <connection>
+        <from>/superimpose_hand/skeleton/cam/left:o</from>
+        <to>/view/cam_left/skeleton</to>
+        <protocol>udp</protocol>
+    </connection>
+
+    <connection>
+        <from>/superimpose_hand/skeleton/endeffector/pose:o</from>
+        <to>/datadumper/endeffector/pose:i</to>
+    </connection>
+
+    <connection>
+        <from>/superimpose_hand/skeleton/left:o</from>
+        <to>/datadumper/skeleton/camera/left:i</to>
+    </connection>
+
+    <connection>
+        <from>/superimpose_hand/skeleton/cam/left/pose:o</from>
+        <to>/datadumper/camera/left/pose:i</to>
+    </connection>
+
+    <!-- CAD -->
+    <connection>
+        <from>/icub/cam/left</from>
+        <to>/superimpose_hand/cad/cam/left:i</to>
         <protocol>tcp</protocol>
     </connection>
 
     <connection>
-        <from>/icub/camcalib/left/out</from>
-        <to>/superimpose_hand/img_skeleton_left:i</to>
-        <protocol>udp</protocol>
+        <from>/superimpose_hand/cad/cam/left:o</from>
+        <to>/view/cam_left/cad</to>
+        <protocol>tcp</protocol>
     </connection>
 
     <connection>
-        <from>/superimpose_hand/img_skeleton_left:o</from>
-        <to>/viewleft_skeleton</to>
-        <protocol>udp</protocol>
+        <from>/superimpose_hand/cad/endeffector/pose:o</from>
+        <to>/datadumper/endeffector/pose:i</to>
     </connection>
 
     <connection>
-        <from>/superimpose_hand/endeffector_pose:o</from>
-        <to>/datadumper_endeffector_pose:i</to>
+        <from>/superimpose_hand/cad/left:o</from>
+        <to>/datadumper/cad/camera/left:i</to>
     </connection>
 
     <connection>
-        <from>/superimpose_hand/img_skeleton_left:o</from>
-        <to>/datadumper_skeleton_left:i</to>
-    </connection>
-
-    <connection>
-        <from>/superimpose_hand/left_camera_pose:o</from>
-        <to>/datadumper_leftcam_pose:i</to>
+        <from>/superimpose_hand/cad/cam/left/pose:o</from>
+        <to>/datadumper/camera/left/pose:i</to>
     </connection>
 
 </application>
