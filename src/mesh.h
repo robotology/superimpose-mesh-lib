@@ -3,10 +3,7 @@
 
 #include <vector>
 
-#ifndef GL_H
-#define GL_H
 #include <GL/glew.h>
-#endif /* GL_H */
 #include <assimp/scene.h>
 
 #include "shader.h"

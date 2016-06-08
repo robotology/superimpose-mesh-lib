@@ -10,7 +10,6 @@ project(superimpose-hand)
 #message("- GLM\n    Debian: apt\n    MacOS: brew\n    WIN: TBD")
 #message("- GLEW\n    Debian: apt\n    MacOS: brew\n    WIN: TBD")
 #message("- ASSIMP\n    Debian: apt\n    MacOS: brew\n    WIN: TBD")
-#message("- SOIL\n    Debian: apt\n    MacOS: http://www.lonesock.net/soil.html or custom github/brew repos)\n    WIN: TBD\n")
 
 find_package(PkgConfig      REQUIRED)
 find_package(YARP           REQUIRED)
@@ -22,7 +21,6 @@ find_package(GLEW           REQUIRED)
 pkg_search_module(GLFW      REQUIRED    glfw3)
 find_package(GLM            REQUIRED)
 find_package(ASSIMP         REQUIRED)
-find_package(SOIL           REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH   ${YARP_MODULE_PATH}
                                 ${ICUB_MODULE_PATH}
@@ -34,8 +32,7 @@ include_directories(${YARP_INCLUDE_DIRS}
                     ${GLEW_INCLUDE_DIRS}
                     ${GLFW_INCLUDE_DIRS}
                     ${GLM_INCLUDE_DIRS}
-                    ${ASSIMP_INCLUDE_DIRS}
-                    ${SOIL_INCLUDE_DIR})
+                    ${ASSIMP_INCLUDE_DIRS})
 
 include(YarpInstallationHelpers)
 include(ICUBcontribHelpers)
@@ -68,16 +65,12 @@ set(SHADERS_FRAG_FILES  ${SHADERS_DIR}/shader_model.frag
                         ${SHADERS_DIR}/shader_simple.frag
                         ${SHADERS_DIR}/shader_background.frag)
 
-set(IMAGE_DIR           ${CMAKE_CURRENT_SOURCE_DIR}/img)
-set(IMAGE_FILES         ${IMAGE_DIR}/skeleton_leftcam_02000.jpeg)
-
 set(ICUB_MODEL_EXT      obj)
 set(ICUB_HAND_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/icub_right_hand/${ICUB_MODEL_EXT})
 set(ICUB_HAND_FILES     ${ICUB_HAND_DIR}/r_palm_cad.${ICUB_MODEL_EXT})
 
 set(RESOURCE_FILES      ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES}
-                        ${ICUB_HAND_FILES}
-                        ${IMAGE_FILES})
+                        ${ICUB_HAND_FILES})
 
 option(IS_ICUB_SIM
        "Choose to use the iCub_SIM and the associated application files" ON)
@@ -90,16 +83,14 @@ set(LIBS    ${YARP_LIBRARIES}
             ${OPENGL_LIBRARIES}
             ${GLEW_LIBRARIES}
             ${GLFW_LIBRARIES}
-            ${ASSIMP_LIBRARIES} -L${ASSIMP_LIBRARY_DIRS}
-            ${SOIL_LIBRARIES})
+            ${ASSIMP_LIBRARIES} -L${ASSIMP_LIBRARY_DIRS})
 
 if(${CMAKE_GENERATOR} STREQUAL "Xcode")
     add_executable(${PROJECT_NAME}  ${SOURCE_FILES}
                                     ${PROGRAM_FILES}
                                     ${RESOURCE_FILES})
-    source_group("Shader Files"                 FILES ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES})
-    source_group("Resource\\CAD"              FILES ${ICUB_HAND_FILES})
-    source_group("Resource\\Image"                  FILES ${IMAGE_FILES})
+    source_group("Shader Files"                     FILES ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES})
+    source_group("Resource\\CAD"                    FILES ${ICUB_HAND_FILES})
     source_group("Resource\\Configuration Files"    FILES ${PROGRAM_CONFIG} ${SIM_PROGRAM_CONFIG})
     source_group("Resource\\Script Files"           FILES ${PROGRAM_SCRIPT} ${SIM_PROGRAM_SCRIPT})
 else()

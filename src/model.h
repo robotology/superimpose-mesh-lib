@@ -4,10 +4,7 @@
 #include <vector>
 #include <string>
 
-#ifndef GL_H
-#define GL_H
 #include <GL/glew.h>
-#endif /* GL_H */
 #include <assimp/scene.h>
 
 #include "shader.h"
@@ -30,8 +27,8 @@ private:
     void loadModel(std::string path);
     void processNode(aiNode* node, const aiScene* scene);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-    GLint TextureFromFile(const char* path, std::string directory);
-    std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+//    GLint TextureFromFile(const char* path, std::string directory);
+//    std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 };
 
 #endif /* MODEL_H */
