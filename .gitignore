@@ -54,6 +54,7 @@ Thumbs.db
 .idea/
 build/
 builddeb/
+buildl/
 buildmac/
 buildx/
 xcodeenvvar.txt

@@ -16,11 +16,15 @@ find_package(YARP           REQUIRED)
 find_package(ICUB           REQUIRED)
 find_package(ICUBcontrib    REQUIRED)
 find_package(OpenCV         REQUIRED)
-find_package(OPENGL         REQUIRED)
+find_package(OpenGL         REQUIRED)
 find_package(GLEW           REQUIRED)
 pkg_search_module(GLFW      REQUIRED    glfw3)
-find_package(GLM            REQUIRED)
-find_package(ASSIMP         REQUIRED)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    pkg_search_module(glm   REQUIRED    glm)
+else()
+    find_package(glm        REQUIRED)
+endif()
+find_package(assimp         REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH   ${YARP_MODULE_PATH}
                                 ${ICUB_MODULE_PATH}
@@ -99,7 +103,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 
-if(APPLE)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-DGLFW_MAC)
 endif()
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
