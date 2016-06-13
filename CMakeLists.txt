@@ -1,15 +1,8 @@
-cmake_minimum_required(VERSION 2.8.9)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-list(APPEND CMAKE_MODULE_PATH   "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+cmake_minimum_required(VERSION 3.1)
 
 project(superimpose-hand)
 
-#message("\nRequired packages list:")
-#message("- GLFW\n    Debian: apt\n    MacOS: brew\n    WIN: TBD")
-#message("- GLM\n    Debian: apt\n    MacOS: brew\n    WIN: TBD")
-#message("- GLEW\n    Debian: apt\n    MacOS: brew\n    WIN: TBD")
-#message("- ASSIMP\n    Debian: apt\n    MacOS: brew\n    WIN: TBD")
+list(APPEND CMAKE_MODULE_PATH   "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 find_package(PkgConfig      REQUIRED)
 find_package(YARP           REQUIRED)
@@ -66,7 +59,7 @@ set(SHADERS_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/shader)
 set(SHADERS_VERT_FILES  ${SHADERS_DIR}/shader_model.vert
                         ${SHADERS_DIR}/shader_background.vert)
 set(SHADERS_FRAG_FILES  ${SHADERS_DIR}/shader_model.frag
-                        ${SHADERS_DIR}/shader_simple.frag
+                        ${SHADERS_DIR}/shader_model_simple.frag
                         ${SHADERS_DIR}/shader_background.frag)
 
 set(ICUB_MODEL_EXT      obj)
@@ -89,28 +82,30 @@ set(LIBS    ${YARP_LIBRARIES}
             ${GLFW_LIBRARIES}
             ${ASSIMP_LIBRARIES} -L${ASSIMP_LIBRARY_DIRS})
 
-if(${CMAKE_GENERATOR} STREQUAL "Xcode")
+if(${CMAKE_GENERATOR} MATCHES "Xcode")
     add_executable(${PROJECT_NAME}  ${SOURCE_FILES}
                                     ${PROGRAM_FILES}
                                     ${RESOURCE_FILES})
-    source_group("Shader Files"                     FILES ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES})
-    source_group("Resource\\CAD"                    FILES ${ICUB_HAND_FILES})
-    source_group("Resource\\Configuration Files"    FILES ${PROGRAM_CONFIG} ${SIM_PROGRAM_CONFIG})
-    source_group("Resource\\Script Files"           FILES ${PROGRAM_SCRIPT} ${SIM_PROGRAM_SCRIPT})
+    source_group("Resource\\Shader Files"       FILES ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES})
+    source_group("Resource\\CAD"                FILES ${ICUB_HAND_FILES})
+    source_group("YARP\\Configuration Files"    FILES ${PROGRAM_CONFIG} ${SIM_PROGRAM_CONFIG})
+    source_group("YARP\\Script Files"           FILES ${PROGRAM_SCRIPT} ${SIM_PROGRAM_SCRIPT})
 else()
     add_executable(${PROJECT_NAME}  ${SOURCE_FILES})
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${LIBS})
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_nullptr cxx_constexpr)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    add_definitions(-DGLFW_MAC)
+    add_definitions(-D GLFW_MAC)
 endif()
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy ${RESOURCE_FILES} $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
-install(TARGETS ${PROJECT_NAME}     DESTINATION bin)
-install(FILES   ${RESOURCE_FILES}   DESTINATION bin)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E make_directory                       $<TARGET_FILE_DIR:${PROJECT_NAME}>
+                   COMMAND ${CMAKE_COMMAND} -E copy             ${RESOURCE_FILES}   $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+
+install(TARGETS     ${PROJECT_NAME}     DESTINATION bin)
 if(IS_ICUB_SIM)
     yarp_install(FILES  ${SIM_PROGRAM_SCRIPT}   DESTINATION     ${ICUBCONTRIB_APPLICATIONS_INSTALL_DIR})
     yarp_install(FILES  ${SIM_PROGRAM_CONFIG}   DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
@@ -118,5 +113,6 @@ else()
     yarp_install(FILES  ${PROGRAM_SCRIPT}       DESTINATION     ${ICUBCONTRIB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
     yarp_install(FILES  ${PROGRAM_CONFIG}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
 endif()
+yarp_install(FILES      ${RESOURCE_FILES}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
 
 icubcontrib_add_uninstall_target()

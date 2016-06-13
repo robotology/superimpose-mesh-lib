@@ -248,10 +248,14 @@ private:
     const ConstString log_ID;
     const ConstString laterality;
     const ConstString camera;
-    const int camsel;
-    
     PolyDriver &arm_cartesian_driver;
     PolyDriver &gaze_driver;
+    const ConstString &shader_background_vert;
+    const ConstString &shader_background_frag;
+    const ConstString &shader_model_vert;
+    const ConstString &shader_model_frag;
+    const ConstString &cad_hand;
+    const int camsel;
     
     ICartesianControl *itf_arm_cart;
     Vector ee_x;
@@ -267,22 +271,27 @@ private:
     BufferedPort<ImageOf<PixelRgb>> inport_renderer_img;
     BufferedPort<Bottle> port_ee_pose;
     BufferedPort<Bottle> port_cam_pose;
-    
-//    GLFWwindow *window;
+
     GLuint texture;
     GLuint VAO;
     GLuint EBO;
     GLuint VBO;
     Shader *shader_background;
     Shader *shader_cad;
-    Model *cad_hand;
+    Model *model_hand;
     glm::mat4 root_to_ogl;
     glm::mat4 align_ee_to_ogl;
     glm::mat4 back_proj;
     glm::mat4 projection;
     
 public:
-    SuperimposeHandCADThread(const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : log_ID("[SuperimposeHandCADThread]"), laterality(laterality), camera(camera), camsel((camera == "left")? 0:1), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) { }
+    SuperimposeHandCADThread(const ConstString &laterality, const ConstString &camera,
+                             PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver,
+                             const ConstString &shader_background_vert, const ConstString &shader_background_frag,
+                             const ConstString &shader_model_vert, const ConstString &shader_model_frag,
+                             const ConstString &cad_hand) :
+                                log_ID("[SuperimposeHandCADThread]"), laterality(laterality), camera(camera),
+                                arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver), shader_background_vert(shader_background_vert), shader_background_frag(shader_background_frag), shader_model_vert(shader_model_vert), shader_model_frag(shader_model_frag), cad_hand(cad_hand), camsel((camera == "left")? 0:1) { }
     
     bool threadInit() {
         yInfo() << log_ID << "Initializing hand skeleton drawing thread.";
@@ -393,11 +402,11 @@ public:
         glBindVertexArray(0);
         
         /* Crate shader program. */
-        shader_background = new Shader("shader_background.vert", "shader_background.frag");
-        shader_cad = new Shader("shader_model.vert", "shader_simple.frag"); // TODO: add light to the model
+        shader_background = new Shader(shader_background_vert.c_str(), shader_background_frag.c_str());
+        shader_cad = new Shader(shader_model_vert.c_str(), shader_model_frag.c_str()); // TODO: add light to the model
         
         /* Load models. */
-        cad_hand = new Model("r_palm_cad.obj");
+        model_hand = new Model(cad_hand.c_str());
         
         /* Predefined rotation matrices. */
         root_to_ogl = glm::mat4(0.0f, 0.0f, 1.0f, 0.0f,
@@ -483,7 +492,7 @@ public:
                 
                 glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
                 
-                cad_hand->Draw(*shader_cad);
+                model_hand->Draw(*shader_cad);
                 
                 /* Swap the buffers. */
                 glfwSwapBuffers(window);
@@ -516,7 +525,7 @@ public:
         glDeleteBuffers(1, &VBO);
         delete shader_background;
         delete shader_cad;
-        delete cad_hand;
+        delete model_hand;
         
         yInfo() << log_ID << "Deallocation completed!";
     }
@@ -554,6 +563,11 @@ private:
 
     SuperimposeHandSkeletonThread *trd_left_cam_skeleton;
     SuperimposeHandCADThread *trd_left_cam_cad;
+    ConstString shader_background_vert;
+    ConstString shader_background_frag;
+    ConstString shader_model_vert;
+    ConstString shader_model_frag;
+    ConstString cad_hand;
 
     Port port_command;
 
@@ -570,6 +584,14 @@ private:
     int angle_ratio;
     double motion_time;
     double path_time;
+
+    bool fileFound (const ConstString &file) {
+        if (file.empty()) {
+            yError() << log_ID << "File not found!";
+            return false;
+        }
+        return true;
+    }
 
     bool setRightArmRemoteControlboard()
     {
@@ -836,6 +858,23 @@ public:
             yInfo() << log_ID << arm_vel.toString();
         }
 
+        /* Looking for OpenGL shaders and CAD files. */
+        shader_background_vert = rf.findFileByName("shader_background.vert");
+        if (!fileFound(shader_background_vert)) return false;
+
+        shader_background_frag = rf.findFileByName("shader_background.frag");
+        if (!fileFound(shader_background_frag)) return false;
+
+        shader_model_vert = rf.findFileByName("shader_model.vert");
+        if (!fileFound(shader_model_vert)) return false;
+
+        shader_model_frag = rf.findFileByName("shader_model_simple.frag");
+        if (!fileFound(shader_model_frag)) return false;
+
+        cad_hand = rf.findFileByName("r_palm_cad.obj");
+        if (!fileFound(cad_hand)) return false;
+
+
         /* Initializing useful pose matrices and vectors for the hand. */
         frontal_view_R.resize(3, 3);
         frontal_view_R(0,0) =  0.0;   frontal_view_R(0,1) =  0.0;   frontal_view_R(0,2) =  1.0;
@@ -1004,7 +1043,7 @@ public:
         else if (command.get(0).asString() == "cad"){
             
             if (!superimpose_cad && command.get(1).asString() == "on") {
-                trd_left_cam_cad = new SuperimposeHandCADThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
+                trd_left_cam_cad = new SuperimposeHandCADThread("right", "left", rightarm_cartesian_driver, gaze_driver, shader_background_vert, shader_background_frag, shader_model_vert, shader_model_frag, cad_hand);
                 
                 if (trd_left_cam_cad != NULL) {
                     reply = Bottle("Starting hand CAD superimposing thread.");
@@ -1125,6 +1164,8 @@ public:
         yInfo() << log_ID << "Releasing.";
     }
 };
+
+bool fileFound(const ConstString &file);
 
 int main(int argc, char *argv[])
 {
