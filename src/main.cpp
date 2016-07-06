@@ -198,6 +198,14 @@ public:
                 for (unsigned int fng = 0; fng < 3; ++fng) {
                     std::deque<cv::Point> current_joint_point;
 
+                    Vector current_joint_pixel;
+                    itf_head_gaze->get2DPixel(camsel, Ha*(finger[fng].getH0().getCol(3)), current_joint_pixel);
+
+                    current_joint_point.push_front(cv::Point(static_cast<int>(current_joint_pixel[0]), static_cast<int>(current_joint_pixel[1])));
+                    cv::circle(img, current_joint_point.front(), 3, cv::Scalar(0, 0, 255), 4);
+
+                    cv::line(img, endeffector_point, current_joint_point.front(), cv::Scalar(255, 0, 0), 2);
+
                     for (unsigned int i = 0; i < finger[fng].getN(); ++i) {
                         Vector current_joint_pixel;
                         itf_head_gaze->get2DPixel(camsel, Ha*(finger[fng].getH(i, true).getCol(3)), current_joint_pixel);
@@ -205,13 +213,8 @@ public:
                         current_joint_point.push_front(cv::Point(static_cast<int>(current_joint_pixel[0]), static_cast<int>(current_joint_pixel[1])));
                         cv::circle(img, current_joint_point.front(), 3, cv::Scalar(0, 0, 255), 4);
 
-                        if (i > 0) {
-                            cv::line(img, current_joint_point.front(), current_joint_point.back(), cv::Scalar(255, 255, 255), 2);
-                            current_joint_point.pop_back();
-                        }
-                        else {
-                            cv::line(img, endeffector_point, current_joint_point.front(), cv::Scalar(255, 0, 0), 2);
-                        }
+                        cv::line(img, current_joint_point.front(), current_joint_point.back(), cv::Scalar(255, 255, 255), 2);
+                        current_joint_point.pop_back();
                     }
                 }
 
