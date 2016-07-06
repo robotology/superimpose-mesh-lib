@@ -3,6 +3,7 @@
 #include <list>
 #include <sstream>
 #include <vector>
+#include <unordered_map>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -251,15 +252,18 @@ private:
     const ConstString log_ID;
     const ConstString laterality;
     const ConstString camera;
+    PolyDriver &arm_remote_driver;
     PolyDriver &arm_cartesian_driver;
     PolyDriver &gaze_driver;
     const ConstString &shader_background_vert;
     const ConstString &shader_background_frag;
     const ConstString &shader_model_vert;
     const ConstString &shader_model_frag;
-    const ConstString &cad_hand;
+    const std::unordered_map<std::string, ConstString> &cad_hand;
     const int camsel;
-    
+
+    IEncoders *itf_arm_encoders;
+    int num_arm_enc;
     ICartesianControl *itf_arm_cart;
     Vector ee_x;
     Vector ee_o;
@@ -270,6 +274,9 @@ private:
     float EYE_L_FY;
     float EYE_L_CX;
     float EYE_L_CY;
+
+    iCubFinger finger[3];
+    typedef std::unordered_map<std::string, std::pair<Vector, Vector>> FingerPose;
     
     BufferedPort<ImageOf<PixelRgb>> inport_renderer_img;
     BufferedPort<Bottle> port_ee_pose;
@@ -281,20 +288,20 @@ private:
     GLuint VBO;
     Shader *shader_background;
     Shader *shader_cad;
-    Model *model_hand;
+    typedef std::unordered_map<std::string, Model*> ModelHand;
+    ModelHand model_hand;
+
     glm::mat4 root_to_ogl;
-    glm::mat4 align_ee_to_ogl;
     glm::mat4 back_proj;
     glm::mat4 projection;
     
 public:
     SuperimposeHandCADThread(const ConstString &laterality, const ConstString &camera,
-                             PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver,
+                             PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver,
                              const ConstString &shader_background_vert, const ConstString &shader_background_frag,
                              const ConstString &shader_model_vert, const ConstString &shader_model_frag,
-                             const ConstString &cad_hand) :
-                                log_ID("[SuperimposeHandCADThread]"), laterality(laterality), camera(camera),
-                                arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver), shader_background_vert(shader_background_vert), shader_background_frag(shader_background_frag), shader_model_vert(shader_model_vert), shader_model_frag(shader_model_frag), cad_hand(cad_hand), camsel((camera == "left")? 0:1) { }
+                             const std::unordered_map<std::string, ConstString> &cad_hand) :
+                                log_ID("[SuperimposeHandCADThread]"), laterality(laterality), camera(camera), arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver), shader_background_vert(shader_background_vert), shader_background_frag(shader_background_frag), shader_model_vert(shader_model_vert), shader_model_frag(shader_model_frag), cad_hand(cad_hand), camsel((camera == "left")? 0:1) { }
     
     bool threadInit() {
         yInfo() << log_ID << "Initializing hand skeleton drawing thread.";
@@ -312,6 +319,20 @@ public:
             yError() << log_ID << "Error getting IGazeControl interface.";
             return false;
         }
+
+        IControlLimits *itf_fingers_lim;
+        arm_remote_driver.view(itf_fingers_lim);
+        if (!itf_fingers_lim) {
+            yError() << log_ID << "Error getting IControlLimits interface in thread.";
+            return false;
+        }
+
+        arm_remote_driver.view(itf_arm_encoders);
+        if (!itf_arm_encoders) {
+            yError() << log_ID << "Error getting IEncoders interface.";
+            return false;
+        }
+        itf_arm_encoders->getAxes(&num_arm_enc);
         
         yInfo() << log_ID << "Interfaces set!";
         
@@ -354,6 +375,23 @@ public:
         EYE_L_CX = static_cast<float>(cam_left_info->get(2).asDouble());
         EYE_L_FY = static_cast<float>(cam_left_info->get(5).asDouble());
         EYE_L_CY = static_cast<float>(cam_left_info->get(6).asDouble());
+
+        yInfo() << log_ID << "Setting joint bounds for the fingers.";
+
+        finger[0] = iCubFinger(laterality+"_thumb");
+        finger[1] = iCubFinger(laterality+"_index");
+        finger[2] = iCubFinger(laterality+"_middle");
+
+        std::deque<IControlLimits*> temp_lim;
+        temp_lim.push_front(itf_fingers_lim);
+        for (int i = 0; i < 3; ++i) {
+            if (!finger[i].alignJointsBounds(temp_lim)) {
+                yError() << log_ID << "Cannot set joint bound for finger " + std::to_string(i) + ".";
+                return false;
+            }
+        }
+
+        yInfo() << log_ID << "Joint bound for finger set!";
 
         yInfo() << log_ID << "Setting up OpenGL renderers.";
         /* Make the OpenGL context of window the current one handled by this thread. */
@@ -409,19 +447,16 @@ public:
         shader_cad = new Shader(shader_model_vert.c_str(), shader_model_frag.c_str()); // TODO: add light to the model
         
         /* Load models. */
-        model_hand = new Model(cad_hand.c_str());
-        
+        for (auto map = cad_hand.cbegin(); map != cad_hand.cend(); ++map) {
+            model_hand[map->first] = new Model(map->second.c_str());
+        }
+
         /* Predefined rotation matrices. */
         root_to_ogl = glm::mat4(0.0f, 0.0f, 1.0f, 0.0f,
                                 1.0f, 0.0f, 0.0f, 0.0f,
                                 0.0f, 1.0f, 0.0f, 0.0f,
                                 0.0f, 0.0f, 0.0f, 1.0f);
-        
-        /* Initial orientation discrepancies from loading the model in OpenGL rotated in ROOT coordinate w.r.t. the real orientation from the ROOT in the real robot settings. */
-        align_ee_to_ogl = glm::rotate(glm::mat4(1.0f), glm::half_pi<GLfloat>(), glm::vec3(0.0f, 1.0f, 0.0f));
-        align_ee_to_ogl = glm::rotate(align_ee_to_ogl, glm::half_pi<GLfloat>(), glm::vec3(0.0f, 0.0f, 1.0f));
-        align_ee_to_ogl = glm::rotate(align_ee_to_ogl, glm::pi<GLfloat>(), glm::vec3(1.0f, 0.0f, 0.0f));
-        
+
         back_proj = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, FAR*100.f);
 
         /* Projection matrix. */
@@ -444,9 +479,53 @@ public:
         while (!isStopping()) {
             
             ImageOf<PixelRgb> *imgin = inport_renderer_img.read(true);
+
             itf_arm_cart->getPose(ee_x, ee_o);
+
             itf_head_gaze->getLeftEyePose(cam_x, cam_o);
-            
+
+            Matrix Ha = axis2dcm(ee_o);
+            ee_x.push_back(1.0);
+            Ha.setCol(3, ee_x);
+            Vector encs(static_cast<size_t>(num_arm_enc));
+            Vector chainjoints;
+            itf_arm_encoders->getEncoders(encs.data());
+            for (unsigned int i = 0; i < 3; ++i) {
+                finger[i].getChainJoints(encs, chainjoints);
+                finger[i].setAng(CTRL_DEG2RAD * chainjoints);
+            }
+
+            //TODO: Improve fingers representation
+            //TODO: try to unify fingers notation with the base piece and the DH notation
+            FingerPose finger_pose;
+            for (unsigned int fng = 0; fng < 3; ++fng) {
+
+                std::string finger_s;
+                Vector j_x;
+                Vector j_o;
+
+                if (fng != 0) {
+                    j_x = (Ha * (finger[fng].getH0().getCol(3))).subVector(0, 2);
+                    j_o = dcm2axis(Ha * finger[fng].getH0());
+
+                    if      (fng == 1) { finger_s = "index0"; }
+                    else if (fng == 2) { finger_s = "medium0"; }
+
+                    finger_pose[finger_s] = {j_x, j_o};
+                }
+
+                for (unsigned int i = 0; i < finger[fng].getN(); ++i) {
+                    j_x = (Ha * (finger[fng].getH(i, true).getCol(3))).subVector(0, 2);
+                    j_o = dcm2axis(Ha * finger[fng].getH(i, true));
+
+                    if      (fng == 0) { finger_s = "thumb"+std::to_string(i+1); }
+                    else if (fng == 1) { finger_s = "index"+std::to_string(i+1); }
+                    else if (fng == 2) { finger_s = "medium"+std::to_string(i+1); }
+
+                    finger_pose[finger_s] = {j_x, j_o};
+                }
+            }
+
             if (imgin != NULL) {
                 /* Load and generate the texture. */
                 glBindTexture(GL_TEXTURE_2D, texture);
@@ -467,7 +546,7 @@ public:
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
                 glBindVertexArray(0);
                 
-                /* Draw in wireframe. */
+                /* Wireframe only. */
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                 
                 /* Use/Activate the shader. */
@@ -478,7 +557,7 @@ public:
                 glm::mat4 root_ee_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(ee_x[0]), static_cast<float>(ee_x[1]), static_cast<float>(ee_x[2])));
                 glm::mat4 root_ee_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(ee_o[3]), glm::vec3(static_cast<float>(ee_o[0]), static_cast<float>(ee_o[1]), static_cast<float>(ee_o[2])));
 
-                glm::mat4 model = root_to_ogl * (root_ee_t * root_ee_o) * align_ee_to_ogl;
+                glm::mat4 model = root_to_ogl * (root_ee_t * root_ee_o);
                 
                 glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
                 
@@ -494,9 +573,26 @@ public:
                 glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
                 
                 glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-                
-                model_hand->Draw(*shader_cad);
-                
+
+//                model_palm->Draw(*shader_cad);
+                model_hand["palm"]->Draw(*shader_cad);
+
+                /* Draw hand pieces */
+                //TODO: incorporare "palm"
+                for (auto map = finger_pose.cbegin(); map != finger_pose.cend(); ++map) {
+                    Vector j_x = finger_pose[map->first].first;
+                    Vector j_o = finger_pose[map->first].second;
+
+                    glm::mat4 root_j_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(j_x[0]), static_cast<float>(j_x[1]), static_cast<float>(j_x[2])));
+                    glm::mat4 root_j_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(j_o[3]), glm::vec3(static_cast<float>(j_o[0]), static_cast<float>(j_o[1]), static_cast<float>(j_o[2])));
+
+                    glm::mat4 model = root_to_ogl * (root_j_t * root_j_o);
+
+                    glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                    model_hand[map->first]->Draw(*shader_cad);
+                }
+
                 /* Swap the buffers. */
                 glfwSwapBuffers(window);
                 
@@ -528,8 +624,10 @@ public:
         glDeleteBuffers(1, &VBO);
         delete shader_background;
         delete shader_cad;
-        delete model_hand;
-        
+        for (auto map = cad_hand.cbegin(); map != cad_hand.cend(); ++map) {
+            delete model_hand[map->first];
+        }
+
         yInfo() << log_ID << "Deallocation completed!";
     }
 };
@@ -570,7 +668,7 @@ private:
     ConstString shader_background_frag;
     ConstString shader_model_vert;
     ConstString shader_model_frag;
-    ConstString cad_hand;
+    std::unordered_map<std::string, ConstString> cad_hand;
 
     Port port_command;
 
@@ -874,8 +972,37 @@ public:
         shader_model_frag = rf.findFileByName("shader_model_simple.frag");
         if (!fileFound(shader_model_frag)) return false;
 
-        cad_hand = rf.findFileByName("r_palm_cad.obj");
-        if (!fileFound(cad_hand)) return false;
+        //TODO: use simplified dae instead of obj
+        cad_hand["palm"] = rf.findFileByName("r_palm.obj");
+        if (!fileFound(cad_hand["palm"])) return false;
+        cad_hand["thumb1"] = rf.findFileByName("r_tl0.obj");
+        if (!fileFound(cad_hand["thumb1"])) return false;
+        cad_hand["thumb2"] = rf.findFileByName("r_tl1.obj");
+        if (!fileFound(cad_hand["thumb2"])) return false;
+        cad_hand["thumb3"] = rf.findFileByName("r_tl2.obj");
+        if (!fileFound(cad_hand["thumb3"])) return false;
+        cad_hand["thumb4"] = rf.findFileByName("r_tl3.obj");
+        if (!fileFound(cad_hand["thumb4"])) return false;
+        cad_hand["thumb5"] = rf.findFileByName("r_tl4.obj");
+        if (!fileFound(cad_hand["thumb5"])) return false;
+        cad_hand["index0"] = rf.findFileByName("r_indexbase.obj");
+        if (!fileFound(cad_hand["index0"])) return false;
+        cad_hand["index1"] = rf.findFileByName("r_ail0.obj");
+        if (!fileFound(cad_hand["index1"])) return false;
+        cad_hand["index2"] = rf.findFileByName("r_ail1.obj");
+        if (!fileFound(cad_hand["index2"])) return false;
+        cad_hand["index3"] = rf.findFileByName("r_ail2.obj");
+        if (!fileFound(cad_hand["index3"])) return false;
+        cad_hand["index4"] = rf.findFileByName("r_ail3.obj");
+        if (!fileFound(cad_hand["index4"])) return false;
+        cad_hand["medium0"] = rf.findFileByName("r_ml0.obj");
+        if (!fileFound(cad_hand["medium0"])) return false;
+        cad_hand["medium1"] = rf.findFileByName("r_ml1.obj");
+        if (!fileFound(cad_hand["medium1"])) return false;
+        cad_hand["medium2"] = rf.findFileByName("r_ml2.obj");
+        if (!fileFound(cad_hand["medium2"])) return false;
+        cad_hand["medium3"] = rf.findFileByName("r_ml3.obj");
+        if (!fileFound(cad_hand["medium3"])) return false;
 
 
         /* Initializing useful pose matrices and vectors for the hand. */
@@ -1046,7 +1173,7 @@ public:
         else if (command.get(0).asString() == "cad"){
             
             if (!superimpose_cad && command.get(1).asString() == "on") {
-                trd_left_cam_cad = new SuperimposeHandCADThread("right", "left", rightarm_cartesian_driver, gaze_driver, shader_background_vert, shader_background_frag, shader_model_vert, shader_model_frag, cad_hand);
+                trd_left_cam_cad = new SuperimposeHandCADThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver, shader_background_vert, shader_background_frag, shader_model_vert, shader_model_frag, cad_hand);
                 
                 if (trd_left_cam_cad != NULL) {
                     reply = Bottle("Starting hand CAD superimposing thread.");

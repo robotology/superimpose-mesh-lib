@@ -64,7 +64,22 @@ set(SHADERS_FRAG_FILES  ${SHADERS_DIR}/shader_model.frag
 
 set(ICUB_MODEL_EXT      obj)
 set(ICUB_HAND_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/icub_right_hand/${ICUB_MODEL_EXT})
-set(ICUB_HAND_FILES     ${ICUB_HAND_DIR}/r_palm_cad.${ICUB_MODEL_EXT})
+set(ICUB_HAND_FILES     ${ICUB_HAND_DIR}/r_palm.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_ail0.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_ail1.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_ail2.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_ail3.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_indexbase.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_ml0.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_ml1.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_ml2.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_ml3.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_palm.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_tl0.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_tl1.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_tl2.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_tl3.${ICUB_MODEL_EXT}
+                        ${ICUB_HAND_DIR}/r_tl4.${ICUB_MODEL_EXT})
 
 set(RESOURCE_FILES      ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES}
                         ${ICUB_HAND_FILES})

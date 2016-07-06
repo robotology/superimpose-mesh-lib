@@ -10,7 +10,6 @@
 *.app
 *.slo
 *.lo
-*.obj
 *.gch
 *.pch
 *.dylib
@@ -50,7 +49,7 @@ ehthumbs.db
 Thumbs.db
 
 # Custom Folders #
-#################
+##################
 .idea/
 build/
 builddeb/
