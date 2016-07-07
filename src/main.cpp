@@ -276,7 +276,7 @@ private:
     float EYE_L_CY;
 
     iCubFinger finger[3];
-    typedef std::unordered_map<std::string, std::pair<Vector, Vector>> FingerPose;
+    typedef std::unordered_map<std::string, std::pair<Vector, Vector>> HandPose;
     
     BufferedPort<ImageOf<PixelRgb>> inport_renderer_img;
     BufferedPort<Bottle> port_ee_pose;
@@ -288,8 +288,8 @@ private:
     GLuint VBO;
     Shader *shader_background;
     Shader *shader_cad;
-    typedef std::unordered_map<std::string, Model*> ModelHand;
-    ModelHand model_hand;
+    typedef std::unordered_map<std::string, Model*> HandModel;
+    HandModel hand_model;
 
     glm::mat4 root_to_ogl;
     glm::mat4 back_proj;
@@ -448,7 +448,7 @@ public:
         
         /* Load models. */
         for (auto map = cad_hand.cbegin(); map != cad_hand.cend(); ++map) {
-            model_hand[map->first] = new Model(map->second.c_str());
+            hand_model[map->first] = new Model(map->second.c_str());
         }
 
         /* Predefined rotation matrices. */
@@ -487,6 +487,7 @@ public:
             Matrix Ha = axis2dcm(ee_o);
             ee_x.push_back(1.0);
             Ha.setCol(3, ee_x);
+
             Vector encs(static_cast<size_t>(num_arm_enc));
             Vector chainjoints;
             itf_arm_encoders->getEncoders(encs.data());
@@ -496,8 +497,8 @@ public:
             }
 
             //TODO: Improve fingers representation
-            //TODO: try to unify fingers notation with the base piece and the DH notation
-            FingerPose finger_pose;
+            HandPose hand_pose;
+            hand_pose["palm"] = {ee_x, ee_o};
             for (unsigned int fng = 0; fng < 3; ++fng) {
 
                 std::string finger_s;
@@ -511,7 +512,7 @@ public:
                     if      (fng == 1) { finger_s = "index0"; }
                     else if (fng == 2) { finger_s = "medium0"; }
 
-                    finger_pose[finger_s] = {j_x, j_o};
+                    hand_pose[finger_s] = {j_x, j_o};
                 }
 
                 for (unsigned int i = 0; i < finger[fng].getN(); ++i) {
@@ -522,7 +523,7 @@ public:
                     else if (fng == 1) { finger_s = "index"+std::to_string(i+1); }
                     else if (fng == 2) { finger_s = "medium"+std::to_string(i+1); }
 
-                    finger_pose[finger_s] = {j_x, j_o};
+                    hand_pose[finger_s] = {j_x, j_o};
                 }
             }
 
@@ -551,16 +552,7 @@ public:
                 
                 /* Use/Activate the shader. */
                 shader_cad->Use();
-                
-                /* Model transformation matrix. */
-                /* ROOT reference frame is different than the one used by OpenGL. */
-                glm::mat4 root_ee_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(ee_x[0]), static_cast<float>(ee_x[1]), static_cast<float>(ee_x[2])));
-                glm::mat4 root_ee_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(ee_o[3]), glm::vec3(static_cast<float>(ee_o[0]), static_cast<float>(ee_o[1]), static_cast<float>(ee_o[2])));
 
-                glm::mat4 model = root_to_ogl * (root_ee_t * root_ee_o);
-                
-                glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-                
                 /* View transformation matrix. */
                 /* Extrinsic camera matrix: */
                 glm::mat4 root_eye_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
@@ -574,14 +566,10 @@ public:
                 
                 glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-//                model_palm->Draw(*shader_cad);
-                model_hand["palm"]->Draw(*shader_cad);
-
-                /* Draw hand pieces */
-                //TODO: incorporare "palm"
-                for (auto map = finger_pose.cbegin(); map != finger_pose.cend(); ++map) {
-                    Vector j_x = finger_pose[map->first].first;
-                    Vector j_o = finger_pose[map->first].second;
+                /* Model transformation matrix. */
+                for (auto map = hand_pose.cbegin(); map != hand_pose.cend(); ++map) {
+                    Vector j_x = hand_pose[map->first].first;
+                    Vector j_o = hand_pose[map->first].second;
 
                     glm::mat4 root_j_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(j_x[0]), static_cast<float>(j_x[1]), static_cast<float>(j_x[2])));
                     glm::mat4 root_j_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(j_o[3]), glm::vec3(static_cast<float>(j_o[0]), static_cast<float>(j_o[1]), static_cast<float>(j_o[2])));
@@ -590,7 +578,7 @@ public:
 
                     glUniformMatrix4fv(glGetUniformLocation(shader_cad->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-                    model_hand[map->first]->Draw(*shader_cad);
+                    hand_model[map->first]->Draw(*shader_cad);
                 }
 
                 /* Swap the buffers. */
@@ -617,15 +605,20 @@ public:
         if (!port_ee_pose.isClosed()) port_ee_pose.close();
         if (!port_cam_pose.isClosed()) port_cam_pose.close();
 
+        yInfo() << log_ID << "Closing OpenGL context.";
         glfwMakeContextCurrent(NULL);
+        yInfo() << log_ID << "Closing OpenGL window.";
         glfwSetWindowShouldClose(window, GL_TRUE);
+        yInfo() << log_ID << "Deleting OpenGL vertices and objects.";
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &EBO);
         glDeleteBuffers(1, &VBO);
+        yInfo() << log_ID << "Deleting OpenGL shaders.";
         delete shader_background;
         delete shader_cad;
         for (auto map = cad_hand.cbegin(); map != cad_hand.cend(); ++map) {
-            delete model_hand[map->first];
+            yInfo() << log_ID << "Deleting OpenGL "+map->first+" model.";
+            delete hand_model[map->first];
         }
 
         yInfo() << log_ID << "Deallocation completed!";
