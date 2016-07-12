@@ -28,8 +28,12 @@
 #include "shader.h"
 
 #define PROJECT_NAME ConstString("superimpose_hand")
-#define WIDTH 320.0f
-#define HEIGHT 240.0f
+//#define WINDOW_WIDTH 320
+//#define WINDOW_HEIGHT 240
+#define WINDOW_WIDTH 160
+#define WINDOW_HEIGHT 120
+#define FRAME_WIDTH 320
+#define FRAME_HEIGHT 240
 #define NEAR 0.001f
 #define FAR 1000.0f
 
@@ -336,14 +340,19 @@ public:
         
         yInfo() << log_ID << "Interfaces set!";
         
-        yInfo() << log_ID << "Opening ports for skeleton images.";
+        yInfo() << log_ID << "Opening ports for CAD images.";
         
         if (!inport_renderer_img.open("/"+PROJECT_NAME+"/cad/cam/"+camera+":i")) {
-            yError() << log_ID << "Cannot open input image port for "+camera+".";
+            yError() << log_ID << "Cannot open input image port for "+camera+" camera.";
+            return false;
+        }
+
+        if (!outport_renderer_img.open("/"+PROJECT_NAME+"/cad/cam/"+camera+":o")) {
+            yError() << log_ID << "Cannot open output image port for "+camera+" camera.";
             return false;
         }
         
-        yInfo() << log_ID << "Skeleton image ports succesfully opened!";
+        yInfo() << log_ID << "CAD image ports succesfully opened!";
         
         yInfo() << log_ID << "Opening port for end effector pose.";
         
@@ -444,7 +453,8 @@ public:
         
         /* Crate shader program. */
         shader_background = new Shader(shader_background_vert.c_str(), shader_background_frag.c_str());
-        shader_cad = new Shader(shader_model_vert.c_str(), shader_model_frag.c_str()); // TODO: add light to the model
+        // TODO: add light to the model
+        shader_cad = new Shader(shader_model_vert.c_str(), shader_model_frag.c_str());
         
         /* Load models. */
         for (auto map = cad_hand.cbegin(); map != cad_hand.cend(); ++map) {
@@ -461,12 +471,12 @@ public:
 
         /* Projection matrix. */
         /* Intrinsic camera matrix: (232.921 0.0     162.202 0.0
-         0.0     232.43  125.738 0.0
-         0.0     0.0     1.0     0.0) */
-        projection = glm::mat4(2.0f*EYE_L_FX/WIDTH,       0,                          0,                          0,
-                               0,                         2.0f*EYE_L_FY/HEIGHT,       0,                          0,
-                               2.0f*(EYE_L_CX/WIDTH)-1,   2.0f*(EYE_L_CY/HEIGHT)-1,   -(FAR+NEAR)/(FAR-NEAR),     -1,
-                               0,                         0,                          -2.0f*FAR*NEAR/(FAR-NEAR),  0);
+                                     0.0     232.43  125.738 0.0
+                                     0.0     0.0     1.0     0.0) */
+        projection = glm::mat4(2.0f*EYE_L_FX/FRAME_WIDTH,       0,                                  0,                           0,
+                               0,                               2.0f*EYE_L_FY/FRAME_HEIGHT,         0,                           0,
+                               2.0f*(EYE_L_CX/FRAME_WIDTH)-1,   2.0f*(EYE_L_CY/FRAME_HEIGHT)-1,     -(FAR+NEAR)/(FAR-NEAR),     -1,
+                               0,                               0,                                  -2.0f*FAR*NEAR/(FAR-NEAR),   0 );
         
         yInfo() << log_ID << "OpenGL renderers succesfully set up!";
         
@@ -1317,15 +1327,20 @@ int main(int argc, char *argv[])
     
     /* Set context properties by "hinting" specific (property, value) pairs. */
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    //TODO: attivare la riga successiva
+//    glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+    //???: c'è da fare swapbuffer?
+    //???: la size della window può essere impostata ad 1x1?
+    //???: devo usare un framebuffer?
 #ifdef GLFW_MAC
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
     
     /* Create a window. */
-    window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL Window", nullptr, nullptr);
+    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL Window", nullptr, nullptr);
     if (window == nullptr) {
         yError() << log_ID << "Failed to create GLFW window.";
         glfwTerminate();
@@ -1348,6 +1363,7 @@ int main(int argc, char *argv[])
     int hdpi_height;
     glfwGetFramebufferSize(window, &hdpi_width, &hdpi_height);
     glViewport(0, 0, hdpi_width, hdpi_height);
+    yInfo() << log_ID << "OpenGL viewport set to "+std::to_string(hdpi_width)+"x"+std::to_string(hdpi_height)+".";
     
     /* Set GL property. */
     glEnable(GL_DEPTH_TEST);
