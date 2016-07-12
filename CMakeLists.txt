@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.1)
 
 project(superimpose-hand)
+set(SH_VERSION_MAJOR "0")
+set(SH_VERSION_MINOR "1")
+set(SH_VERSION_PATCH "0")
+set(SH_VERSION_DEVEL "1")
+if(SH_VERSION_DEVEL)
+    set(SH_VERSION "${SH_VERSION_MAJOR}.${SH_VERSION_MINOR}.${SH_VERSION_PATCH}.${SH_VERSION_DEVEL}")
+else()
+    set(SH_VERSION "${SH_VERSION_MAJOR}.${SH_VERSION_MINOR}.${SH_VERSION_PATCH}")
+endif()
 
 list(APPEND CMAKE_MODULE_PATH   "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
