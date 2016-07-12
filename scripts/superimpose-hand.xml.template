@@ -59,9 +59,9 @@
     </module>
 
     <module>
-        <name>icub22</name>
+        <name>yarpview</name>
         <parameters>--name /view/cam_left/cad</parameters>
-        <node>yarprun</node>
+        <node>icub22</node>
     </module>
 
 
