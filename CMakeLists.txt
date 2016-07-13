@@ -123,6 +123,11 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_nullptr cxx_constexpr)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-D GLFW_MAC)
+    option(IS_APPLE_RETINA
+           "Select this option if the Apple machine has a Retina display" OFF)
+    if(IS_APPLE_RETINA)
+        add_definitions(-D GLFW_RETINA)
+    endif()
 endif()
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

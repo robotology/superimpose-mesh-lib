@@ -2,8 +2,9 @@
 #include <iostream>
 #include <list>
 #include <sstream>
-#include <vector>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -28,10 +29,15 @@
 #include "shader.h"
 
 #define PROJECT_NAME ConstString("superimpose_hand")
-//#define WINDOW_WIDTH 320
-//#define WINDOW_HEIGHT 240
-#define WINDOW_WIDTH 160
-#define WINDOW_HEIGHT 120
+#define WINDOW_WIDTH 320
+#define WINDOW_HEIGHT 240
+#ifdef GLFW_RETINA
+#define FRAMEBUFFER_WIDTH WINDOW_WIDTH*2
+#define FRAMEBUFFER_HEIGHT WINDOW_HEIGHT*2
+#else
+#define FRAMEBUFFER_WIDTH WINDOW_WIDTH
+#define FRAMEBUFFER_HEIGHT WINDOW_HEIGHT
+#endif
 #define FRAME_WIDTH 320
 #define FRAME_HEIGHT 240
 #define NEAR 0.001f
@@ -283,13 +289,14 @@ private:
     typedef std::unordered_map<std::string, std::pair<Vector, Vector>> HandPose;
     
     BufferedPort<ImageOf<PixelRgb>> inport_renderer_img;
+    BufferedPort<ImageOf<PixelRgb>> outport_renderer_img;
     BufferedPort<Bottle> port_ee_pose;
     BufferedPort<Bottle> port_cam_pose;
 
     GLuint texture;
-    GLuint VAO;
-    GLuint EBO;
-    GLuint VBO;
+    GLuint vao;
+    GLuint ebo;
+    GLuint vbo;
     Shader *shader_background;
     Shader *shader_cad;
     typedef std::unordered_map<std::string, Model*> HandModel;
@@ -411,15 +418,16 @@ public:
         glBindTexture(GL_TEXTURE_2D, texture);
         
         /* Set the texture wrapping/filtering options (on the currently bound texture object). */
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
         glBindTexture(GL_TEXTURE_2D, 0);
         
         /* Crate the squared support for the backround texture. */
-        glGenVertexArrays(1, &VAO);
-        glBindVertexArray(VAO);
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
         GLfloat vertices[] = {//Positions      //Colors            //Texture Coords
                                 1.0f,  1.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Top Right
                                 1.0f, -1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Bottom Right
@@ -431,14 +439,14 @@ public:
                              1, 2, 3 }; // Second Triangle
         
         /* Create and bind an element buffer object. */
-        glGenBuffers(1, &EBO);
+        glGenBuffers(1, &ebo);
 
-        glGenBuffers(1, &VBO);
+        glGenBuffers(1, &vbo);
         
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
         
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
         
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)0);
@@ -553,7 +561,7 @@ public:
                 shader_background->Use();
                 glUniformMatrix4fv(glGetUniformLocation(shader_background->Program, "projection"), 1, GL_FALSE, glm::value_ptr(back_proj));
                 glBindTexture(GL_TEXTURE_2D, texture);
-                glBindVertexArray(VAO);
+                glBindVertexArray(vao);
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
                 glBindVertexArray(0);
                 
@@ -591,9 +599,24 @@ public:
                     hand_model[map->first]->Draw(*shader_cad);
                 }
 
+                unsigned char *ogl_pixel = new unsigned char [3 * FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT];
+                glPixelStorei(GL_PACK_ALIGNMENT, 1);
+                glReadPixels(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, ogl_pixel);
+                for (size_t i = 0; i < (FRAMEBUFFER_HEIGHT / 2); ++i) {
+                    unsigned char(&row_bot)[3 * FRAMEBUFFER_WIDTH] = *reinterpret_cast<unsigned char(*)[3 * FRAMEBUFFER_WIDTH]>(&ogl_pixel[3 * FRAMEBUFFER_WIDTH * i]);
+                    unsigned char(&row_up) [3 * FRAMEBUFFER_WIDTH] = *reinterpret_cast<unsigned char(*)[3 * FRAMEBUFFER_WIDTH]>(&ogl_pixel[3 * FRAMEBUFFER_WIDTH * (FRAMEBUFFER_HEIGHT - i)]);
+                    std::swap(row_bot, row_up);
+                }
+
                 /* Swap the buffers. */
                 glfwSwapBuffers(window);
-                
+
+                ImageOf<PixelRgb> &imgout = outport_renderer_img.prepare();
+                imgout.resize(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
+                imgout.setExternal(ogl_pixel, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
+                delete [] ogl_pixel;
+                outport_renderer_img.write();
+
                 Bottle &eePoseBottle = port_ee_pose.prepare();
                 eePoseBottle.clear();
                 eePoseBottle.addString(ee_x.toString() + "    " + ee_o.toString());
@@ -612,6 +635,7 @@ public:
         yInfo() << log_ID << "Deallocating resource of renderer thread.";
         
         if (!inport_renderer_img.isClosed()) inport_renderer_img.close();
+        if (!outport_renderer_img.isClosed()) outport_renderer_img.close();
         if (!port_ee_pose.isClosed()) port_ee_pose.close();
         if (!port_cam_pose.isClosed()) port_cam_pose.close();
 
@@ -620,9 +644,9 @@ public:
         yInfo() << log_ID << "Closing OpenGL window.";
         glfwSetWindowShouldClose(window, GL_TRUE);
         yInfo() << log_ID << "Deleting OpenGL vertices and objects.";
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &EBO);
-        glDeleteBuffers(1, &VBO);
+        glDeleteVertexArrays(1, &vao);
+        glDeleteBuffers(1, &ebo);
+        glDeleteBuffers(1, &vbo);
         yInfo() << log_ID << "Deleting OpenGL shaders.";
         delete shader_background;
         delete shader_cad;
