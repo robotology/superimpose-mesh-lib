@@ -461,7 +461,6 @@ public:
         
         /* Crate shader program. */
         shader_background = new Shader(shader_background_vert.c_str(), shader_background_frag.c_str());
-        // TODO: add light to the model
         shader_cad = new Shader(shader_model_vert.c_str(), shader_model_frag.c_str());
         
         /* Load models. */
@@ -604,7 +603,7 @@ public:
                 glReadPixels(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, ogl_pixel);
                 for (size_t i = 0; i < (FRAMEBUFFER_HEIGHT / 2); ++i) {
                     unsigned char(&row_bot)[3 * FRAMEBUFFER_WIDTH] = *reinterpret_cast<unsigned char(*)[3 * FRAMEBUFFER_WIDTH]>(&ogl_pixel[3 * FRAMEBUFFER_WIDTH * i]);
-                    unsigned char(&row_up) [3 * FRAMEBUFFER_WIDTH] = *reinterpret_cast<unsigned char(*)[3 * FRAMEBUFFER_WIDTH]>(&ogl_pixel[3 * FRAMEBUFFER_WIDTH * (FRAMEBUFFER_HEIGHT - i)]);
+                    unsigned char(&row_up) [3 * FRAMEBUFFER_WIDTH] = *reinterpret_cast<unsigned char(*)[3 * FRAMEBUFFER_WIDTH]>(&ogl_pixel[3 * FRAMEBUFFER_WIDTH * (FRAMEBUFFER_HEIGHT-1 - i)]);
                     std::swap(row_bot, row_up);
                 }
 
@@ -1354,11 +1353,9 @@ int main(int argc, char *argv[])
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    //TODO: attivare la riga successiva
-//    glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+    glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     //???: c'è da fare swapbuffer?
     //???: la size della window può essere impostata ad 1x1?
-    //???: devo usare un framebuffer?
 #ifdef GLFW_MAC
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
