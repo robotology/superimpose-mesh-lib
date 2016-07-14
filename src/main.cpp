@@ -346,11 +346,6 @@ public:
             yError() << log_ID << "Cannot open input image port for "+camera+" camera.";
             return false;
         }
-
-        if (!outport_renderer_img.open("/"+PROJECT_NAME+"/cad/cam/"+camera+":o")) {
-            yError() << log_ID << "Cannot open output image port for "+camera+" camera.";
-            return false;
-        }
         
         yInfo() << log_ID << "CAD image ports succesfully opened!";
         
