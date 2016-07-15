@@ -2,17 +2,17 @@
 <?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
 <application>
 
-    <!-- Generic information -->
+    <!-- GENERIC INFORMATION -->
     <name>SIM_Gazebo_superimpose-hand</name>
     <description>Superimpose the hand skeleton or 3D CAD model on top of iCub hand</description>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
     </authors>
 
 
-    <!-- Required modules -->
+    <!-- REQUIRED MODULES -->
     <module>
         <name>superimpose-hand</name>
         <node>yarprun</node>
@@ -66,14 +66,14 @@
     </module>
 
 
-    <!-- Required connections -->
+    <!-- REQUIRED CONNECTIONS -->
     <connection>
         <from>/icubGazeboSim/cam/left</from>
         <to>/view/cam_left</to>
         <protocol>tcp</protocol>
     </connection>
 
-    <!-- Skeleton -->
+    <!-- SKELETON -->
     <connection>
         <from>/icubGazeboSim/cam/left</from>
         <to>/superimpose_hand/skeleton/cam/left:i</to>

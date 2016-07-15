@@ -2,32 +2,32 @@
 <?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
 <application>
 
-    <!-- Required -->
+    <!-- REQUIRED -->
     <dependencies>
         <port>/yarprun</port>
     </dependencies>
 
-    <!-- Generic information-->
+    <!-- GENERIC INFORMATION -->
     <name>SIM_Background_Apps</name>
     <description>Background applications for iCubSim-based simulations</description>
-    <version>1.3.0</version>
+    <version>1.3.1</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
     </authors>
 
-    <!-- Required modules. -->
+    <!-- REQUIRED MODULES -->
     <module>
         <name>yarplogger</name>
         <node>yarprun</node>
         <parameters>--start</parameters>
 	</module>
-	  
+
     <module>
         <name>iCub_SIM</name>
 		<node>vmdeb</node>
     </module>
-    
+
     <module>
         <name>simCartesianControl</name>
         <parameters>--robot icubSim</parameters>
@@ -36,7 +36,7 @@
         	<port>/icubSim/right_arm/state:o</port>
         </dependencies>
     </module>
-    
+
     <module>
         <name>iKinCartesianSolver</name>
         <parameters>--part right_arm --context cartesianSolver</parameters>
@@ -45,7 +45,7 @@
         	<port>/icubSim/right_arm/state:o</port>
         </dependencies>
     </module>
-    
+
     <module>
         <name>iKinGazeCtrl</name>
         <parameters>--from configSim.ini</parameters>
