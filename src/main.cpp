@@ -76,8 +76,7 @@ private:
     BufferedPort<Bottle> port_cam_pose;
 
 public:
-    SuperimposeHandSkeletonThread(const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : log_ID("[SuperimposeHandSkeletonThread]"), laterality(laterality), camera(camera), camsel((camera == "left")? 0:1), arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {
-    }
+    SuperimposeHandSkeletonThread(const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : log_ID("[SuperimposeHandSkeletonThread]"), laterality(laterality), camera(camera), camsel((camera == "left")? 0:1), arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {}
 
     bool threadInit() {
         yInfo() << log_ID << "Initializing hand skeleton drawing thread.";
