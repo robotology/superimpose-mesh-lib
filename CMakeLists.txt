@@ -141,7 +141,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-D GLFW_MAC)
 endif()
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+add_custom_command(TARGET  ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E make_directory                       $<TARGET_FILE_DIR:${PROJECT_NAME}>
                    COMMAND ${CMAKE_COMMAND} -E copy             ${RESOURCE_FILES}   $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
@@ -161,3 +161,6 @@ endif()
 yarp_install(FILES      ${RESOURCE_FILES}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
 
 icubcontrib_add_uninstall_target()
+
+message("IDL_GEN_FILES: " ${IDL_GEN_FILES})
+message("CMAKE_CURRENT_BINARY_DIR: " ${CMAKE_CURRENT_BINARY_DIR})

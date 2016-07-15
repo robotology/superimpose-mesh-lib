@@ -26,6 +26,7 @@
 
 #include "model.h"
 #include "shader.h"
+#include "src/SuperimposeHandIDL.h"
 
 #define PROJECT_NAME ConstString("superimpose_hand")
 //#define WINDOW_WIDTH 320
@@ -289,8 +290,8 @@ private:
     GLuint VAO;
     GLuint EBO;
     GLuint VBO;
-    Shader *shader_background;
-    Shader *shader_cad;
+    Shader *shader_background = nullptr;
+    Shader *shader_cad = nullptr;
     typedef std::unordered_map<std::string, Model*> HandModel;
     HandModel hand_model;
 
@@ -611,12 +612,15 @@ public:
 
         yInfo() << log_ID << "Closing OpenGL context.";
         glfwMakeContextCurrent(NULL);
+
         yInfo() << log_ID << "Closing OpenGL window.";
         glfwSetWindowShouldClose(window, GL_TRUE);
+
         yInfo() << log_ID << "Deleting OpenGL vertices and objects.";
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &EBO);
         glDeleteBuffers(1, &VBO);
+
         yInfo() << log_ID << "Deleting OpenGL shaders.";
         delete shader_background;
         delete shader_cad;
@@ -629,7 +633,8 @@ public:
     }
 };
 
-class SuperimposeHand : public RFModule
+class SuperimposeHand : public RFModule,
+                        public SuperimposeHandIDL
 {
 private:
     const ConstString log_ID;
@@ -659,8 +664,9 @@ private:
     PolyDriver gaze_driver;
     IGazeControl *itf_head_gaze;
 
-    SuperimposeHandSkeletonThread *trd_left_cam_skeleton;
-    SuperimposeHandCADThread *trd_left_cam_cad;
+    SuperimposeHandSkeletonThread *trd_left_cam_skeleton = nullptr;
+
+    SuperimposeHandCADThread *trd_left_cam_cad = nullptr;
     ConstString shader_background_vert;
     ConstString shader_background_frag;
     ConstString shader_model_vert;
@@ -859,10 +865,15 @@ private:
         return true;
     }
 
+    bool attach(Port &source)
+    {
+        return this->yarp().attachAsServer(source);
+    }
+
     bool setCommandPort()
     {
         yInfo() << log_ID << "Opening command port.";
-        if (!port_command.open("/"+PROJECT_NAME+"/rpc")) {
+        if (!port_command.open("/"+PROJECT_NAME+"/cmd")) {
             yError() << log_ID << "Cannot open the command port.";
             return false;
         }
@@ -930,6 +941,201 @@ private:
         return true;
     }
 
+protected:
+    bool move_hand()
+    {
+        if (!viewhand) {
+            yInfo() << "Starting single hand motion.";
+
+            start = true;
+
+            return true;
+        } else {
+            yWarning() << "Can't move hand in this settings! Use initial_position() before using move_hand() again.";
+
+            return false;
+        }
+    }
+
+    bool move_hand_freerun()
+    {
+        if (!viewhand) {
+            yInfo() << "Starting freerun hand motion.";
+
+            start = true;
+            freerunning = true;
+
+            return true;
+        } else {
+            yWarning() << "Can't move hand in this settings! Use initial_position() before using move_hand() again.";
+
+            return false;
+        }
+    }
+
+    bool stop_hand()
+    {
+        yInfo() << "Stopping hand motion when reaching the initial position.";
+
+        start = false;
+        if (freerunning) freerunning = false;
+
+        return true;
+    }
+
+    bool initial_position()
+    {
+        if (!viewhand) {
+            yWarning() << "Already in initial position settings!";
+
+            return false;
+        } else {
+            yInfo() << "Reaching initial position...";
+
+            viewhand = !moveHand(table_view_R, table_view_x);
+            if (!viewhand) yInfo() << "...done. iCub can move the hand in this settings.";
+            else yWarning() << "...could not reach initial position!";
+
+            return viewhand;
+        }
+    }
+
+    bool view_hand()
+    {
+        if (!start) {
+            yInfo() << "Reaching a position close to iCub left camera with the right hand...";
+
+            viewhand = moveHand(frontal_view_R, frontal_view_x);
+            if (!viewhand) yWarning() << "...could not reach the desired position!";
+            else yInfo() << "...done. iCub can't move the hand in this settings.";
+
+            return viewhand;
+        } else {
+            yWarning() << "Can't move hand while moving it!";
+
+            return false;
+        }
+    }
+
+    bool open_fingers()
+    {
+        yInfo() << "Opening fingers...";
+
+        bool motion_done = moveFingers(open_hand_joints);
+        if (!motion_done) yWarning() << "...fingers could not be opened!";
+        else yInfo() << "...done.";
+
+        return motion_done;
+    }
+
+    bool close_fingers()
+    {
+        yInfo() << "Closing fingers...";
+
+        bool motion_done = moveFingers(closed_hand_joints);
+        if (!motion_done) yWarning() << "...fingers could not be closed!";
+        else yInfo() << "...done.";
+
+        return motion_done;
+    }
+
+    bool view_skeleton(const bool status)
+    {
+        if (!superimpose_skeleton && status) {
+            trd_left_cam_skeleton = new SuperimposeHandSkeletonThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
+
+            if (trd_left_cam_skeleton != NULL) {
+                yInfo() << "Starting skeleton superimposing thread for the right hand on the left camera images...";
+
+                if (!trd_left_cam_skeleton->start()) {
+                    yWarning() << "...thread could not be started!";
+
+                    superimpose_skeleton = false;
+                } else {
+                    yInfo() << "...done.";
+
+                    superimpose_skeleton = true;
+                }
+            } else {
+                yWarning() << "Could not initialize hand skeleton superimposition!";
+
+                superimpose_skeleton = false;
+            }
+
+            return superimpose_skeleton;
+
+        } else if (superimpose_skeleton && !status) {
+            yInfo() << "Stopping hand skeleton superimposing thread for the right hand on the left camera images...";
+
+            if (!trd_left_cam_skeleton->stop()) {
+                yWarning() << "...thread could not be stopped!";
+
+                superimpose_skeleton = true;
+            } else {
+                yInfo() << "...done.";
+
+                delete trd_left_cam_skeleton;
+
+                superimpose_skeleton = false;
+            }
+
+            return !superimpose_skeleton;
+
+        } else return true;
+    }
+
+    bool view_mesh(const bool status) {
+        if (!superimpose_cad && status) {
+            trd_left_cam_cad = new SuperimposeHandCADThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver, shader_background_vert, shader_background_frag, shader_model_vert, shader_model_frag, cad_hand);
+
+            if (trd_left_cam_cad != NULL) {
+                yInfo() << "Starting mesh superimposing thread for the right hand on the left camera images...";
+
+                if (!trd_left_cam_cad->start()) {
+                    yWarning() << "...thread could not be started!";
+
+                    superimpose_cad = false;
+                } else {
+                    yInfo() << "...done.";
+
+                    superimpose_cad = true;
+                }
+            } else {
+                yWarning() << "Could not initialize hand mesh superimposition!";
+
+                superimpose_cad = false;
+            }
+
+            return superimpose_cad;
+
+        } else if (superimpose_cad && !status) {
+            yInfo() << "Stopping hand mesh superimposing thread for the right hand on the left camera images...";
+
+            if (!trd_left_cam_cad->stop()) {
+                yWarning() << "...thread could not be stopped!";
+
+                superimpose_cad = true;
+            } else {
+                yInfo() << "...done.";
+
+                delete trd_left_cam_cad;
+                
+                superimpose_cad = false;
+            }
+
+            return !superimpose_cad;
+
+        } else return true;
+    }
+
+    std::string quit() {
+        yInfo() << "Quitting...";
+
+        this->stopModule();
+
+        return "[bye]";
+    }
+
 public:
     SuperimposeHand() : log_ID("[SuperimposeHand]") {}
 
@@ -937,6 +1143,8 @@ public:
 
     bool configure(ResourceFinder &rf)
     {
+        this->setName(PROJECT_NAME.c_str());
+
         /* Setting default parameters. */
         start = false;
         viewhand = false;
@@ -1070,144 +1278,6 @@ public:
 
     }
 
-    bool respond(const Bottle& command, Bottle& reply)
-    {
-        yInfo() << log_ID << "Got something: " << command.toString();
-
-        if (command.get(0).asString() == "start") {
-
-            if (viewhand) {
-                Bottle("Can't move hand in this settings! Use tablehand command before using start command again.");
-            } else {
-                start = true;
-
-                if (command.get(1).asString() == "freerun") {
-                    freerunning = true;
-                    reply = Bottle("Starting freerunning motion mode.");
-                } else {
-                    reply = Bottle("Starting single finger motion.");
-                }
-            }
-        }
-        else if (command.get(0).asString() == "stop") {
-
-            start = false;
-
-            if (freerunning) freerunning = false;
-
-            reply = Bottle("Stopping finger motion.");
-
-        }
-        else if (command.get(0).asString() == "tablehand") {
-
-            if (!viewhand) {
-                reply = Bottle("Already in tablehand settings!");
-            } else {
-                viewhand = false;
-
-                reply = Bottle("Tablehand enabled, iCub can move the hand in this settings.");
-
-                moveHand(table_view_R, table_view_x);
-            }
-
-        }
-        else if (command.get(0).asString() == "viewhand") {
-
-            if (start) {
-                reply = Bottle("Can't move hand while moving it!");
-            } else {
-                viewhand = true;
-
-                reply = Bottle("Viewhand enabled, iCub can't move hand in this settings.");
-
-                moveHand(frontal_view_R, frontal_view_x);
-            }
-
-        }
-        else if (command.get(0).asString() == "fingers") {
-
-            if (command.get(1).asString() == "open") {
-                moveFingers(open_hand_joints);
-                reply = Bottle("Hand opened!");
-            }
-            else if (command.get(1).asString() == "close") {
-                moveFingers(closed_hand_joints);
-                reply = Bottle("Hand closed (...but the index finger)!");
-            }
-            else {
-                reply = Bottle("Option not available for fingers settings (available: open, close).");
-            }
-
-        }
-        else if (command.get(0).asString() == "skeleton"){
-
-            if (!superimpose_skeleton && command.get(1).asString() == "on") {
-                trd_left_cam_skeleton = new SuperimposeHandSkeletonThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
-
-                if (trd_left_cam_skeleton != NULL) {
-                    reply = Bottle("Starting hand skeleton superimposing thread.");
-                    trd_left_cam_skeleton->start();
-
-                    superimpose_skeleton = true;
-                }
-                else {
-                    reply = Bottle("Could not initialize hand skeleton superimposing .");
-                }
-
-            }
-            else if (superimpose_skeleton && command.get(1).asString() == "off") {
-                reply = Bottle("Stopping hand skeleton superimposing thread.");
-
-                trd_left_cam_skeleton->stop();
-                superimpose_skeleton = false;
-                delete trd_left_cam_skeleton;
-            }
-            else {
-                reply = Bottle("Option not available for hand skeleton superimposing thread operations (available: on, off).");
-            }
-
-        }
-        else if (command.get(0).asString() == "cad"){
-            
-            if (!superimpose_cad && command.get(1).asString() == "on") {
-                trd_left_cam_cad = new SuperimposeHandCADThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver, shader_background_vert, shader_background_frag, shader_model_vert, shader_model_frag, cad_hand);
-                
-                if (trd_left_cam_cad != NULL) {
-                    reply = Bottle("Starting hand CAD superimposing thread.");
-                    trd_left_cam_cad->start();
-                    
-                    superimpose_cad = true;
-                }
-                else {
-                    reply = Bottle("Could not initialize hand CAD superimposing thread.");
-                }
-                
-            }
-            else if (superimpose_cad && command.get(1).asString() == "off") {
-                reply = Bottle("Stopping hand CAD superimposing thread.");
-                
-                trd_left_cam_cad->stop();
-                superimpose_cad = false;
-                delete trd_left_cam_cad;
-            }
-            else {
-                reply = Bottle("Option not available for hand CAD superimposing thread operations (available: on, off).");
-            }
-            
-        }
-        else if (command.get(0).asString() == "quit") {
-
-            reply = Bottle("Quitting...");
-            return false;
-
-        }
-        else {
-            reply = Bottle("Not a valid command.");
-        }
-
-        return true;
-    }
-
     bool updateModule()
     {
         if (start) {
@@ -1234,16 +1304,9 @@ public:
 
     bool interruptModule()
     {
-        yInfo() << log_ID << "Interrupting the module...\nStopping threads...";
+        if (superimpose_skeleton) trd_left_cam_skeleton->stop();
 
-        if (superimpose_skeleton) {
-            trd_left_cam_skeleton->stop();
-            delete trd_left_cam_skeleton;
-        }
-        if (superimpose_cad) {
-            trd_left_cam_cad->stop();
-            delete trd_left_cam_cad;
-        }
+        if (superimpose_cad) trd_left_cam_cad->stop();
 
         return true;
     }
@@ -1252,14 +1315,17 @@ public:
     {
         yInfo() << log_ID << "Calling close functions...";
 
+        delete trd_left_cam_skeleton;
+        delete trd_left_cam_cad;
+
         itf_rightarm_cart->removeTipFrame();
 
         if (rightarm_cartesian_driver.isValid()) rightarm_cartesian_driver.close();
         if (rightarm_remote_driver.isValid()) rightarm_remote_driver.close();
         if (head_remote_driver.isValid()) head_remote_driver.close();
         if (gaze_driver.isValid()) gaze_driver.close();
-        if (port_command.isOpen()) port_command.close();
 
+        if (port_command.isOpen()) port_command.close();
         return true;
     }
 
