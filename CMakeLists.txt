@@ -166,6 +166,3 @@ endif()
 yarp_install(FILES      ${RESOURCE_FILES}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
 
 icubcontrib_add_uninstall_target()
-
-message("IDL_GEN_FILES: " ${IDL_GEN_FILES})
-message("CMAKE_CURRENT_BINARY_DIR: " ${CMAKE_CURRENT_BINARY_DIR})
