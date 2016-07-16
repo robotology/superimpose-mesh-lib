@@ -25,8 +25,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "model.h"
-#include "shader.h"
+#include "Model.h"
+#include "Shader.h"
 #include "src/SuperimposeHandIDL.h"
 
 #define PROJECT_NAME ConstString("superimpose_hand")

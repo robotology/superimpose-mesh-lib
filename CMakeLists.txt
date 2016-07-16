@@ -42,14 +42,13 @@ set(ICUB_MESH_EXT       obj)
 set(ICUB_HAND_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/icub_right_hand/${ICUB_MESH_EXT})
 
 
-set(INCLUDE_FILES       ${INCLUDE_DIR}/shader.h
-                        ${INCLUDE_DIR}/mesh.h
-                        ${INCLUDE_DIR}/model.h)
+set(INCLUDE_FILES       ${INCLUDE_DIR}/Shader.h
+                        ${INCLUDE_DIR}/Mesh.h
+                        ${INCLUDE_DIR}/Model.h)
 set(SOURCE_FILES        src/main.cpp
-                        src/shader.cpp
-                        src/mesh.cpp
-                        src/model.cpp
-                        src/idl.thrift)
+                        src/Shader.cpp
+                        src/Mesh.cpp
+                        src/Model.cpp)
 set(THIRFT_FILES        src/idl.thrift)
 
 set(PROGRAM_CONFIG      config/superimpose-hand_config.ini)
@@ -123,6 +122,7 @@ yarp_add_idl(IDL_GEN_FILES ${THIRFT_FILES})
 if(${CMAKE_GENERATOR} MATCHES "Xcode")
     add_executable(${PROJECT_NAME}  ${INCLUDE_FILES}
                                     ${SOURCE_FILES}
+                                    ${THIRFT_FILES}
                                     ${PROGRAM_FILES}
                                     ${RESOURCE_FILES}
                                     ${IDL_GEN_FILES})

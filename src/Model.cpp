@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 //#include <SOIL/SOIL.h>
 
-#include "model.h"
+#include "Model.h"
 
 Model::Model(const GLchar* path) {
     this->loadModel(path);

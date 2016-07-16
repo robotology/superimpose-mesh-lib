@@ -6,7 +6,7 @@
 #include <GL/glew.h>
 #include <assimp/scene.h>
 
-#include "shader.h"
+#include "Shader.h"
 
 struct Vertex {
     glm::vec3 Position;
