@@ -1354,8 +1354,6 @@ int main(int argc, char *argv[])
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-    //???: c'è da fare swapbuffer?
-    //???: la size della window può essere impostata ad 1x1?
 #ifdef GLFW_MAC
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
