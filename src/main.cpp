@@ -667,11 +667,12 @@ private:
     ConstString robot;
     bool usegaze;
     bool usetorsoDOF;
+
     bool start;
-    bool viewhand;
+    bool init_position;
     bool freerunning;
     bool superimpose_skeleton;
-    bool superimpose_cad;
+    bool superimpose_mesh;
 
     PolyDriver rightarm_remote_driver;
     IEncoders *itf_rightarm_enc;
@@ -969,7 +970,7 @@ private:
 protected:
     bool move_hand()
     {
-        if (!viewhand) {
+        if (!init_position) {
             yInfo() << "Starting single hand motion.";
 
             start = true;
@@ -984,7 +985,7 @@ protected:
 
     bool move_hand_freerun()
     {
-        if (!viewhand) {
+        if (!init_position) {
             yInfo() << "Starting freerun hand motion.";
 
             start = true;
@@ -1010,18 +1011,18 @@ protected:
 
     bool initial_position()
     {
-        if (!viewhand) {
+        if (!init_position) {
             yWarning() << "Already in initial position settings!";
 
             return false;
         } else {
             yInfo() << "Reaching initial position...";
 
-            viewhand = !moveHand(table_view_R, table_view_x);
-            if (!viewhand) yInfo() << "...done. iCub can move the hand in this settings.";
+            init_position = !moveHand(table_view_R, table_view_x);
+            if (!init_position) yInfo() << "...done. iCub can move the hand in this settings.";
             else yWarning() << "...could not reach initial position!";
 
-            return viewhand;
+            return init_position;
         }
     }
 
@@ -1030,11 +1031,11 @@ protected:
         if (!start) {
             yInfo() << "Reaching a position close to iCub left camera with the right hand...";
 
-            viewhand = moveHand(frontal_view_R, frontal_view_x);
-            if (!viewhand) yWarning() << "...could not reach the desired position!";
+            init_position = moveHand(frontal_view_R, frontal_view_x);
+            if (!init_position) yWarning() << "...could not reach the desired position!";
             else yInfo() << "...done. iCub can't move the hand in this settings.";
 
-            return viewhand;
+            return init_position;
         } else {
             yWarning() << "Can't move hand while moving it!";
 
@@ -1110,7 +1111,7 @@ protected:
     }
 
     bool view_mesh(const bool status) {
-        if (!superimpose_cad && status) {
+        if (!superimpose_mesh && status) {
             trd_left_cam_cad = new SuperimposeHandCADThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver, shader_background_vert, shader_background_frag, shader_model_vert, shader_model_frag, cad_hand);
 
             if (trd_left_cam_cad != NULL) {
@@ -1119,36 +1120,36 @@ protected:
                 if (!trd_left_cam_cad->start()) {
                     yWarning() << "...thread could not be started!";
 
-                    superimpose_cad = false;
+                    superimpose_mesh = false;
                 } else {
                     yInfo() << "...done.";
 
-                    superimpose_cad = true;
+                    superimpose_mesh = true;
                 }
             } else {
                 yWarning() << "Could not initialize hand mesh superimposition!";
 
-                superimpose_cad = false;
+                superimpose_mesh = false;
             }
 
-            return superimpose_cad;
+            return superimpose_mesh;
 
-        } else if (superimpose_cad && !status) {
+        } else if (superimpose_mesh && !status) {
             yInfo() << "Stopping hand mesh superimposing thread for the right hand on the left camera images...";
 
             if (!trd_left_cam_cad->stop()) {
                 yWarning() << "...thread could not be stopped!";
 
-                superimpose_cad = true;
+                superimpose_mesh = true;
             } else {
                 yInfo() << "...done.";
 
                 delete trd_left_cam_cad;
                 
-                superimpose_cad = false;
+                superimpose_mesh = false;
             }
 
-            return !superimpose_cad;
+            return !superimpose_mesh;
 
         } else return true;
     }
@@ -1172,10 +1173,10 @@ public:
 
         /* Setting default parameters. */
         start = false;
-        viewhand = false;
+        init_position = false;
         freerunning = false;
         superimpose_skeleton = false;
-        superimpose_cad = false;
+        superimpose_mesh = false;
 
         /* Parsing parameters from config file. */
         robot = rf.findGroup("PARAMETER").check("robot", Value("icub")).asString();
@@ -1331,7 +1332,7 @@ public:
     {
         if (superimpose_skeleton) trd_left_cam_skeleton->stop();
 
-        if (superimpose_cad) trd_left_cam_cad->stop();
+        if (superimpose_mesh) trd_left_cam_cad->stop();
 
         return true;
     }
