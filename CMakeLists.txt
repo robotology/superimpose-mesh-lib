@@ -49,7 +49,8 @@ set(SOURCE_FILES        src/main.cpp
                         src/Shader.cpp
                         src/Mesh.cpp
                         src/Model.cpp)
-set(THIRFT_FILES        src/idl.thrift)
+set(THIRFT_FILES        src/idl_rfm.thrift
+                        src/idl_mesh.thrift)
 
 set(PROGRAM_CONFIG      config/superimpose-hand_config.ini)
 set(PROGRAM_SCRIPT      scripts/superimpose-hand.xml.template)

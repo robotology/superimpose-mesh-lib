@@ -2,7 +2,7 @@
 # Authors: Claudio Fantacci
 # CopyPolicy: Released under the terms of the GNU GPL v3.0.
 #
-# idl.thrift
+# idl_rfm.thrift
 
 /**
  * SuperimposeHandIDL

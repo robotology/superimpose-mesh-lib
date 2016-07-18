@@ -28,6 +28,7 @@
 #include "Model.h"
 #include "Shader.h"
 #include "src/SuperimposeHandIDL.h"
+#include "src/SuperimposeHandCADIDL.h"
 
 #define PROJECT_NAME ConstString("superimpose_hand")
 #define WINDOW_WIDTH 320
@@ -141,6 +142,7 @@ public:
             yError() << log_ID << "Cannot open input image port for "+camera+".";
             return false;
         }
+
         if (!outport_skeleton_img.open("/"+PROJECT_NAME+"/skeleton/cam/"+camera+":o")) {
             yError() << log_ID << "Cannot open output image port for "+camera+".";
             return false;
@@ -244,17 +246,99 @@ public:
         }
     }
 
+    void onStop() {
+        inport_skeleton_img.interrupt();
+        outport_skeleton_img.interrupt();
+        port_ee_pose.interrupt();
+        port_cam_pose.interrupt();
+    }
+
     void threadRelease() {
         yInfo() << log_ID << "Deallocating resource of hand skeleton drawing thread.";
 
-        if (!inport_skeleton_img.isClosed()) inport_skeleton_img.close();
+        if (!inport_skeleton_img.isClosed())  inport_skeleton_img.close();
         if (!outport_skeleton_img.isClosed()) outport_skeleton_img.close();
-        if (!port_ee_pose.isClosed()) port_ee_pose.close();
-        if (!port_cam_pose.isClosed()) port_cam_pose.close();
+        if (!port_ee_pose.isClosed())         port_ee_pose.close();
+        if (!port_cam_pose.isClosed())        port_cam_pose.close();
 
         yInfo() << log_ID << "Deallocation completed!";
     }
 };
+
+enum MipMaps {
+    NEAREST = 0,
+    LINEAR = 1
+};
+
+class ThreadControllerSHC : public SuperimposeHandCADIDL
+{
+private:
+    ConstString log_ID;
+
+    bool mesh_back;
+    bool mesh_wires;
+    MipMaps mesh_mmaps;
+protected:
+    bool mesh_background(const bool status)
+    {
+        if (status && !mesh_back) {
+            yInfo() << log_ID << "Enabling background of the mesh window.";
+
+            mesh_back = true;
+
+            return true;
+        } else if (!status && mesh_back) {
+            yInfo() << log_ID << "Disabling background of the mesh window.";
+
+            mesh_back = false;
+
+            return true;
+        } else return false;
+    }
+
+    bool mesh_wireframe(const bool status)
+    {
+        if (status && !mesh_wires) {
+            yInfo() << log_ID << "Enabling wireframe rendering.";
+
+            mesh_wires = true;
+
+            return true;
+        } else if (!status && mesh_wires) {
+            yInfo() << log_ID << "Disabling wireframe rendering.";
+
+            mesh_wires = false;
+
+            return true;
+        } else return false;
+    }
+
+    bool mesh_mipmaps(const std::string& type)
+    {
+        if (type == "nearest") {
+            yInfo() << log_ID << "Setting mipmaps color filtering to nearest neighbor.";
+
+            mesh_mmaps = NEAREST;
+
+            return true;
+        } else if (type == "linear") {
+            yInfo() << log_ID << "Setting mipmaps color filtering to linear.";
+
+            mesh_mmaps = LINEAR;
+
+            return true;
+        } else return false;
+    }
+public:
+    ThreadControllerSHC() : log_ID("[ThreadControllerSHC]"), mesh_back(true), mesh_wires(true), mesh_mmaps(NEAREST) {};
+
+    bool getBackgroundOpt() { return mesh_back; }
+
+    bool getWireframeOpt()  { return mesh_wires; }
+
+    MipMaps getMipmapsOpt()    { return mesh_mmaps; }
+};
+
 
 class SuperimposeHandCADThread : public Thread
 {
@@ -306,6 +390,25 @@ private:
     glm::mat4 root_to_ogl;
     glm::mat4 back_proj;
     glm::mat4 projection;
+
+    ThreadControllerSHC helper;
+    Port port_command;
+
+    bool setCommandPort()
+    {
+        yInfo() << log_ID << "Opening command port.";
+        if (!port_command.open("/"+PROJECT_NAME+"/cad/cmd")) {
+            yError() << log_ID << "Cannot open the command port.";
+            return false;
+        }
+        if (!helper.yarp().attachAsServer(port_command)) {
+            yError() << log_ID << "Cannot attach the command port.";
+            return false;
+        }
+        yInfo() << log_ID << "Command port succesfully opened and attached. Ready to start and recieve commands.";
+
+        return true;
+    }
     
 public:
     SuperimposeHandCADThread(const ConstString &laterality, const ConstString &camera,
@@ -416,16 +519,7 @@ public:
         
         /* Create a background texture. */
         glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        
-        /* Set the texture wrapping/filtering options (on the currently bound texture object). */
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glBindTexture(GL_TEXTURE_2D, 0);
-        
         /* Crate the squared support for the backround texture. */
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
@@ -466,6 +560,7 @@ public:
         
         /* Load models. */
         for (auto map = cad_hand.cbegin(); map != cad_hand.cend(); ++map) {
+            yInfo() << log_ID << "Loading OpenGL "+map->first+" model.";
             hand_model[map->first] = new Model(map->second.c_str());
         }
 
@@ -487,7 +582,13 @@ public:
                                0,                               0,                                  -2.0f*FAR*NEAR/(FAR-NEAR),   0 );
         
         yInfo() << log_ID << "OpenGL renderers succesfully set up!";
-        
+
+        yInfo() << log_ID << "Setting up thread helper.";
+
+        if (!setCommandPort()) return false;
+
+        yInfo() << log_ID << "Thread helper succesfully set up!";
+
         yInfo() << log_ID << "Initialization completed!";
         
         return true;
@@ -548,6 +649,16 @@ public:
             if (imgin != NULL) {
                 /* Load and generate the texture. */
                 glBindTexture(GL_TEXTURE_2D, texture);
+
+                /* Set the texture wrapping/filtering options (on the currently bound texture object). */
+                if (helper.getMipmapsOpt() == NEAREST) {
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                } else if (helper.getMipmapsOpt() == LINEAR) {
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                }
+                
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgin->width(), imgin->height(), 0, GL_RGB, GL_UNSIGNED_BYTE, imgin->getRawImage());
                 glGenerateMipmap(GL_TEXTURE_2D);
                 glBindTexture(GL_TEXTURE_2D, 0);
@@ -557,16 +668,20 @@ public:
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                 
                 /* Draw the background picture. */
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                shader_background->Use();
-                glUniformMatrix4fv(glGetUniformLocation(shader_background->Program, "projection"), 1, GL_FALSE, glm::value_ptr(back_proj));
-                glBindTexture(GL_TEXTURE_2D, texture);
-                glBindVertexArray(vao);
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-                glBindVertexArray(0);
-                
-                /* Wireframe only. */
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                if (helper.getBackgroundOpt()) {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    shader_background->Use();
+                    glUniformMatrix4fv(glGetUniformLocation(shader_background->Program, "projection"), 1, GL_FALSE, glm::value_ptr(back_proj));
+                    glBindTexture(GL_TEXTURE_2D, texture);
+                    glBindVertexArray(vao);
+                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+                    glBindVertexArray(0);
+                }
+
+                if (helper.getWireframeOpt()) {
+                    /* Wireframe only. */
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                } else glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 
                 /* Use/Activate the shader. */
                 shader_cad->Use();
@@ -630,14 +745,35 @@ public:
             }
         }
     }
-    
+
+    void onStop() {
+        inport_renderer_img.interrupt();
+        outport_renderer_img.interrupt();
+        port_ee_pose.interrupt();
+        port_cam_pose.interrupt();
+    }
+
     void threadRelease() {
         yInfo() << log_ID << "Deallocating resource of renderer thread.";
-        
-        if (!inport_renderer_img.isClosed()) inport_renderer_img.close();
+
+        if (!inport_renderer_img.isClosed())  inport_renderer_img.close();
         if (!outport_renderer_img.isClosed()) outport_renderer_img.close();
-        if (!port_ee_pose.isClosed()) port_ee_pose.close();
-        if (!port_cam_pose.isClosed()) port_cam_pose.close();
+        if (!port_ee_pose.isClosed())         port_ee_pose.close();
+        if (!port_cam_pose.isClosed())        port_cam_pose.close();
+
+        yInfo() << log_ID << "Deleting OpenGL models and vertices.";
+        for (auto map = hand_model.begin(); map != hand_model.end(); ++map) {
+            yInfo() << log_ID << "Deleting OpenGL "+map->first+" model.";
+            delete map->second;
+        }
+        glDeleteVertexArrays(1, &vao);
+        glDeleteBuffers(1, &ebo);
+        glDeleteBuffers(1, &vbo);
+        glDeleteTextures(1, &texture);
+
+        yInfo() << log_ID << "Deleting OpenGL shaders.";
+        delete shader_background;
+        delete shader_cad;
 
         yInfo() << log_ID << "Closing OpenGL context.";
         glfwMakeContextCurrent(NULL);
@@ -645,19 +781,7 @@ public:
         yInfo() << log_ID << "Closing OpenGL window.";
         glfwSetWindowShouldClose(window, GL_TRUE);
 
-        yInfo() << log_ID << "Deleting OpenGL vertices and objects.";
-
-        glDeleteVertexArrays(1, &vao);
-        glDeleteBuffers(1, &ebo);
-        glDeleteBuffers(1, &vbo);
-
-        yInfo() << log_ID << "Deleting OpenGL shaders.";
-        delete shader_background;
-        delete shader_cad;
-        for (auto map = cad_hand.cbegin(); map != cad_hand.cend(); ++map) {
-            yInfo() << log_ID << "Deleting OpenGL "+map->first+" model.";
-            delete hand_model[map->first];
-        }
+        if (port_command.isOpen()) port_command.close();
 
         yInfo() << log_ID << "Deallocation completed!";
     }
@@ -672,11 +796,12 @@ private:
     ConstString robot;
     bool usegaze;
     bool usetorsoDOF;
+
     bool start;
-    bool viewhand;
+    bool init_position;
     bool freerunning;
     bool superimpose_skeleton;
-    bool superimpose_cad;
+    bool superimpose_mesh;
 
     PolyDriver rightarm_remote_driver;
     IEncoders *itf_rightarm_enc;
@@ -895,11 +1020,6 @@ private:
         return true;
     }
 
-    bool attach(Port &source)
-    {
-        return this->yarp().attachAsServer(source);
-    }
-
     bool setCommandPort()
     {
         yInfo() << log_ID << "Opening command port.";
@@ -907,7 +1027,7 @@ private:
             yError() << log_ID << "Cannot open the command port.";
             return false;
         }
-        if (!attach(port_command)) {
+        if (!this->yarp().attachAsServer(port_command)) {
             yError() << log_ID << "Cannot attach the command port.";
             return false;
         }
@@ -974,14 +1094,14 @@ private:
 protected:
     bool move_hand()
     {
-        if (!viewhand) {
-            yInfo() << "Starting single hand motion.";
+        if (!init_position) {
+            yInfo() << log_ID << "Starting single hand motion.";
 
             start = true;
 
             return true;
         } else {
-            yWarning() << "Can't move hand in this settings! Use initial_position() before using move_hand() again.";
+            yWarning() << log_ID << "Can't move hand in this settings! Use initial_position() before using move_hand() again.";
 
             return false;
         }
@@ -989,15 +1109,15 @@ protected:
 
     bool move_hand_freerun()
     {
-        if (!viewhand) {
-            yInfo() << "Starting freerun hand motion.";
+        if (!init_position) {
+            yInfo() << log_ID << "Starting freerun hand motion.";
 
             start = true;
             freerunning = true;
 
             return true;
         } else {
-            yWarning() << "Can't move hand in this settings! Use initial_position() before using move_hand() again.";
+            yWarning() << log_ID << "Can't move hand in this settings! Use initial_position() before using move_hand() again.";
 
             return false;
         }
@@ -1005,7 +1125,7 @@ protected:
 
     bool stop_hand()
     {
-        yInfo() << "Stopping hand motion when reaching the initial position.";
+        yInfo() << log_ID << "Stopping hand motion when reaching the initial position.";
 
         start = false;
         if (freerunning) freerunning = false;
@@ -1015,33 +1135,33 @@ protected:
 
     bool initial_position()
     {
-        if (!viewhand) {
-            yWarning() << "Already in initial position settings!";
+        if (!init_position) {
+            yWarning() << log_ID << "Already in initial position settings!";
 
             return false;
         } else {
-            yInfo() << "Reaching initial position...";
+            yInfo() << log_ID << "Reaching initial position...";
 
-            viewhand = !moveHand(table_view_R, table_view_x);
-            if (!viewhand) yInfo() << "...done. iCub can move the hand in this settings.";
-            else yWarning() << "...could not reach initial position!";
+            init_position = !moveHand(table_view_R, table_view_x);
+            if (!init_position) yInfo() << log_ID << "...done. iCub can move the hand in this settings.";
+            else yWarning() << log_ID << "...could not reach initial position!";
 
-            return viewhand;
+            return init_position;
         }
     }
 
     bool view_hand()
     {
         if (!start) {
-            yInfo() << "Reaching a position close to iCub left camera with the right hand...";
+            yInfo() << log_ID << "Reaching a position close to iCub left camera with the right hand...";
 
-            viewhand = moveHand(frontal_view_R, frontal_view_x);
-            if (!viewhand) yWarning() << "...could not reach the desired position!";
-            else yInfo() << "...done. iCub can't move the hand in this settings.";
+            init_position = moveHand(frontal_view_R, frontal_view_x);
+            if (!init_position) yWarning() << log_ID << "...could not reach the desired position!";
+            else yInfo() << log_ID << "...done. iCub can't move the hand in this settings.";
 
-            return viewhand;
+            return init_position;
         } else {
-            yWarning() << "Can't move hand while moving it!";
+            yWarning() << log_ID << "Can't move hand while moving it!";
 
             return false;
         }
@@ -1049,22 +1169,22 @@ protected:
 
     bool open_fingers()
     {
-        yInfo() << "Opening fingers...";
+        yInfo() << log_ID << "Opening fingers...";
 
         bool motion_done = moveFingers(open_hand_joints);
-        if (!motion_done) yWarning() << "...fingers could not be opened!";
-        else yInfo() << "...done.";
+        if (!motion_done) yWarning() << log_ID << "...fingers could not be opened!";
+        else yInfo() << log_ID << "...done.";
 
         return motion_done;
     }
 
     bool close_fingers()
     {
-        yInfo() << "Closing fingers...";
+        yInfo() << log_ID << "Closing fingers...";
 
         bool motion_done = moveFingers(closed_hand_joints);
-        if (!motion_done) yWarning() << "...fingers could not be closed!";
-        else yInfo() << "...done.";
+        if (!motion_done) yWarning() << log_ID << "...fingers could not be closed!";
+        else yInfo() << log_ID << "...done.";
 
         return motion_done;
     }
@@ -1075,19 +1195,19 @@ protected:
             trd_left_cam_skeleton = new SuperimposeHandSkeletonThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
 
             if (trd_left_cam_skeleton != NULL) {
-                yInfo() << "Starting skeleton superimposing thread for the right hand on the left camera images...";
+                yInfo() << log_ID << "Starting skeleton superimposing thread for the right hand on the left camera images...";
 
                 if (!trd_left_cam_skeleton->start()) {
-                    yWarning() << "...thread could not be started!";
+                    yWarning() << log_ID << "...thread could not be started!";
 
                     superimpose_skeleton = false;
                 } else {
-                    yInfo() << "...done.";
+                    yInfo() << log_ID << "...done.";
 
                     superimpose_skeleton = true;
                 }
             } else {
-                yWarning() << "Could not initialize hand skeleton superimposition!";
+                yWarning() << log_ID << "Could not initialize hand skeleton superimposition!";
 
                 superimpose_skeleton = false;
             }
@@ -1095,16 +1215,17 @@ protected:
             return superimpose_skeleton;
 
         } else if (superimpose_skeleton && !status) {
-            yInfo() << "Stopping hand skeleton superimposing thread for the right hand on the left camera images...";
+            yInfo() << log_ID << "Stopping hand skeleton superimposing thread for the right hand on the left camera images...";
 
             if (!trd_left_cam_skeleton->stop()) {
-                yWarning() << "...thread could not be stopped!";
+                yWarning() << log_ID << "...thread could not be stopped!";
 
                 superimpose_skeleton = true;
             } else {
-                yInfo() << "...done.";
+                yInfo() << log_ID << "...done.";
 
                 delete trd_left_cam_skeleton;
+                trd_left_cam_cad = nullptr;
 
                 superimpose_skeleton = false;
             }
@@ -1115,51 +1236,52 @@ protected:
     }
 
     bool view_mesh(const bool status) {
-        if (!superimpose_cad && status) {
+        if (!superimpose_mesh && status) {
             trd_left_cam_cad = new SuperimposeHandCADThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver, shader_background_vert, shader_background_frag, shader_model_vert, shader_model_frag, cad_hand);
 
             if (trd_left_cam_cad != NULL) {
-                yInfo() << "Starting mesh superimposing thread for the right hand on the left camera images...";
+                yInfo() << log_ID << "Starting mesh superimposing thread for the right hand on the left camera images...";
 
                 if (!trd_left_cam_cad->start()) {
-                    yWarning() << "...thread could not be started!";
+                    yWarning() << log_ID << "...thread could not be started!";
 
-                    superimpose_cad = false;
+                    superimpose_mesh = false;
                 } else {
-                    yInfo() << "...done.";
+                    yInfo() << log_ID << "...done.";
 
-                    superimpose_cad = true;
+                    superimpose_mesh = true;
                 }
             } else {
-                yWarning() << "Could not initialize hand mesh superimposition!";
+                yWarning() << log_ID << "Could not initialize hand mesh superimposition!";
 
-                superimpose_cad = false;
+                superimpose_mesh = false;
             }
 
-            return superimpose_cad;
+            return superimpose_mesh;
 
-        } else if (superimpose_cad && !status) {
-            yInfo() << "Stopping hand mesh superimposing thread for the right hand on the left camera images...";
+        } else if (superimpose_mesh && !status) {
+            yInfo() << log_ID << "Stopping hand mesh superimposing thread for the right hand on the left camera images...";
 
             if (!trd_left_cam_cad->stop()) {
-                yWarning() << "...thread could not be stopped!";
+                yWarning() << log_ID << "...thread could not be stopped!";
 
-                superimpose_cad = true;
+                superimpose_mesh = true;
             } else {
-                yInfo() << "...done.";
+                yInfo() << log_ID << "...done.";
 
                 delete trd_left_cam_cad;
+                trd_left_cam_cad = nullptr;
                 
-                superimpose_cad = false;
+                superimpose_mesh = false;
             }
 
-            return !superimpose_cad;
+            return !superimpose_mesh;
 
         } else return false;
     }
 
     std::string quit() {
-        yInfo() << "Quitting...";
+        yInfo() << log_ID << "Quitting...";
 
         this->stopModule();
 
@@ -1177,10 +1299,10 @@ public:
 
         /* Setting default parameters. */
         start = false;
-        viewhand = false;
+        init_position = false;
         freerunning = false;
         superimpose_skeleton = false;
-        superimpose_cad = false;
+        superimpose_mesh = false;
 
         /* Parsing parameters from config file. */
         robot = rf.findGroup("PARAMETER").check("robot", Value("icub")).asString();
@@ -1334,9 +1456,15 @@ public:
 
     bool interruptModule()
     {
-        if (superimpose_skeleton) trd_left_cam_skeleton->stop();
+        if (superimpose_skeleton) {
+            trd_left_cam_skeleton->stop();
+            trd_left_cam_skeleton = nullptr;
+        }
 
-        if (superimpose_cad) trd_left_cam_cad->stop();
+        if (superimpose_mesh) {
+            trd_left_cam_cad->stop();
+            trd_left_cam_cad = nullptr;
+        }
 
         return true;
     }
