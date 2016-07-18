@@ -246,13 +246,20 @@ public:
         }
     }
 
+    void onStop() {
+        inport_skeleton_img.interrupt();
+        outport_skeleton_img.interrupt();
+        port_ee_pose.interrupt();
+        port_cam_pose.interrupt();
+    }
+
     void threadRelease() {
         yInfo() << log_ID << "Deallocating resource of hand skeleton drawing thread.";
 
-        if (!inport_skeleton_img.isClosed()) inport_skeleton_img.close();
+        if (!inport_skeleton_img.isClosed())  inport_skeleton_img.close();
         if (!outport_skeleton_img.isClosed()) outport_skeleton_img.close();
-        if (!port_ee_pose.isClosed()) port_ee_pose.close();
-        if (!port_cam_pose.isClosed()) port_cam_pose.close();
+        if (!port_ee_pose.isClosed())         port_ee_pose.close();
+        if (!port_cam_pose.isClosed())        port_cam_pose.close();
 
         yInfo() << log_ID << "Deallocation completed!";
     }
@@ -553,6 +560,7 @@ public:
         
         /* Load models. */
         for (auto map = cad_hand.cbegin(); map != cad_hand.cend(); ++map) {
+            yInfo() << log_ID << "Loading OpenGL "+map->first+" model.";
             hand_model[map->first] = new Model(map->second.c_str());
         }
 
@@ -577,7 +585,7 @@ public:
 
         yInfo() << log_ID << "Setting up thread helper.";
 
-//        if (!setCommandPort()) return false;
+        if (!setCommandPort()) return false;
 
         yInfo() << log_ID << "Thread helper succesfully set up!";
 
@@ -737,27 +745,27 @@ public:
             }
         }
     }
-    
+
+    void onStop() {
+        inport_renderer_img.interrupt();
+        outport_renderer_img.interrupt();
+        port_ee_pose.interrupt();
+        port_cam_pose.interrupt();
+    }
+
     void threadRelease() {
         yInfo() << log_ID << "Deallocating resource of renderer thread.";
 
-        if (!inport_renderer_img.isClosed()) {
-            inport_renderer_img.close();
+        if (!inport_renderer_img.isClosed())  inport_renderer_img.close();
+        if (!outport_renderer_img.isClosed()) outport_renderer_img.close();
+        if (!port_ee_pose.isClosed())         port_ee_pose.close();
+        if (!port_cam_pose.isClosed())        port_cam_pose.close();
+
+        yInfo() << log_ID << "Deleting OpenGL models and vertices.";
+        for (auto map = hand_model.begin(); map != hand_model.end(); ++map) {
+            yInfo() << log_ID << "Deleting OpenGL "+map->first+" model.";
+            delete map->second;
         }
-        if (!outport_renderer_img.isClosed()) {
-            outport_renderer_img.close();
-        }
-        if (!port_ee_pose.isClosed()) port_ee_pose.close();
-        if (!port_cam_pose.isClosed()) port_cam_pose.close();
-
-        yInfo() << log_ID << "Closing OpenGL context.";
-        glfwMakeContextCurrent(NULL);
-
-        yInfo() << log_ID << "Closing OpenGL window.";
-        glfwSetWindowShouldClose(window, GL_TRUE);
-
-        yInfo() << log_ID << "Deleting OpenGL vertices and objects.";
-
         glDeleteVertexArrays(1, &vao);
         glDeleteBuffers(1, &ebo);
         glDeleteBuffers(1, &vbo);
@@ -766,10 +774,12 @@ public:
         yInfo() << log_ID << "Deleting OpenGL shaders.";
         delete shader_background;
         delete shader_cad;
-        for (auto map = cad_hand.cbegin(); map != cad_hand.cend(); ++map) {
-            yInfo() << log_ID << "Deleting OpenGL "+map->first+" model.";
-            delete hand_model[map->first];
-        }
+
+        yInfo() << log_ID << "Closing OpenGL context.";
+        glfwMakeContextCurrent(NULL);
+
+        yInfo() << log_ID << "Closing OpenGL window.";
+        glfwSetWindowShouldClose(window, GL_TRUE);
 
         if (port_command.isOpen()) port_command.close();
 
@@ -1215,6 +1225,7 @@ protected:
                 yInfo() << log_ID << "...done.";
 
                 delete trd_left_cam_skeleton;
+                trd_left_cam_cad = nullptr;
 
                 superimpose_skeleton = false;
             }
@@ -1259,6 +1270,7 @@ protected:
                 yInfo() << log_ID << "...done.";
 
                 delete trd_left_cam_cad;
+                trd_left_cam_cad = nullptr;
                 
                 superimpose_mesh = false;
             }
@@ -1444,9 +1456,15 @@ public:
 
     bool interruptModule()
     {
-        if (superimpose_skeleton) trd_left_cam_skeleton->stop();
+        if (superimpose_skeleton) {
+            trd_left_cam_skeleton->stop();
+            trd_left_cam_skeleton = nullptr;
+        }
 
-        if (superimpose_mesh) trd_left_cam_cad->stop();
+        if (superimpose_mesh) {
+            trd_left_cam_cad->stop();
+            trd_left_cam_cad = nullptr;
+        }
 
         return true;
     }
