@@ -1111,7 +1111,7 @@ protected:
 
             return !superimpose_skeleton;
 
-        } else return true;
+        } else return false;
     }
 
     bool view_mesh(const bool status) {
@@ -1155,7 +1155,7 @@ protected:
 
             return !superimpose_cad;
 
-        } else return true;
+        } else return false;
     }
 
     std::string quit() {
