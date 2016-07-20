@@ -1524,7 +1524,7 @@ int main(int argc, char *argv[])
     yInfo() << log_ID << "Configuring and starting module...";
 
     Network yarp;
-    if (!yarp.checkNetwork()) {
+    if (!yarp.checkNetwork(3.0)) {
         yError() << log_ID << "YARP seems unavailable.";
         return -1;
     }
