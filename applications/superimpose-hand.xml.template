@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
+<application>
+
+    <!-- GENERIC INFORMATION -->
+    <name>superimpose-hand</name>
+    <description>Superimpose the hand skeleton or 3D CAD model on top of iCub hand</description>
+    <version>3.0.0</version>
+
+    <authors>
+        <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
+    </authors>
+
+
+    <!-- REQUIRED MODULES -->
+    <module>
+        <name>superimpose-hand</name>
+        <node>localhost</node>
+        <dependencies>
+            <port>/icub/camcalib/left/out</port>
+            <port>/icub/camcalib/right/out</port>
+        </dependencies>
+    </module>
+
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /view/cam_left</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /view/cam_left/skeleton</parameters>
+        <node>localhost</node>
+    </module>
+
+    <module>
+        <name>yarpview</name>
+        <parameters>--name /view/cam_left/cad</parameters>
+        <node>localhost</node>
+    </module>
+
+
+    <!-- REQUIRED CONNECTIONS -->
+    <connection>
+        <from>/icub/camcalib/left/out</from>
+        <to>/view/cam_left</to>
+        <protocol>tcp</protocol>
+    </connection>
+
+    <!-- RC: SKELETON -->
+    <connection>
+        <from>/icub/camcalib/left/out</from>
+        <to>/superimpose_hand/skeleton/cam/left:i</to>
+        <protocol>tcp</protocol>
+    </connection>
+
+    <connection>
+        <from>/superimpose_hand/skeleton/cam/left:o</from>
+        <to>/view/cam_left/skeleton</to>
+        <protocol>tcp</protocol>
+    </connection>
+
+    <!-- RC: CAD -->
+    <connection>
+        <from>/icub/camcalib/left/out</from>
+        <to>/superimpose_hand/cad/cam/left:i</to>
+        <protocol>tcp</protocol>
+    </connection>
+
+    <connection>
+        <from>/superimpose_hand/cad/cam/left:o</from>
+        <to>/view/cam_left/cad</to>
+        <protocol>tcp</protocol>
+    </connection>
+
+</application>

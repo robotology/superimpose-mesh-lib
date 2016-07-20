@@ -2,17 +2,17 @@
 <?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
 <application>
 
-    <!-- Generic information -->
+    <!-- GENERIC INFORMATION -->
     <name>SIM_superimpose-hand</name>
     <description>Superimpose the hand skeleton or 3D CAD model on top of iCub hand</description>
-    <version>2.2.0</version>
+    <version>2.3.0</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
     </authors>
 
 
-    <!-- Required modules -->
+    <!-- RQUIRED MODULES -->
     <module>
         <name>superimpose-hand</name>
         <node>yarprun</node>
@@ -21,30 +21,6 @@
             <port>/icubSim/cam/left</port>
             <port>/icubSim/cam/right</port>
         </dependencies>
-    </module>
-
-    <module>
-        <name>yarpdatadumper</name>
-        <node>yarprun</node>
-        <parameters>--name /datadumper/endeffector/pose:i --txTime --type bottle</parameters>
-    </module>
-
-    <module>
-        <name>yarpdatadumper</name>
-        <node>yarprun</node>
-        <parameters>--name /datadumper/skeleton/camera/left:i --txTime --type image --addVideo --videoType mkv</parameters>
-    </module>
-
-    <module>
-        <name>yarpdatadumper</name>
-        <node>yarprun</node>
-        <parameters>--name /datadumper/cad/camera/left:i --txTime --type image --addVideo --videoType mkv</parameters>
-    </module>
-
-    <module>
-        <name>yarpdatadumper</name>
-        <node>yarprun</node>
-        <parameters>--name /datadumper/camera/left/pose:i --txTime --type bottle</parameters>
     </module>
 
     <module>
@@ -66,14 +42,14 @@
     </module>
 
 
-    <!-- Required connections -->
+    <!-- REQUIRED CONNECTIONS -->
     <connection>
         <from>/icubSim/cam/left</from>
         <to>/view/cam_left</to>
         <protocol>tcp</protocol>
     </connection>
 
-    <!-- Skeleton -->
+    <!-- RC: SKELETON -->
     <connection>
         <from>/icubSim/cam/left</from>
         <to>/superimpose_hand/skeleton/cam/left:i</to>
@@ -86,22 +62,7 @@
         <protocol>tcp</protocol>
     </connection>
 
-    <connection>
-        <from>/superimpose_hand/skeleton/endeffector/pose:o</from>
-        <to>/datadumper/endeffector/pose:i</to>
-    </connection>
-
-    <connection>
-        <from>/superimpose_hand/skeleton/left:o</from>
-        <to>/datadumper/skeleton/camera/left:i</to>
-    </connection>
-
-    <connection>
-        <from>/superimpose_hand/skeleton/cam/left/pose:o</from>
-        <to>/datadumper/camera/left/pose:i</to>
-    </connection>
-
-    <!-- CAD -->
+    <!-- RC: CAD -->
     <connection>
         <from>/icubSim/cam/left</from>
         <to>/superimpose_hand/cad/cam/left:i</to>
@@ -112,21 +73,6 @@
         <from>/superimpose_hand/cad/cam/left:o</from>
         <to>/view/cam_left/cad</to>
         <protocol>tcp</protocol>
-    </connection>
-
-    <connection>
-        <from>/superimpose_hand/cad/endeffector/pose:o</from>
-        <to>/datadumper/endeffector/pose:i</to>
-    </connection>
-
-    <connection>
-        <from>/superimpose_hand/cad/left:o</from>
-        <to>/datadumper/cad/camera/left:i</to>
-    </connection>
-
-    <connection>
-        <from>/superimpose_hand/cad/cam/left/pose:o</from>
-        <to>/datadumper/camera/left/pose:i</to>
     </connection>
 
 </application>

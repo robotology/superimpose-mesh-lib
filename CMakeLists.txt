@@ -53,13 +53,14 @@ set(THIRFT_FILES        src/idl_rfm.thrift
                         src/idl_mesh.thrift)
 
 set(PROGRAM_CONFIG      config/superimpose-hand_config.ini)
-set(PROGRAM_SCRIPT      scripts/superimpose-hand.xml.template)
+set(PROGRAM_APP         applications/superimpose-hand.xml.template
+                        applications/superimpose-hand-dump.xml.template)
 set(SIM_PROGRAM_CONFIG  config/SIM_superimpose-hand_config.ini
                         config/SIM_Gazebo_superimpose-hand_config.ini)
-set(SIM_PROGRAM_SCRIPT  scripts/SIM_superimpose-hand.xml
-                        scripts/SIM_Gazebo_superimpose-hand.xml
-                        scripts/SIM_Background_Apps.xml
-                        scripts/SIM_Gazebo_Background_Apps.xml)
+set(SIM_PROGRAM_APP     applications/SIM_superimpose-hand.xml
+                        applications/SIM_Gazebo_superimpose-hand.xml
+                        applications/SIM_Background_Apps.xml
+                        applications/SIM_Gazebo_Background_Apps.xml)
 
 set(SHADERS_VERT_FILES  ${SHADERS_DIR}/shader_model.vert
                         ${SHADERS_DIR}/shader_background.vert)
@@ -85,8 +86,8 @@ set(ICUB_HAND_FILES     ${ICUB_HAND_DIR}/r_palm.${ICUB_MESH_EXT}
                         ${ICUB_HAND_DIR}/r_tl4.${ICUB_MESH_EXT})
 
 
-set(PROGRAM_FILES       ${PROGRAM_CONFIG}       ${PROGRAM_SCRIPT}
-                        ${SIM_PROGRAM_CONFIG}   ${SIM_PROGRAM_SCRIPT})
+set(PROGRAM_FILES       ${PROGRAM_CONFIG}       ${PROGRAM_APP}
+                        ${SIM_PROGRAM_CONFIG}   ${SIM_PROGRAM_APP})
 set(RESOURCE_FILES      ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES}
                         ${ICUB_HAND_FILES})
 
@@ -127,11 +128,11 @@ if(${CMAKE_GENERATOR} MATCHES "Xcode")
                                     ${PROGRAM_FILES}
                                     ${RESOURCE_FILES}
                                     ${IDL_GEN_FILES})
-    source_group("Resource\\Shader Files"       FILES ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES})
     source_group("Thrift IDL"                   FILES ${THIRFT_FILES})
-    source_group("Resource\\CAD"                FILES ${ICUB_HAND_FILES})
+    source_group("Resource\\Shader Files"       FILES ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES})
+    source_group("Resource\\CAD Files"          FILES ${ICUB_HAND_FILES})
     source_group("YARP\\Configuration Files"    FILES ${PROGRAM_CONFIG} ${SIM_PROGRAM_CONFIG})
-    source_group("YARP\\Script Files"           FILES ${PROGRAM_SCRIPT} ${SIM_PROGRAM_SCRIPT})
+    source_group("YARP\\Application Files"      FILES ${PROGRAM_APP} ${SIM_PROGRAM_APP})
 else()
     add_executable(${PROJECT_NAME}  ${INCLUDE_FILES}
                                     ${SOURCE_FILES}
@@ -158,10 +159,10 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_nullptr cxx_constexpr)
 
 install(TARGETS     ${PROJECT_NAME}     DESTINATION bin)
 if(IS_ICUB_SIM)
-    yarp_install(FILES  ${SIM_PROGRAM_SCRIPT}   DESTINATION     ${ICUBCONTRIB_APPLICATIONS_INSTALL_DIR})
+    yarp_install(FILES  ${SIM_PROGRAM_APP}      DESTINATION     ${ICUBCONTRIB_APPLICATIONS_INSTALL_DIR})
     yarp_install(FILES  ${SIM_PROGRAM_CONFIG}   DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
 else()
-    yarp_install(FILES  ${PROGRAM_SCRIPT}       DESTINATION     ${ICUBCONTRIB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
+    yarp_install(FILES  ${PROGRAM_APP}          DESTINATION     ${ICUBCONTRIB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
     yarp_install(FILES  ${PROGRAM_CONFIG}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
 endif()
 yarp_install(FILES      ${RESOURCE_FILES}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
