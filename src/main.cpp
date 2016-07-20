@@ -794,8 +794,6 @@ private:
     const ConstString log_ID;
 
     ConstString robot;
-    bool usegaze;
-    bool usetorsoDOF;
 
     bool start;
     bool init_position;
@@ -1074,19 +1072,17 @@ private:
         yInfo() << log_ID << "The hand is in position.";
 
         /* Set initial fixation point */
-        if (usegaze) {
-            Vector tmp;
-            itf_head_gaze->getFixationPoint(tmp);
-            Vector init_fixation(init_x);
-            init_fixation[0] -= 0.05;
-            init_fixation[1] -= 0.05;
-            if (norm(tmp - init_fixation) > 0.10) {
-                yInfo() << log_ID << "Moving head to initial fixation point: [" << init_fixation.toString() << "].";
-                itf_head_gaze->lookAtFixationPoint(init_fixation);
-                itf_head_gaze->waitMotionDone(0.1, 6.0);
-            }
-            yInfo() << log_ID << "Gaze motion done.";
+        Vector tmp;
+        itf_head_gaze->getFixationPoint(tmp);
+        Vector init_fixation(init_x);
+        init_fixation[0] -= 0.05;
+        init_fixation[1] -= 0.05;
+        if (norm(tmp - init_fixation) > 0.10) {
+            yInfo() << log_ID << "Moving head to initial fixation point: [" << init_fixation.toString() << "].";
+            itf_head_gaze->lookAtFixationPoint(init_fixation);
+            itf_head_gaze->waitMotionDone(0.1, 6.0);
         }
+        yInfo() << log_ID << "Gaze motion done.";
 
         return true;
     }
@@ -1306,8 +1302,6 @@ public:
 
         /* Parsing parameters from config file. */
         robot = rf.findGroup("PARAMETER").check("robot", Value("icub")).asString();
-        usegaze = rf.findGroup("PARAMETER").check("usegaze", Value(true)).asBool();
-        usetorsoDOF = rf.findGroup("PARAMETER").check("usetorsodof", Value(true)).asBool();
         if (!rf.findGroup("ARMJOINT").findGroup("vel").isNull() && rf.findGroup("ARMJOINT").findGroup("vel").tail().size() == 16) {
             Vector arm_vel(16);
             for (int i = 0; i < rf.findGroup("ARMJOINT").findGroup("vel").tail().size(); ++i) {
@@ -1407,10 +1401,10 @@ public:
         if (!setHeadRemoteControlboard()) return false;
 
         /* Gaze control. */
-        if (usegaze && !setGazeController()) return false;
+        if (!setGazeController()) return false;
 
         /* Enable torso DOF. */
-        if (usetorsoDOF && !setTorsoDOF()) return false;
+        if (!setTorsoDOF()) return false;
 
         /* Set default right hand configuration (closed). */
         if (!moveFingers(open_hand_joints)) return false;
