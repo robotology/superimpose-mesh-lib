@@ -70,17 +70,12 @@ private:
     IEncoders *itf_arm_encoders;
     int num_arm_enc;
     ICartesianControl *itf_arm_cart;
-    Vector ee_x;
-    Vector ee_o;
     IGazeControl *itf_head_gaze;
-    Vector cam_x;
-    Vector cam_o;
 
     iCubFinger finger[3];
 
     BufferedPort<ImageOf<PixelRgb>> inport_skeleton_img;
     BufferedPort<ImageOf<PixelRgb>> outport_skeleton_img;
-    BufferedPort<Bottle> port_ee_pose;
     BufferedPort<Bottle> port_cam_pose;
 
 public:
@@ -150,25 +145,12 @@ public:
         
         yInfo() << log_ID << "Skeleton image ports succesfully opened!";
 
-        yInfo() << log_ID << "Opening port for end effector pose.";
-        
-        if (!port_ee_pose.open("/"+PROJECT_NAME+"/skeleton/endeffector/pose:o")) {
-            yError() << log_ID << "Cannot open end effector pose output port.";
-            return false;
-        }
-        ee_x.resize(3);
-        ee_o.resize(4);
-        
-        yInfo() << log_ID << "End effector port succesfully opened!";
-
         yInfo() << log_ID << "Opening ports for "+camera+" camera pose.";
         
         if (!port_cam_pose.open("/"+PROJECT_NAME+"/skeleton/cam/"+camera+"/pose:o")) {
             yError() << log_ID << "Cannot open "+camera+" camera pose output port.";
             return false;
         }
-        cam_x.resize(3);
-        cam_o.resize(4);
         
         yInfo() << log_ID << "Port for "+camera+" camera succesfully opened!";
 
@@ -178,6 +160,11 @@ public:
     }
 
     void run() {
+        Vector ee_x(3);
+        Vector ee_o(4);
+        Vector cam_x(3);
+        Vector cam_o(4);
+
         while (!isStopping()) {
 
             ImageOf<PixelRgb> *imgin = inport_skeleton_img.read(true);
@@ -231,16 +218,11 @@ public:
                     }
                 }
 
-                Bottle &eePoseBottle = port_ee_pose.prepare();
-                eePoseBottle.clear();
-                eePoseBottle.addString(ee_x.toString() + "    " + ee_o.toString());
-
                 Bottle &camPoseBottle = port_cam_pose.prepare();
                 camPoseBottle.clear();
                 camPoseBottle.addString(cam_x.toString() + "    " + cam_o.toString());
 
                 outport_skeleton_img.write();
-                port_ee_pose.write();
                 port_cam_pose.write();
             }
         }
@@ -249,7 +231,6 @@ public:
     void onStop() {
         inport_skeleton_img.interrupt();
         outport_skeleton_img.interrupt();
-        port_ee_pose.interrupt();
         port_cam_pose.interrupt();
     }
 
@@ -258,7 +239,6 @@ public:
 
         if (!inport_skeleton_img.isClosed())  inport_skeleton_img.close();
         if (!outport_skeleton_img.isClosed()) outport_skeleton_img.close();
-        if (!port_ee_pose.isClosed())         port_ee_pose.close();
         if (!port_cam_pose.isClosed())        port_cam_pose.close();
 
         yInfo() << log_ID << "Deallocation completed!";
@@ -359,11 +339,7 @@ private:
     IEncoders *itf_arm_encoders;
     int num_arm_enc;
     ICartesianControl *itf_arm_cart;
-    Vector ee_x;
-    Vector ee_o;
     IGazeControl *itf_head_gaze;
-    Vector cam_x;
-    Vector cam_o;
     float EYE_L_FX;
     float EYE_L_FY;
     float EYE_L_CX;
@@ -374,7 +350,6 @@ private:
     
     BufferedPort<ImageOf<PixelRgb>> inport_renderer_img;
     BufferedPort<ImageOf<PixelRgb>> outport_renderer_img;
-    BufferedPort<Bottle> port_ee_pose;
     BufferedPort<Bottle> port_cam_pose;
 
     GLuint texture;
@@ -465,25 +440,12 @@ public:
         
         yInfo() << log_ID << "CAD image ports succesfully opened!";
         
-        yInfo() << log_ID << "Opening port for end effector pose.";
-        
-        if (!port_ee_pose.open("/"+PROJECT_NAME+"/cad/endeffector/pose:o")) {
-            yError() << log_ID << "Cannot open end effector pose output port.";
-            return false;
-        }
-        ee_x.resize(3);
-        ee_o.resize(4);
-        
-        yInfo() << log_ID << "End effector port succesfully opened!";
-        
         yInfo() << log_ID << "Opening ports for "+camera+" camera pose.";
         
         if (!port_cam_pose.open("/"+PROJECT_NAME+"/cad/"+camera+"/pose:o")) {
             yError() << log_ID << "Cannot open "+camera+" camera pose output port.";
             return false;
         }
-        cam_x.resize(3);
-        cam_o.resize(4);
         
         yInfo() << log_ID << "Port for "+camera+" camera succesfully opened!";
         
@@ -595,6 +557,10 @@ public:
     }
     
     void run() {
+        Vector ee_x(3);
+        Vector ee_o(4);
+        Vector cam_x(3);
+        Vector cam_o(4);
         while (!isStopping()) {
             
             ImageOf<PixelRgb> *imgin = inport_renderer_img.read(true);
@@ -730,17 +696,12 @@ public:
                 imgout.resize(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
                 imgout.setExternal(ogl_pixel, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
                 delete [] ogl_pixel;
-                outport_renderer_img.write();
-
-                Bottle &eePoseBottle = port_ee_pose.prepare();
-                eePoseBottle.clear();
-                eePoseBottle.addString(ee_x.toString() + "    " + ee_o.toString());
                 
                 Bottle &camPoseBottle = port_cam_pose.prepare();
                 camPoseBottle.clear();
                 camPoseBottle.addString(cam_x.toString() + "    " + cam_o.toString());
-                
-                port_ee_pose.write();
+
+                outport_renderer_img.write();
                 port_cam_pose.write();
             }
         }
@@ -749,7 +710,6 @@ public:
     void onStop() {
         inport_renderer_img.interrupt();
         outport_renderer_img.interrupt();
-        port_ee_pose.interrupt();
         port_cam_pose.interrupt();
     }
 
@@ -758,7 +718,6 @@ public:
 
         if (!inport_renderer_img.isClosed())  inport_renderer_img.close();
         if (!outport_renderer_img.isClosed()) outport_renderer_img.close();
-        if (!port_ee_pose.isClosed())         port_ee_pose.close();
         if (!port_cam_pose.isClosed())        port_cam_pose.close();
 
         yInfo() << log_ID << "Deleting OpenGL models and vertices.";
