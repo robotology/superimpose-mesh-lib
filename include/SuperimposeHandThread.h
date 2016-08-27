@@ -1,25 +1,26 @@
 #ifndef SUPERIMPOSEHANDTHREAD_H
 #define SUPERIMPOSEHANDTHREAD_H
 
-#include <yarp/os/all.h>
+#include <yarp/os/ConstString.h>
+#include <yarp/os/ResourceFinder.h>
+#include <yarp/os/Thread.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include "SuperimposeHand.h"
 
-using namespace yarp::os;
 
-class SuperimposeHandThread : public Thread
+class SuperimposeHandThread : public yarp::os::Thread
 {
 private:
-    const ConstString log_ID;
-    SuperimposeHand &sh;
-    ResourceFinder &rf;
-    GLFWwindow *window;
+    const yarp::os::ConstString log_ID;
+    SuperimposeHand             &sh;
+    yarp::os::ResourceFinder    &rf;
+    GLFWwindow                  *window;
 
 public:
-    SuperimposeHandThread(SuperimposeHand &sh, ResourceFinder &rf, GLFWwindow *window);
+    SuperimposeHandThread(SuperimposeHand &sh, yarp::os::ResourceFinder &rf, GLFWwindow *window);
 
     bool threadInit   ();
     void run          ();

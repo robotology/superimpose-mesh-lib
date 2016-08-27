@@ -3,9 +3,17 @@
 
 #include <unordered_map>
 
-#include <yarp/os/all.h>
-#include <yarp/dev/all.h>
-#include <yarp/sig/all.h>
+#include <yarp/dev/CartesianControl.h>
+#include <yarp/dev/IEncoders.h>
+#include <yarp/dev/GazeControl.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/sig/Image.h>
+#include <yarp/sig/Vector.h>
+#include <yarp/os/Bottle.h>
+#include <yarp/os/ConstString.h>
+#include <yarp/os/Mutex.h>
+#include <yarp/os/Port.h>
+#include <yarp/os/Thread.h>
 #include <iCub/iKin/iKinFwd.h>
 
 #include <GL/glew.h>
@@ -16,43 +24,40 @@
 #include "Model.h"
 #include "Shader.h"
 
-using namespace yarp::os;
-using namespace yarp::dev;
-using namespace yarp::sig;
-using namespace iCub::iKin;
+typedef std::unordered_map<std::string, yarp::os::ConstString>                           PartFileMap;
+typedef std::unordered_map<std::string, std::pair<yarp::sig::Vector, yarp::sig::Vector>> HandPose;
+typedef std::unordered_map<std::string, Model*>                                          HandModel;
 
-
-class SuperimposeHandCADThread : public Thread
+class SuperimposeHandCADThread : public yarp::os::Thread
 {
 private:
-    const ConstString log_ID;
-    const ConstString laterality;
-    const ConstString camera;
-    PolyDriver &arm_remote_driver;
-    PolyDriver &arm_cartesian_driver;
-    PolyDriver &gaze_driver;
-    const ConstString &shader_background_vert;
-    const ConstString &shader_background_frag;
-    const ConstString &shader_model_vert;
-    const ConstString &shader_model_frag;
-    const std::unordered_map<std::string, ConstString> &cad_hand;
-    const int camsel;
+    const yarp::os::ConstString log_ID;
+    const yarp::os::ConstString laterality;
+    const yarp::os::ConstString camera;
+    yarp::dev::PolyDriver       &arm_remote_driver;
+    yarp::dev::PolyDriver       &arm_cartesian_driver;
+    yarp::dev::PolyDriver       &gaze_driver;
+    const yarp::os::ConstString &shader_background_vert;
+    const yarp::os::ConstString &shader_background_frag;
+    const yarp::os::ConstString &shader_model_vert;
+    const yarp::os::ConstString &shader_model_frag;
+    const PartFileMap           &cad_hand;
+    const int                   camsel;
 
-    IEncoders *itf_arm_encoders;
-    int num_arm_enc;
-    ICartesianControl *itf_arm_cart;
-    IGazeControl *itf_head_gaze;
-    float EYE_L_FX;
-    float EYE_L_FY;
-    float EYE_L_CX;
-    float EYE_L_CY;
+    yarp::dev::IEncoders         *itf_arm_encoders;
+    yarp::dev::ICartesianControl *itf_arm_cart;
+    yarp::dev::IGazeControl      *itf_head_gaze;
+    int                          num_arm_enc;
+    float                        EYE_L_FX;
+    float                        EYE_L_FY;
+    float                        EYE_L_CX;
+    float                        EYE_L_CY;
 
-    iCubFinger finger[3];
-    typedef std::unordered_map<std::string, std::pair<Vector, Vector>> HandPose;
+    iCub::iKin::iCubFinger finger[3];
 
-    BufferedPort<ImageOf<PixelRgb>> inport_renderer_img;
-    BufferedPort<ImageOf<PixelRgb>> outport_renderer_img;
-    BufferedPort<Bottle> port_cam_pose;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb>> inport_renderer_img;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb>> outport_renderer_img;
+    yarp::os::BufferedPort<yarp::os::Bottle>                        port_cam_pose;
 
     GLFWwindow *window;
 
@@ -63,7 +68,6 @@ private:
     Shader *shader_background = nullptr;
     Shader *shader_cad = nullptr;
 
-    typedef std::unordered_map<std::string, Model*> HandModel;
     HandModel hand_model;
 
     glm::mat4 root_to_ogl;
@@ -71,16 +75,16 @@ private:
     glm::mat4 projection;
 
     ThreadControllerSHC helper;
-    Port port_command;
+    yarp::os::Port      port_command;
 
     bool setCommandPort();
 
 public:
-    SuperimposeHandCADThread(const ConstString &laterality, const ConstString &camera,
-                             PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver,
-                             const ConstString &shader_background_vert, const ConstString &shader_background_frag,
-                             const ConstString &shader_model_vert, const ConstString &shader_model_frag,
-                             const std::unordered_map<std::string, ConstString> &cad_hand, GLFWwindow *window);
+    SuperimposeHandCADThread(const yarp::os::ConstString &laterality, const yarp::os::ConstString &camera,
+                             yarp::dev::PolyDriver &arm_remote_driver, yarp::dev::PolyDriver &arm_cartesian_driver, yarp::dev::PolyDriver &gaze_driver,
+                             const yarp::os::ConstString &shader_background_vert, const yarp::os::ConstString &shader_background_frag,
+                             const yarp::os::ConstString &shader_model_vert, const yarp::os::ConstString &shader_model_frag,
+                             const std::unordered_map<std::string, yarp::os::ConstString> &cad_hand, GLFWwindow *window);
 
     bool threadInit   ();
     void run          ();

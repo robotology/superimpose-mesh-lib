@@ -1,41 +1,41 @@
 #ifndef SUPERIMPOSESKELETONCADTHREAD_H
 #define SUPERIMPOSESKELETONCADTHREAD_H
 
-#include <yarp/os/all.h>
-#include <yarp/dev/all.h>
-#include <yarp/sig/all.h>
+#include <yarp/dev/CartesianControl.h>
+#include <yarp/dev/GazeControl.h>
+#include <yarp/dev/IEncoders.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/os/Bottle.h>
+#include <yarp/os/ConstString.h>
+#include <yarp/os/Thread.h>
+#include <yarp/sig/Image.h>
 #include <iCub/iKin/iKinFwd.h>
 
-using namespace yarp::os;
-using namespace yarp::dev;
-using namespace yarp::sig;
-using namespace iCub::iKin;
-
-class SuperimposeHandSkeletonThread : public Thread
+class SuperimposeHandSkeletonThread : public yarp::os::Thread
 {
 private:
-    const ConstString log_ID;
-    const ConstString laterality;
-    const ConstString camera;
-    const int camsel;
+    const yarp::os::ConstString log_ID;
+    const yarp::os::ConstString laterality;
+    const yarp::os::ConstString camera;
+    const int                   camsel;
 
-    PolyDriver &arm_remote_driver;
-    PolyDriver &arm_cartesian_driver;
-    PolyDriver &gaze_driver;
+    yarp::dev::PolyDriver &arm_remote_driver;
+    yarp::dev::PolyDriver &arm_cartesian_driver;
+    yarp::dev::PolyDriver &gaze_driver;
 
-    IEncoders *itf_arm_encoders;
-    int num_arm_enc;
-    ICartesianControl *itf_arm_cart;
-    IGazeControl *itf_head_gaze;
+    yarp::dev::IEncoders         *itf_arm_encoders;
+    yarp::dev::ICartesianControl *itf_arm_cart;
+    yarp::dev::IGazeControl      *itf_head_gaze;
+    int                          num_arm_enc;
 
-    iCubFinger finger[3];
+    iCub::iKin::iCubFinger finger[3];
 
-    BufferedPort<ImageOf<PixelRgb>> inport_skeleton_img;
-    BufferedPort<ImageOf<PixelRgb>> outport_skeleton_img;
-    BufferedPort<Bottle> port_cam_pose;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb>> inport_skeleton_img;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb>> outport_skeleton_img;
+    yarp::os::BufferedPort<yarp::os::Bottle>                        port_cam_pose;
 
 public:
-    SuperimposeHandSkeletonThread(const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver);
+    SuperimposeHandSkeletonThread(const yarp::os::ConstString &laterality, const yarp::os::ConstString &camera, yarp::dev::PolyDriver &arm_remote_driver, yarp::dev::PolyDriver &arm_cartesian_driver, yarp::dev::PolyDriver &gaze_driver);
 
     bool threadInit   ();
     void run          ();

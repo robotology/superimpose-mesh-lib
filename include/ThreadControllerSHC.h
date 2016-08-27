@@ -3,11 +3,9 @@
 
 #include <iosfwd>
 
-#include <yarp/os/all.h>
+#include <yarp/os/ConstString.h>
 
 #include "src/SuperimposeHandCADIDL.h"
-
-using namespace yarp::os;
 
 enum MipMaps {
     NEAREST = 0,
@@ -17,7 +15,7 @@ enum MipMaps {
 class ThreadControllerSHC : public SuperimposeHandCADIDL
 {
 private:
-    ConstString log_ID;
+    yarp::os::ConstString log_ID;
 
     bool mesh_back;
     bool mesh_wires;

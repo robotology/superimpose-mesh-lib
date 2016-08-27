@@ -3,16 +3,23 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include <yarp/os/LogStream.h>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>
 
 #define PROJECT_NAME ConstString("superimpose_hand")
 
+using namespace yarp::dev;
 using namespace yarp::math;
+using namespace yarp::os;
+using namespace yarp::sig;
 using namespace iCub::ctrl;
+using namespace iCub::iKin;
+
 
 SuperimposeHandSkeletonThread::SuperimposeHandSkeletonThread(const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) :
     log_ID("[SuperimposeHandSkeletonThread]"), laterality(laterality), camera(camera), camsel((camera == "left")? 0:1), arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {}
+
 
 bool SuperimposeHandSkeletonThread::threadInit() {
     yInfo() << log_ID << "Initializing hand skeleton drawing thread.";
@@ -92,6 +99,7 @@ bool SuperimposeHandSkeletonThread::threadInit() {
     return true;
 }
 
+
 void SuperimposeHandSkeletonThread::run() {
     Vector ee_x(3);
     Vector ee_o(4);
@@ -161,11 +169,13 @@ void SuperimposeHandSkeletonThread::run() {
     }
 }
 
+
 void SuperimposeHandSkeletonThread::onStop() {
     inport_skeleton_img.interrupt();
     outport_skeleton_img.interrupt();
     port_cam_pose.interrupt();
 }
+
 
 void SuperimposeHandSkeletonThread::threadRelease() {
     yInfo() << log_ID << "Deallocating resource of hand skeleton drawing thread.";

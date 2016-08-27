@@ -2,10 +2,18 @@
 
 #include <list>
 
+#include <yarp/os/LogStream.h>
+#include <yarp/os/ConstString.h>
+#include <yarp/os/Property.h>
+#include <yarp/os/Time.h>
+#include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 
 #define PROJECT_NAME ConstString("superimpose_hand")
 
+using namespace yarp::dev;
+using namespace yarp::os;
+using namespace yarp::sig;
 using namespace yarp::math;
 
 
@@ -16,6 +24,7 @@ bool SuperimposeHand::fileFound (const ConstString &file) {
     }
     return true;
 }
+
 
 bool SuperimposeHand::setRightArmRemoteControlboard()
 {
@@ -73,6 +82,7 @@ bool SuperimposeHand::setRightArmRemoteControlboard()
     return true;
 }
 
+
 bool SuperimposeHand::setRightArmCartesianController()
 {
     Property rightarm_cartesian_options;
@@ -95,6 +105,7 @@ bool SuperimposeHand::setRightArmCartesianController()
 
     return true;
 }
+
 
 bool SuperimposeHand::setHeadRemoteControlboard()
 {
@@ -143,6 +154,7 @@ bool SuperimposeHand::setHeadRemoteControlboard()
     return true;
 }
 
+
 bool SuperimposeHand::setGazeController()
 {
     Property gaze_option;
@@ -165,6 +177,7 @@ bool SuperimposeHand::setGazeController()
     return true;
 }
 
+
 bool SuperimposeHand::setTorsoDOF()
 {
     Vector curDOF;
@@ -185,6 +198,7 @@ bool SuperimposeHand::setTorsoDOF()
     return true;
 }
 
+
 bool SuperimposeHand::setCommandPort()
 {
     yInfo() << log_ID << "Opening command port.";
@@ -200,6 +214,7 @@ bool SuperimposeHand::setCommandPort()
 
     return true;
 }
+
 
 bool SuperimposeHand::moveFingers(const double (&joint)[6])
 {
@@ -225,6 +240,7 @@ bool SuperimposeHand::moveFingers(const double (&joint)[6])
 
     return true;
 }
+
 
 bool SuperimposeHand::moveHand(const Matrix &R, const Vector &init_x)
 {
@@ -254,6 +270,7 @@ bool SuperimposeHand::moveHand(const Matrix &R, const Vector &init_x)
     return true;
 }
 
+
 bool SuperimposeHand::move_hand()
 {
     if (!init_position) {
@@ -268,6 +285,7 @@ bool SuperimposeHand::move_hand()
         return false;
     }
 }
+
 
 bool SuperimposeHand::move_hand_freerun()
 {
@@ -285,6 +303,7 @@ bool SuperimposeHand::move_hand_freerun()
     }
 }
 
+
 bool SuperimposeHand::stop_hand()
 {
     yInfo() << log_ID << "Stopping hand motion when reaching the initial position.";
@@ -294,6 +313,7 @@ bool SuperimposeHand::stop_hand()
 
     return true;
 }
+
 
 bool SuperimposeHand::initial_position()
 {
@@ -312,6 +332,7 @@ bool SuperimposeHand::initial_position()
     }
 }
 
+
 bool SuperimposeHand::view_hand()
 {
     if (!start) {
@@ -329,6 +350,7 @@ bool SuperimposeHand::view_hand()
     }
 }
 
+
 bool SuperimposeHand::open_fingers()
 {
     yInfo() << log_ID << "Opening fingers...";
@@ -340,6 +362,7 @@ bool SuperimposeHand::open_fingers()
     return motion_done;
 }
 
+
 bool SuperimposeHand::close_fingers()
 {
     yInfo() << log_ID << "Closing fingers...";
@@ -350,6 +373,7 @@ bool SuperimposeHand::close_fingers()
 
     return motion_done;
 }
+
 
 bool SuperimposeHand::view_skeleton(const bool status)
 {
@@ -397,6 +421,7 @@ bool SuperimposeHand::view_skeleton(const bool status)
     } else return false;
 }
 
+
 bool SuperimposeHand::view_mesh(const bool status) {
     if (!superimpose_mesh && status) {
         trd_left_cam_cad = new SuperimposeHandCADThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver, shader_background_vert, shader_background_frag, shader_model_vert, shader_model_frag, cad_hand, window);
@@ -442,6 +467,7 @@ bool SuperimposeHand::view_mesh(const bool status) {
     } else return false;
 }
 
+
 std::string SuperimposeHand::quit() {
     yInfo() << log_ID << "Quitting...";
 
@@ -450,7 +476,9 @@ std::string SuperimposeHand::quit() {
     return "[bye]";
 }
 
+
 SuperimposeHand::SuperimposeHand() : log_ID("[SuperimposeHand]") {}
+
 
 bool SuperimposeHand::configure(ResourceFinder &rf)
 {
@@ -587,6 +615,7 @@ bool SuperimposeHand::configure(ResourceFinder &rf)
 
 }
 
+
 bool SuperimposeHand::updateModule()
 {
     if (start) {
@@ -611,6 +640,7 @@ bool SuperimposeHand::updateModule()
     return true;
 }
 
+
 bool SuperimposeHand::interruptModule()
 {
     if (superimpose_skeleton) {
@@ -625,6 +655,7 @@ bool SuperimposeHand::interruptModule()
     
     return true;
 }
+
 
 bool SuperimposeHand::close()
 {

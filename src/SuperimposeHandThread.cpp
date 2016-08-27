@@ -1,5 +1,10 @@
 #include "SuperimposeHandThread.h"
 
+#include <yarp/os/LogStream.h>
+#include <yarp/os/ResourceFinder.h>
+
+using namespace yarp::os;
+
 SuperimposeHandThread::SuperimposeHandThread(SuperimposeHand &sh, ResourceFinder &rf, GLFWwindow *window) :
     log_ID("[SuperimposeHandThread]"), sh(sh), rf(rf), window(window) {}
 

@@ -11,6 +11,7 @@
 
 using namespace yarp::os;
 
+
 int main(int argc, char *argv[])
 {
     ConstString log_ID = "[Main]";

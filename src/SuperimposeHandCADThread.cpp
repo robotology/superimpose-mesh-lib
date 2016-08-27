@@ -10,14 +10,15 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <yarp/math/Math.h>
+#include <yarp/os/LogStream.h>
 #include <iCub/ctrl/math.h>
 
-#define PROJECT_NAME ConstString("superimpose_hand")
+#define PROJECT_NAME yarp::os::ConstString("superimpose_hand")
 #define WINDOW_WIDTH  320
 #define WINDOW_HEIGHT 240
 #ifdef GLFW_RETINA
-#define FRAMEBUFFER_WIDTH  WINDOW_WIDTH*2
-#define FRAMEBUFFER_HEIGHT WINDOW_HEIGHT*2
+#define FRAMEBUFFER_WIDTH  2*WINDOW_WIDTH
+#define FRAMEBUFFER_HEIGHT 2*WINDOW_HEIGHT
 #else
 #define FRAMEBUFFER_WIDTH  WINDOW_WIDTH
 #define FRAMEBUFFER_HEIGHT WINDOW_HEIGHT
@@ -27,8 +28,12 @@
 #define NEAR 0.001f
 #define FAR  1000.0f
 
+using namespace yarp::dev;
 using namespace yarp::math;
+using namespace yarp::os;
+using namespace yarp::sig;
 using namespace iCub::ctrl;
+using namespace iCub::iKin;
 
 bool SuperimposeHandCADThread::setCommandPort()
 {
@@ -49,6 +54,7 @@ bool SuperimposeHandCADThread::setCommandPort()
 
 SuperimposeHandCADThread::SuperimposeHandCADThread(const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver, const ConstString &shader_background_vert, const ConstString &shader_background_frag, const ConstString &shader_model_vert, const ConstString &shader_model_frag, const std::unordered_map<std::string, ConstString> &cad_hand, GLFWwindow *window) :
         log_ID("[SuperimposeHandCADThread]"), laterality(laterality), camera(camera), arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver), shader_background_vert(shader_background_vert), shader_background_frag(shader_background_frag), shader_model_vert(shader_model_vert), shader_model_frag(shader_model_frag), cad_hand(cad_hand), camsel((camera == "left")? 0:1), window(window) { }
+
 
 bool SuperimposeHandCADThread::threadInit() {
     yInfo() << log_ID << "Initializing hand skeleton drawing thread.";
@@ -213,6 +219,7 @@ bool SuperimposeHandCADThread::threadInit() {
     return true;
 }
 
+
 void SuperimposeHandCADThread::run() {
     Vector ee_x(3);
     Vector ee_o(4);
@@ -364,11 +371,13 @@ void SuperimposeHandCADThread::run() {
     }
 }
 
+
 void SuperimposeHandCADThread::onStop() {
     inport_renderer_img.interrupt();
     outport_renderer_img.interrupt();
     port_cam_pose.interrupt();
 }
+
 
 void SuperimposeHandCADThread::threadRelease() {
     yInfo() << log_ID << "Deallocating resource of renderer thread.";

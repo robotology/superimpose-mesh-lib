@@ -1,5 +1,7 @@
 #include "ThreadControllerSHC.h"
 
+#include <yarp/os/LogStream.h>
+
 bool ThreadControllerSHC::mesh_background(const bool status)
 {
     if (status && !mesh_back) {

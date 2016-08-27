@@ -3,8 +3,16 @@
 
 #include <unordered_map>
 
-#include <yarp/os/all.h>
-#include <yarp/dev/all.h>
+#include <yarp/dev/CartesianControl.h>
+#include <yarp/dev/GazeControl.h>
+#include <yarp/dev/IEncoders.h>
+#include <yarp/dev/IPositionControl2.h>
+#include <yarp/dev/PolyDriver.h>
+#include <yarp/os/ConstString.h>
+#include <yarp/os/ResourceFinder.h>
+#include <yarp/os/RFModule.h>
+#include <yarp/sig/Matrix.h>
+#include <yarp/sig/Vector.h>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -13,18 +21,18 @@
 #include "SuperimposeHandCADThread.h"
 #include "src/SuperimposeHandIDL.h"
 
-using namespace yarp::os;
-using namespace yarp::dev;
+typedef std::unordered_map<std::string, yarp::os::ConstString> PartFileMap;
 
-class SuperimposeHand : public RFModule,
+
+class SuperimposeHand : public yarp::os::RFModule,
                         public SuperimposeHandIDL
 {
 private:
-    const ConstString log_ID;
+    const yarp::os::ConstString log_ID;
 
     GLFWwindow * window;
 
-    ConstString robot;
+    yarp::os::ConstString robot;
 
     bool start;
     bool init_position;
@@ -32,49 +40,49 @@ private:
     bool superimpose_skeleton;
     bool superimpose_mesh;
 
-    PolyDriver rightarm_remote_driver;
-    IEncoders *itf_rightarm_enc;
-    IPositionControl2 *itf_rightarm_pos;
-    int num_rightarm_joint;
-    int num_rightarm_enc;
+    yarp::dev::PolyDriver        rightarm_remote_driver;
+    yarp::dev::IEncoders         *itf_rightarm_enc;
+    yarp::dev::IPositionControl2 *itf_rightarm_pos;
+    int                          num_rightarm_joint;
+    int                          num_rightarm_enc;
 
-    PolyDriver rightarm_cartesian_driver;
-    ICartesianControl *itf_rightarm_cart;
+    yarp::dev::PolyDriver        rightarm_cartesian_driver;
+    yarp::dev::ICartesianControl *itf_rightarm_cart;
 
-    PolyDriver head_remote_driver;
-    IPositionControl2 *itf_head_pos;
-    int num_head_joint;
+    yarp::dev::PolyDriver        head_remote_driver;
+    yarp::dev::IPositionControl2 *itf_head_pos;
+    int                          num_head_joint;
 
-    PolyDriver gaze_driver;
-    IGazeControl *itf_head_gaze;
+    yarp::dev::PolyDriver   gaze_driver;
+    yarp::dev::IGazeControl *itf_head_gaze;
 
     SuperimposeHandSkeletonThread *trd_left_cam_skeleton = nullptr;
 
     SuperimposeHandCADThread *trd_left_cam_cad = nullptr;
-    ConstString shader_background_vert;
-    ConstString shader_background_frag;
-    ConstString shader_model_vert;
-    ConstString shader_model_frag;
-    std::unordered_map<std::string, ConstString> cad_hand;
+    yarp::os::ConstString    shader_background_vert;
+    yarp::os::ConstString    shader_background_frag;
+    yarp::os::ConstString    shader_model_vert;
+    yarp::os::ConstString    shader_model_frag;
+    PartFileMap              cad_hand;
 
-    Port port_command;
+    yarp::os::Port port_command;
 
-    Matrix frontal_view_R;
-    Vector frontal_view_x;
+    yarp::sig::Matrix frontal_view_R;
+    yarp::sig::Vector frontal_view_x;
 
-    Matrix table_view_R;
-    Vector table_view_x;
+    yarp::sig::Matrix table_view_R;
+    yarp::sig::Vector table_view_x;
 
     double open_hand_joints[6];
     double closed_hand_joints[6];
 
     double radius;
-    int angle_ratio;
+    int    angle_ratio;
     double motion_time;
     double path_time;
 
     
-    bool fileFound                     (const ConstString &file);
+    bool fileFound                     (const yarp::os::ConstString &file);
     bool setRightArmRemoteControlboard ();
     bool setRightArmCartesianController();
     bool setHeadRemoteControlboard     ();
@@ -82,7 +90,7 @@ private:
     bool setTorsoDOF                   ();
     bool setCommandPort                ();
     bool moveFingers                   (const double (&joint)[6]);
-    bool moveHand                      (const Matrix &R, const Vector &init_x);
+    bool moveHand                      (const yarp::sig::Matrix &R, const yarp::sig::Vector &init_x);
 
 protected:
     bool move_hand        ();
@@ -99,7 +107,7 @@ protected:
 public:
     SuperimposeHand     ();
     double getPeriod    () { return 0.0; }
-    bool configure      (ResourceFinder &rf);
+    bool configure      (yarp::os::ResourceFinder &rf);
     void setWindow      (GLFWwindow *window) { this->window = window; }
     bool updateModule   ();
     bool interruptModule();
