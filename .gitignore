@@ -51,9 +51,5 @@ Thumbs.db
 # Custom Folders #
 ##################
 .idea/
-build/
-builddeb/
-buildl/
-buildmac/
-buildx/
+build*/
 xcodeenvvar.txt

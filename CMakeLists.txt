@@ -22,7 +22,8 @@ find_package(ICUBcontrib    REQUIRED)
 find_package(OpenCV         REQUIRED)
 find_package(OpenGL         REQUIRED)
 find_package(GLEW           REQUIRED)
-pkg_search_module(GLFW      REQUIRED    glfw3)
+find_package(GLFW3          REQUIRED)
+#pkg_search_module(GLFW      REQUIRED    glfw3)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     pkg_search_module(glm   REQUIRED    glm)
 else()
@@ -44,11 +45,21 @@ set(ICUB_HAND_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/icub_right_hand/${ICUB_MESH_
 
 set(INCLUDE_FILES       ${INCLUDE_DIR}/Shader.h
                         ${INCLUDE_DIR}/Mesh.h
-                        ${INCLUDE_DIR}/Model.h)
+                        ${INCLUDE_DIR}/Model.h
+                        ${INCLUDE_DIR}/SuperimposeHandCADThread.h
+                        ${INCLUDE_DIR}/ThreadControllerSHC.h
+                        ${INCLUDE_DIR}/SuperimposeHandSkeletonThread.h
+                        ${INCLUDE_DIR}/SuperimposeHand.h
+                        ${INCLUDE_DIR}/SuperimposeHandThread.h)
 set(SOURCE_FILES        src/main.cpp
                         src/Shader.cpp
                         src/Mesh.cpp
-                        src/Model.cpp)
+                        src/Model.cpp
+                        src/SuperimposeHandCADThread.cpp
+                        src/ThreadControllerSHC.cpp
+                        src/SuperimposeHandSkeletonThread.cpp
+                        src/SuperimposeHand.cpp
+                        src/SuperimposeHandThread.cpp)
 set(THIRFT_FILES        src/idl_rfm.thrift
                         src/idl_mesh.thrift)
 
@@ -104,20 +115,18 @@ include_directories(${INCLUDE_DIR}
                     ${YARP_INCLUDE_DIRS}
                     ${ICUB_INCLUDE_DIRS}
                     ${OPENGL_INCLUDE_DIR}
-                    ${GLEW_INCLUDE_DIRS}
-                    ${GLFW_INCLUDE_DIRS}
-                    ${GLM_INCLUDE_DIRS}
                     ${ASSIMP_INCLUDE_DIRS})
 
 set(LIBS    ${YARP_LIBRARIES}
             ${ICUB_LIBRARIES}
             ctrlLib
             iKin
-            ${OpenCV_LIBRARIES}
+            ${OpenCV_LIBS}
             ${OPENGL_LIBRARIES}
-            ${GLEW_LIBRARIES}
-            ${GLFW_LIBRARIES}
-            ${ASSIMP_LIBRARIES} -L${ASSIMP_LIBRARY_DIRS})
+            glew
+            glm
+            glfw
+            -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES})
 
 yarp_add_idl(IDL_GEN_FILES ${THIRFT_FILES})
 
@@ -142,7 +151,7 @@ endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-D GLFW_MAC)
     option(IS_APPLE_RETINA
-           "Select this option if the Apple machine has a Retina display" OFF)
+           "Select this option if the Apple machine has a Retina display" ON)
     if(IS_APPLE_RETINA)
         add_definitions(-D GLFW_RETINA)
     endif()
