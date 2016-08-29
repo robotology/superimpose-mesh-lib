@@ -225,8 +225,9 @@ void SuperimposeHandCADThread::run() {
     Vector ee_o(4);
     Vector cam_x(3);
     Vector cam_o(4);
-    while (!isStopping()) {
+    unsigned char *ogl_pixel = new unsigned char [3 * FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT];
 
+    while (!isStopping()) {
         ImageOf<PixelRgb> *imgin = inport_renderer_img.read(true);
 
         itf_arm_cart->getPose(ee_x, ee_o);
@@ -344,7 +345,6 @@ void SuperimposeHandCADThread::run() {
                 hand_model[map->first]->Draw(*shader_cad);
             }
 
-            unsigned char *ogl_pixel = new unsigned char [3 * FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT];
             glPixelStorei(GL_PACK_ALIGNMENT, 1);
             glReadPixels(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, ogl_pixel);
             for (size_t i = 0; i < (FRAMEBUFFER_HEIGHT / 2); ++i) {
@@ -359,7 +359,6 @@ void SuperimposeHandCADThread::run() {
             ImageOf<PixelRgb> &imgout = outport_renderer_img.prepare();
             imgout.resize(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
             imgout.setExternal(ogl_pixel, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
-            delete [] ogl_pixel;
 
             Bottle &camPoseBottle = port_cam_pose.prepare();
             camPoseBottle.clear();
@@ -367,20 +366,23 @@ void SuperimposeHandCADThread::run() {
 
             outport_renderer_img.write();
             port_cam_pose.write();
+
         }
     }
+    delete [] ogl_pixel;
 }
 
 
 void SuperimposeHandCADThread::onStop() {
     inport_renderer_img.interrupt();
-    outport_renderer_img.interrupt();
-    port_cam_pose.interrupt();
 }
 
 
 void SuperimposeHandCADThread::threadRelease() {
     yInfo() << log_ID << "Deallocating resource of renderer thread.";
+
+    outport_renderer_img.interrupt();
+    port_cam_pose.interrupt();
 
     if (!inport_renderer_img.isClosed())  inport_renderer_img.close();
     if (!outport_renderer_img.isClosed()) outport_renderer_img.close();

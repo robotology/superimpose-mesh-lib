@@ -11,7 +11,6 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/ConstString.h>
-#include <yarp/os/Mutex.h>
 #include <yarp/os/Port.h>
 #include <yarp/os/Thread.h>
 #include <iCub/iKin/iKinFwd.h>
