@@ -5,7 +5,7 @@
     <!-- GENERIC INFORMATION -->
     <name>SIM_superimpose-hand</name>
     <description>Superimpose the hand skeleton or 3D CAD model on top of iCub hand</description>
-    <version>2.3.0</version>
+    <version>2.4.0</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
@@ -25,51 +25,51 @@
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /view/cam_left</parameters>
+        <parameters>--name /view/cam_left --x 20 --y 0 --RefreshTime 30</parameters>
         <node>yarprun</node>
     </module>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /view/cam_left/skeleton</parameters>
+        <parameters>--name /view/cam_left/skeleton --x 340 --y 0 --RefreshTime 30</parameters>
         <node>yarprun</node>
     </module>
 
     <module>
         <name>yarpview</name>
-        <parameters>--name /view/cam_left/cad</parameters>
+        <parameters>--name /view/cam_left/cad --x 660 --y 0 --RefreshTime 30</parameters>
         <node>yarprun</node>
     </module>
 
 
     <!-- REQUIRED CONNECTIONS -->
-    <connection>
+    <connection persist="true">
         <from>/icubSim/cam/left</from>
         <to>/view/cam_left</to>
         <protocol>tcp</protocol>
     </connection>
 
     <!-- RC: SKELETON -->
-    <connection>
+    <connection persist="true">
         <from>/icubSim/cam/left</from>
         <to>/superimpose_hand/skeleton/cam/left:i</to>
         <protocol>tcp</protocol>
     </connection>
 
-    <connection>
+    <connection persist="true">
         <from>/superimpose_hand/skeleton/cam/left:o</from>
         <to>/view/cam_left/skeleton</to>
         <protocol>tcp</protocol>
     </connection>
 
     <!-- RC: CAD -->
-    <connection>
+    <connection persist="true">
         <from>/icubSim/cam/left</from>
         <to>/superimpose_hand/cad/cam/left:i</to>
         <protocol>tcp</protocol>
     </connection>
 
-    <connection>
+    <connection persist="true">
         <from>/superimpose_hand/cad/cam/left:o</from>
         <to>/view/cam_left/cad</to>
         <protocol>tcp</protocol>
