@@ -5,8 +5,10 @@
 
 using namespace yarp::os;
 
+
 SuperimposeHandThread::SuperimposeHandThread(SuperimposeHand &sh, ResourceFinder &rf, GLFWwindow *window) :
     log_ID("[SuperimposeHandThread]"), sh(sh), rf(rf), window(window) {}
+
 
 bool SuperimposeHandThread::threadInit() {
     if (!sh.configure(rf)) {
@@ -22,9 +24,11 @@ bool SuperimposeHandThread::threadInit() {
     return true;
 }
 
+
 void SuperimposeHandThread::run() {
     sh.runModule();
 }
+
 
 void SuperimposeHandThread::threadRelease() {
     yInfo() << log_ID << "Releasing.";

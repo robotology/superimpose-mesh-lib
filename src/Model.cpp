@@ -7,15 +7,18 @@
 
 #include "Model.h"
 
+
 Model::Model(const GLchar* path) {
     this->loadModel(path);
 }
+
 
 void Model::Draw(Shader shader) {
     for(GLuint i = 0; i < this->meshes.size(); i++) {
         this->meshes[i].Draw(shader);
     }
 }
+
 
 void Model::loadModel(std::string path) {
     Assimp::Importer import;
@@ -36,6 +39,7 @@ void Model::loadModel(std::string path) {
     this->processNode(scene->mRootNode, scene);
 }
 
+
 void Model::processNode(aiNode* node, const aiScene* scene) {
     /* Process all the node's meshes (if any). */
     for (GLuint i = 0; i < node->mNumMeshes; ++i) {
@@ -49,6 +53,7 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
     }
 }
 /* Note: we could basically forget about processing any of the nodes and simply loop through all of the scene's meshes directly without doing all this complicated stuff with indices. The reason we're doing this is that the initial idea for using nodes like this is that it defines a parent-child relation between meshes. By recursively iterating through these relations we can actually define certain meshes to be parents of other meshes. It is generally recommended to stick with this approach for whenever you want extra control over your mesh data. These node-like relations are after all defined by the artists who created the models. */
+
 
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
     std::vector<Vertex> vertices;
@@ -99,6 +104,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
     return Mesh(vertices, indices, textures);
 }
 
+
 //std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName) {
 //    std::vector<Texture> textures;
 //    for (GLuint i = 0; i < mat->GetTextureCount(type); ++i) {
@@ -127,6 +133,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
 //    
 //    return textures;
 //}
+
 
 //GLint Model::TextureFromFile(const char* path, std::string directory)
 //{

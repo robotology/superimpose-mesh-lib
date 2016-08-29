@@ -7,10 +7,12 @@
 
 #include "src/SuperimposeHandCADIDL.h"
 
+
 enum MipMaps {
     NEAREST = 0,
     LINEAR  = 1
 };
+
 
 class ThreadControllerSHC : public SuperimposeHandCADIDL
 {

@@ -2,6 +2,7 @@
 
 #include <yarp/os/LogStream.h>
 
+
 bool ThreadControllerSHC::mesh_background(const bool status)
 {
     if (status && !mesh_back) {
@@ -18,6 +19,7 @@ bool ThreadControllerSHC::mesh_background(const bool status)
         return true;
     } else return false;
 }
+
 
 bool ThreadControllerSHC::mesh_wireframe(const bool status)
 {
@@ -36,6 +38,7 @@ bool ThreadControllerSHC::mesh_wireframe(const bool status)
     } else return false;
 }
 
+
 bool ThreadControllerSHC::mesh_mipmaps(const std::string& type)
 {
     if (type == "nearest") {
@@ -52,5 +55,6 @@ bool ThreadControllerSHC::mesh_mipmaps(const std::string& type)
         return true;
     } else return false;
 }
+
 
 ThreadControllerSHC::ThreadControllerSHC() : log_ID("[ThreadControllerSHC]"), mesh_back(true), mesh_wires(true), mesh_mmaps(NEAREST) {};

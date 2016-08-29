@@ -546,7 +546,6 @@ bool SuperimposeHand::configure(ResourceFinder &rf)
     cad_hand["medium3"] = rf.findFileByName("r_ml3.obj");
     if (!fileFound(cad_hand["medium3"])) return false;
 
-
     /* Initializing useful pose matrices and vectors for the hand. */
     frontal_view_R.resize(3, 3);
     frontal_view_R(0,0) =  0.0;   frontal_view_R(0,1) =  0.0;   frontal_view_R(0,2) =  1.0;
@@ -612,7 +611,6 @@ bool SuperimposeHand::configure(ResourceFinder &rf)
 
     /* Open a remote command port and allow the program be started */
     return setCommandPort();
-
 }
 
 

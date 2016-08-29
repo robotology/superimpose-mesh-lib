@@ -27,6 +27,7 @@ typedef std::unordered_map<std::string, yarp::os::ConstString>                  
 typedef std::unordered_map<std::string, std::pair<yarp::sig::Vector, yarp::sig::Vector>> HandPose;
 typedef std::unordered_map<std::string, Model*>                                          HandModel;
 
+
 class SuperimposeHandCADThread : public yarp::os::Thread
 {
 private:
@@ -76,6 +77,7 @@ private:
     ThreadControllerSHC helper;
     yarp::os::Port      port_command;
 
+    
     bool setCommandPort();
 
 public:

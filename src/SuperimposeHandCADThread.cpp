@@ -35,6 +35,7 @@ using namespace yarp::sig;
 using namespace iCub::ctrl;
 using namespace iCub::iKin;
 
+
 bool SuperimposeHandCADThread::setCommandPort()
 {
     yInfo() << log_ID << "Opening command port.";

@@ -110,8 +110,7 @@ public:
     bool configure      (yarp::os::ResourceFinder &rf);
     void setWindow      (GLFWwindow *window) { this->window = window; }
     bool updateModule   ();
-    bool close          ();
-    
+    bool close          ();    
 };
 
 #endif /* SUPERIMPOSEHAND_H */

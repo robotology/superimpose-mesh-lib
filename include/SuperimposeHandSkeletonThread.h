@@ -11,6 +11,7 @@
 #include <yarp/sig/Image.h>
 #include <iCub/iKin/iKinFwd.h>
 
+
 class SuperimposeHandSkeletonThread : public yarp::os::Thread
 {
 private:

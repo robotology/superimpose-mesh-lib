@@ -8,11 +8,13 @@
 
 #include "Shader.h"
 
+
 struct Vertex {
     glm::vec3 Position;
     glm::vec3 Normal;
     glm::vec2 TexCoords;
 };
+
 
 struct Texture {
     GLuint id;
@@ -20,6 +22,7 @@ struct Texture {
     aiString path;
 };
 /* Note: structs have a great property in C++, their memory layout is sequential. */
+
 
 class Mesh {
 public:
