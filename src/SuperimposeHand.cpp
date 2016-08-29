@@ -166,11 +166,11 @@ bool SuperimposeHand::setGazeController()
     if (gaze_driver.isValid()) {
         gaze_driver.view(itf_head_gaze);
         if (!itf_head_gaze) {
-            std::cerr << "Error getting IGazeControl interface.\n";
+            yError() << log_ID << "Error getting IGazeControl interface.\n";
             return false;
         }
     } else {
-        std::cerr << "Gaze control device not available.\n";
+        yError() << log_ID << "Gaze control device not available.\n";
         return false;
     }
 
@@ -411,7 +411,7 @@ bool SuperimposeHand::view_skeleton(const bool status)
             yInfo() << log_ID << "...done.";
 
             delete trd_left_cam_skeleton;
-            trd_left_cam_cad = nullptr;
+            trd_left_cam_skeleton = nullptr;
 
             superimpose_skeleton = false;
         }
@@ -641,26 +641,13 @@ bool SuperimposeHand::updateModule()
 }
 
 
-bool SuperimposeHand::interruptModule()
-{
-    if (superimpose_skeleton) {
-        trd_left_cam_skeleton->stop();
-        trd_left_cam_skeleton = nullptr;
-    }
-    
-    if (superimpose_mesh) {
-        trd_left_cam_cad->stop();
-        trd_left_cam_cad = nullptr;
-    }
-    
-    return true;
-}
-
-
 bool SuperimposeHand::close()
 {
     yInfo() << log_ID << "Calling close functions...";
-    
+
+    if (superimpose_skeleton) trd_left_cam_skeleton->stop();
+    if (superimpose_mesh)     trd_left_cam_cad->stop();
+
     delete trd_left_cam_skeleton;
     delete trd_left_cam_cad;
     

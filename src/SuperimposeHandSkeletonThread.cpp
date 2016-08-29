@@ -107,7 +107,6 @@ void SuperimposeHandSkeletonThread::run() {
     Vector cam_o(4);
 
     while (!isStopping()) {
-
         ImageOf<PixelRgb> *imgin = inport_skeleton_img.read(true);
         itf_arm_cart->getPose(ee_x, ee_o);
         itf_head_gaze->getLeftEyePose(cam_x, cam_o);
@@ -172,14 +171,15 @@ void SuperimposeHandSkeletonThread::run() {
 
 void SuperimposeHandSkeletonThread::onStop() {
     inport_skeleton_img.interrupt();
-    outport_skeleton_img.interrupt();
-    port_cam_pose.interrupt();
 }
 
 
 void SuperimposeHandSkeletonThread::threadRelease() {
     yInfo() << log_ID << "Deallocating resource of hand skeleton drawing thread.";
-    
+
+    outport_skeleton_img.interrupt();
+    port_cam_pose.interrupt();
+
     if (!inport_skeleton_img.isClosed())  inport_skeleton_img.close();
     if (!outport_skeleton_img.isClosed()) outport_skeleton_img.close();
     if (!port_cam_pose.isClosed())        port_cam_pose.close();
