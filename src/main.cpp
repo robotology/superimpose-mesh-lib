@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 
 #include "SuperimposeHand.h"
-#include "SuperimposeHandThread.h"
 
 #define WINDOW_WIDTH  320
 #define WINDOW_HEIGHT 240
@@ -82,13 +81,16 @@ int main(int argc, char *argv[])
 
     /* SuperimposeHand, derived from RFModule, must be declared by the main thread (thread_0). */
     SuperimposeHand sh;
-    SuperimposeHandThread trd_sh(sh, rf, window);
 
-    trd_sh.start();
-    while (trd_sh.isRunning()) {
+    sh.setWindow(window);
+    sh.runModuleThreaded(rf);
+
+    while (!sh.isStopping()) {
         glfwPollEvents();
     }
-    
+
+    sh.joinModule();
+
     glfwMakeContextCurrent(NULL);
     glfwTerminate();
 

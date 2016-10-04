@@ -49,8 +49,7 @@ set(INCLUDE_FILES       ${INCLUDE_DIR}/Shader.h
                         ${INCLUDE_DIR}/SuperimposeHandCADThread.h
                         ${INCLUDE_DIR}/ThreadControllerSHC.h
                         ${INCLUDE_DIR}/SuperimposeHandSkeletonThread.h
-                        ${INCLUDE_DIR}/SuperimposeHand.h
-                        ${INCLUDE_DIR}/SuperimposeHandThread.h)
+                        ${INCLUDE_DIR}/SuperimposeHand.h)
 set(SOURCE_FILES        src/main.cpp
                         src/Shader.cpp
                         src/Mesh.cpp
@@ -58,8 +57,7 @@ set(SOURCE_FILES        src/main.cpp
                         src/SuperimposeHandCADThread.cpp
                         src/ThreadControllerSHC.cpp
                         src/SuperimposeHandSkeletonThread.cpp
-                        src/SuperimposeHand.cpp
-                        src/SuperimposeHandThread.cpp)
+                        src/SuperimposeHand.cpp)
 set(THIRFT_FILES        src/idl_rfm.thrift
                         src/idl_mesh.thrift)
 
