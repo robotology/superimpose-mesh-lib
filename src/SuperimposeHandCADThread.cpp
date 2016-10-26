@@ -58,7 +58,7 @@ SuperimposeHandCADThread::SuperimposeHandCADThread(const ConstString &laterality
 
 
 bool SuperimposeHandCADThread::threadInit() {
-    yInfo() << log_ID << "Initializing hand skeleton drawing thread.";
+    yInfo() << log_ID << "Initializing hand CAD drawing thread.";
 
     yInfo() << log_ID << "Setting interfaces";
 
@@ -149,15 +149,15 @@ bool SuperimposeHandCADThread::threadInit() {
     /* Crate the squared support for the backround texture. */
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-    GLfloat vertices[] = {//Positions      //Colors            //Texture Coords
-        1.0f,  1.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Top Right
-        1.0f, -1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Bottom Right
-        -1.0f, -1.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Bottom Left
-        -1.0f,  1.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Top Left
+    GLfloat vertices[] = {// Positions    // Colors           // Texture Coords
+                           1.0f,  1.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,      // Top Right
+                           1.0f, -1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,      // Bottom Right
+                          -1.0f, -1.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,      // Bottom Left
+                          -1.0f,  1.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f       // Top Left
     };
 
     GLuint indices[] = { 0, 1, 3,   // First Triangle
-        1, 2, 3 }; // Second Triangle
+                         1, 2, 3 }; // Second Triangle
 
     /* Create and bind an element buffer object. */
     glGenBuffers(1, &ebo);
