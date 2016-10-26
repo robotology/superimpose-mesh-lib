@@ -6,7 +6,8 @@
 #include <GL/glew.h>
 #include <assimp/scene.h>
 
-#include "shader.h"
+#include "Shader.h"
+
 
 struct Vertex {
     glm::vec3 Position;
@@ -14,12 +15,14 @@ struct Vertex {
     glm::vec2 TexCoords;
 };
 
+
 struct Texture {
     GLuint id;
     std::string type;
     aiString path;
 };
 /* Note: structs have a great property in C++, their memory layout is sequential. */
+
 
 class Mesh {
 public:

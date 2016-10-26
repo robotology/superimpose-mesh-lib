@@ -7,8 +7,9 @@
 #include <GL/glew.h>
 #include <assimp/scene.h>
 
-#include "shader.h"
-#include "mesh.h"
+#include "Shader.h"
+#include "Mesh.h"
+
 
 class Model
 {

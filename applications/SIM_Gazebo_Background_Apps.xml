@@ -5,12 +5,13 @@
     <!-- REQUIRED -->
     <dependencies>
         <port>/yarprun</port>
+        <port>/vmdeb</port>
     </dependencies>
 
     <!-- GENERIC INFORMATION -->
-    <name>SIM_Background_Apps</name>
-    <description>Background applications for iCubSim-based simulations</description>
-    <version>1.3.1</version>
+    <name>SIM_Gazebo_Background_Apps</name>
+    <description>Background applications for Gazebo-based simulations</description>
+    <version>1.4.0</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
@@ -21,35 +22,41 @@
         <name>yarplogger</name>
         <node>yarprun</node>
         <parameters>--start</parameters>
-	</module>
+    </module>
 
     <module>
-        <name>iCub_SIM</name>
-		<node>vmdeb</node>
+        <name>gazebo</name>
+        <node>yarprun</node>
+        <dependencies>
+            <port timeout="5.0">/yarplogger</port>
+        </dependencies>
     </module>
 
     <module>
         <name>simCartesianControl</name>
-        <parameters>--robot icubSim</parameters>
+        <parameters>--robot icubGazeboSim</parameters>
         <node>yarprun</node>
         <dependencies>
-        	<port>/icubSim/right_arm/state:o</port>
+            <port timeout="5.0">/icubGazeboSim/right_arm/state:o</port>
         </dependencies>
     </module>
 
     <module>
         <name>iKinCartesianSolver</name>
-        <parameters>--part right_arm --context cartesianSolver</parameters>
+        <parameters>--part right_arm --context cartesianSolverGazebo</parameters>
         <node>yarprun</node>
         <dependencies>
-        	<port>/icubSim/right_arm/state:o</port>
+            <port timeout="5.0">/icubGazeboSim/right_arm/state:o</port>
         </dependencies>
     </module>
 
     <module>
         <name>iKinGazeCtrl</name>
-        <parameters>--from configSim.ini</parameters>
+        <parameters>--from configGazebo.ini</parameters>
         <node>yarprun</node>
+        <dependencies>
+            <port timeout="5.0">/icubGazeboSim/head/state:o</port>
+        </dependencies>
     </module>
 
 </application>
