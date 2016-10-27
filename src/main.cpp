@@ -83,10 +83,11 @@ int main(int argc, char *argv[])
     SuperimposeHand sh;
 
     sh.setWindow(window);
-    sh.runModuleThreaded(rf);
 
-    while (!sh.isStopping()) {
-        glfwPollEvents();
+    if (sh.runModuleThreaded(rf) > 0) {
+        while (!sh.isStopping()) {
+            glfwPollEvents();
+        }
     }
 
     sh.joinModule();
