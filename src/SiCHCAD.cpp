@@ -1,4 +1,4 @@
-#include "SuperimposeHandCADThread.h"
+#include "SiCHCAD.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

@@ -1,4 +1,4 @@
-#include "SuperimposeHand.h"
+#include "SuperimposeiCubHand.h"
 
 #include <list>
 

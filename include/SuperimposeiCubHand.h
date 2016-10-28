@@ -17,8 +17,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "SuperimposeHandSkeletonThread.h"
-#include "SuperimposeHandCADThread.h"
+#include "SiCHSkeleton.h"
+#include "SiCHCAD.h"
 #include "src/SuperimposeHandIDL.h"
 
 typedef std::unordered_map<std::string, yarp::os::ConstString> PartFileMap;
