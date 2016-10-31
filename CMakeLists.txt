@@ -43,22 +43,22 @@ set(ICUB_MESH_EXT       obj)
 set(ICUB_HAND_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/icub_right_hand/${ICUB_MESH_EXT})
 
 
-set(INCLUDE_FILES       ${INCLUDE_DIR}/Shader.h
-                        ${INCLUDE_DIR}/Mesh.h
+set(INCLUDE_FILES       ${INCLUDE_DIR}/Mesh.h
                         ${INCLUDE_DIR}/Model.h
+                        ${INCLUDE_DIR}/Shader.h
                         ${INCLUDE_DIR}/SuperimposeHand.h
                         ${INCLUDE_DIR}/SHCAD.h
-                        ${INCLUDE_DIR}/SuperimposeHandSkeletonThread.h
+                        ${INCLUDE_DIR}/SHSkeleton.h
                         ${INCLUDE_DIR}/ThreadControllerSHC.h
                         ${INCLUDE_DIR}/SuperimposeiCubHand.h
                         ${INCLUDE_DIR}/SiCHCAD.h
                         ${INCLUDE_DIR}/SiCHSkeleton.h)
 set(SOURCE_FILES        src/main.cpp
-                        src/Shader.cpp
                         src/Mesh.cpp
                         src/Model.cpp
+                        src/Shader.cpp
                         src/SHCAD.cpp
-                        src/SuperimposeHandSkeletonThread.cpp
+                        src/SHSkeleton.cpp
                         src/ThreadControllerSHC.cpp
                         src/SuperimposeiCubHand.cpp
                         src/SiCHCAD.cpp

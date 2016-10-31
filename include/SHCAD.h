@@ -14,6 +14,18 @@
 
 class SHCAD : public SuperimposeHand
 {
+public:
+    typedef typename std::unordered_map<std::string, Model *> HandModel;
+
+    SHCAD (GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY);
+
+    ~SHCAD();
+
+protected:
+    bool superimposeHand(ObjPoseMap obj2pos_map,
+                         const double * cam_x, const double * cam_o,
+                         cv::Mat img);
+
 private:
     const std::string  _log_ID;
     GLFWwindow *       _window;
@@ -23,21 +35,11 @@ private:
     const float        _EYE_L_CX;
     const float        _EYE_L_CY;
 
-    typedef typename std::unordered_map<std::string, Model *> HandModel;
-
     enum MipMaps
     {
         NEAREST = 0,
         LINEAR  = 1
     };
-
-    bool superimposeHand(ObjPoseMap obj2pos_map,
-                         const double * cam_x, const double * cam_o,
-                         cv::Mat img);
-
-    bool getBackgroundOpt();
-    bool getWireframeOpt();
-    MipMaps getMipmapsOpt();
 
     bool      _show_background;
     bool      _mesh_wires;
@@ -53,10 +55,9 @@ private:
     Shader *  _shader_background = nullptr;
     Shader *  _shader_cad        = nullptr;
 
-public:
-    SHCAD (GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY);
-    
-    ~SHCAD();
+    bool    getBackgroundOpt() const;
+    bool    getWireframeOpt()  const;
+    MipMaps getMipmapsOpt()    const;
 };
 
 #endif /* SUPERIMPOSEHANDCAD_H */

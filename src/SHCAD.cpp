@@ -26,7 +26,8 @@
 SHCAD::SHCAD(GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY) :
         _log_ID("[SH-CAD]"), _window(window), _obj2fil_map(obj2fil_map), _EYE_L_FX(EYE_L_FX), _EYE_L_FY(EYE_L_FY), _EYE_L_CX(EYE_L_CX), _EYE_L_CY(EYE_L_CY) {
 
-    std::cout << _log_ID << "Setting up OpenGL renderers.";
+    std::cout << _log_ID << "Setting up OpenGL renderers." << std::endl;
+
     /* Make the OpenGL context of window the current one handled by this thread. */
     glfwMakeContextCurrent(_window);
 
@@ -74,7 +75,7 @@ SHCAD::SHCAD(GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EY
     /* Load models. */
     for (auto map = _obj2fil_map.cbegin(); map != _obj2fil_map.cend(); ++map)
     {
-        std::cout << _log_ID << "Loading OpenGL "+map->first+" model.";
+        std::cout << _log_ID << "Loading OpenGL "+map->first+" model." << std::endl;
         _model_obj[map->first] = new Model(map->second.c_str());
     }
 
@@ -88,16 +89,43 @@ SHCAD::SHCAD(GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EY
 
     /* Projection matrix. */
     /* Intrinsic camera matrix: (232.921 0.0     162.202 0.0
-     0.0     232.43  125.738 0.0
-     0.0     0.0     1.0     0.0) */
-    _projection = glm::mat4(2.0f*EYE_L_FX/FRAME_WIDTH,       0,                                  0,                           0,
-                            0,                               2.0f*EYE_L_FY/FRAME_HEIGHT,         0,                           0,
-                            2.0f*(EYE_L_CX/FRAME_WIDTH)-1,   2.0f*(EYE_L_CY/FRAME_HEIGHT)-1,     -(FAR+NEAR)/(FAR-NEAR),     -1,
-                            0,                               0,                                  -2.0f*FAR*NEAR/(FAR-NEAR),   0 );
+                                 0.0     232.43  125.738 0.0
+                                 0.0     0.0     1.0     0.0) */
+    _projection = glm::mat4(2.0f*(_EYE_L_FX/FRAME_WIDTH),   0,                                  0,                              0,
+                            0,                              2.0f*(_EYE_L_FY/FRAME_HEIGHT),      0,                              0,
+                            2.0f*(_EYE_L_CX/FRAME_WIDTH)-1, 2.0f*(_EYE_L_CY/FRAME_HEIGHT)-1,    -(FAR+NEAR)/(FAR-NEAR),        -1,
+                            0,                              0,                                  -2.0f*(FAR*NEAR)/(FAR-NEAR),    0 );
 
-    std::cout << _log_ID << "OpenGL renderers succesfully set up!";
+    std::cout << _log_ID << "OpenGL renderers succesfully set up!" << std::endl;
 
-    std::cout << _log_ID << "Initialization completed!";
+    std::cout << _log_ID << "Initialization completed!" << std::endl;
+}
+
+
+SHCAD::~SHCAD() {
+    std::cout << _log_ID << "Deallocating OpenGL resources..." << std::endl;
+
+    for (auto map = _model_obj.begin(); map != _model_obj.end(); ++map)
+    {
+        std::cout << _log_ID << "Deleting OpenGL "+map->first+" model." << std::endl;
+        delete map->second;
+    }
+    glDeleteVertexArrays(1, &_vao);
+    glDeleteBuffers     (1, &_ebo);
+    glDeleteBuffers     (1, &_vbo);
+    glDeleteTextures    (1, &_texture);
+
+    std::cout << _log_ID << "Deleting OpenGL shaders." << std::endl;
+    delete _shader_background;
+    delete _shader_cad;
+
+    std::cout << _log_ID << "Closing OpenGL context." << std::endl;
+    glfwMakeContextCurrent(NULL);
+
+    std::cout << _log_ID << "Closing OpenGL window. << std::endl" << std::endl;
+    glfwSetWindowShouldClose(_window, GL_TRUE);
+
+    std::cout << _log_ID << "OpenGL resource deallocation completed!" << std::endl;
 }
 
 
@@ -168,8 +196,8 @@ bool SHCAD::superimposeHand(ObjPoseMap obj2pos_map,
     /* Model transformation matrix. */
     for (auto map = obj2pos_map.cbegin(); map != obj2pos_map.cend(); ++map)
     {
-        double * j_x = obj2pos_map[map->first].first;
-        double * j_o = obj2pos_map[map->first].second;
+        double * j_x = map->second.first;
+        double * j_o = map->second.second;
 
         glm::mat4 root_j_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(j_x[0]), static_cast<float>(j_x[1]), static_cast<float>(j_x[2])));
         glm::mat4 root_j_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(j_o[3]), glm::vec3(static_cast<float>(j_o[0]), static_cast<float>(j_o[1]), static_cast<float>(j_o[2])));
@@ -198,46 +226,19 @@ bool SHCAD::superimposeHand(ObjPoseMap obj2pos_map,
 }
 
 
-SHCAD::~SHCAD() {
-    std::cout << _log_ID << "Deallocating OpenGL resources.";
-
-    for (auto map = _model_obj.begin(); map != _model_obj.end(); ++map)
-    {
-        std::cout << _log_ID << "Deleting OpenGL "+map->first+" model.";
-        delete map->second;
-    }
-    glDeleteVertexArrays(1, &_vao);
-    glDeleteBuffers     (1, &_ebo);
-    glDeleteBuffers     (1, &_vbo);
-    glDeleteTextures    (1, &_texture);
-
-    std::cout << _log_ID << "Deleting OpenGL shaders.";
-    delete _shader_background;
-    delete _shader_cad;
-
-    std::cout << _log_ID << "Closing OpenGL context.";
-    glfwMakeContextCurrent(NULL);
-
-    std::cout << _log_ID << "Closing OpenGL window.";
-    glfwSetWindowShouldClose(_window, GL_TRUE);
-
-    std::cout << _log_ID << "OpenGL resource deallocation completed!";
-}
-
-
-bool SHCAD::getBackgroundOpt()
+bool SHCAD::getBackgroundOpt() const
 {
     return _show_background;
 }
 
 
-bool SHCAD::getWireframeOpt()
+bool SHCAD::getWireframeOpt() const
 {
     return _mesh_wires;
 }
 
 
-SHCAD::MipMaps SHCAD::getMipmapsOpt()
+SHCAD::MipMaps SHCAD::getMipmapsOpt() const
 {
     return _mesh_mmaps;
 }

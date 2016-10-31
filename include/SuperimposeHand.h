@@ -2,6 +2,7 @@
 #define SUPERIMPOSEHAND_H
 
 #include <string>
+#include <map>
 #include <unordered_map>
 #include <utility>
 
@@ -13,7 +14,7 @@ public:
 
     typedef typename std::unordered_map<std::string, std::string> ObjFileMap;
 
-    typedef typename std::unordered_map<std::string, std::pair<double *, double *>> ObjPoseMap;
+    typedef typename std::multimap<std::string, std::pair<double *, double *>> ObjPoseMap;
 
     SuperimposeHand ();
 

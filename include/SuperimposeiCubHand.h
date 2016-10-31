@@ -24,8 +24,8 @@
 typedef std::unordered_map<std::string, yarp::os::ConstString> PartFileMap;
 
 
-class SuperimposeHand : public yarp::os::RFModule,
-                        public SuperimposeHandIDL
+class SuperimposeiCubHand : public yarp::os::RFModule,
+                            public SuperimposeHandIDL
 {
 private:
     const yarp::os::ConstString log_ID;
