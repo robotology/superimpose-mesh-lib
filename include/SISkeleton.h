@@ -1,24 +1,24 @@
 #ifndef SUPERIMPOSESKELETONCADTHREAD_H
 #define SUPERIMPOSESKELETONCADTHREAD_H
 
-#include "SuperimposeHand.h"
+#include "SuperImpose.h"
 
 #include <list>
 #include <string>
 
 #include <glm/glm.hpp>
 
-class SHSkeleton : public SuperimposeHand
+class SISkeleton : public SuperImpose
 {
 public:
-    SHSkeleton(const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY);
+    SISkeleton(const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY);
 
-    ~SHSkeleton();
+    ~SISkeleton();
 
 protected:
-    bool superimposeHand(ObjPoseMap obj2pos_map,
-                         const double * cam_x, const double * cam_o,
-                         cv::Mat img);
+    bool superimpose(ObjPoseMap obj2pos_map,
+                     const double * cam_x, const double * cam_o,
+                     cv::Mat img);
 
 private:
     const std::string _log_ID;

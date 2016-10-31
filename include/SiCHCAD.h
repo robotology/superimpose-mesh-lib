@@ -28,7 +28,7 @@ typedef std::unordered_map<std::string, std::pair<yarp::sig::Vector, yarp::sig::
 typedef std::unordered_map<std::string, Model*>                                          HandModel;
 
 
-class SuperimposeHandCADThread : public yarp::os::Thread
+class SiCHCAD : public yarp::os::Thread
 {
 private:
     const yarp::os::ConstString log_ID;
@@ -81,11 +81,11 @@ private:
     bool setCommandPort();
 
 public:
-    SuperimposeHandCADThread(const yarp::os::ConstString &laterality, const yarp::os::ConstString &camera,
-                             yarp::dev::PolyDriver &arm_remote_driver, yarp::dev::PolyDriver &arm_cartesian_driver, yarp::dev::PolyDriver &gaze_driver,
-                             const yarp::os::ConstString &shader_background_vert, const yarp::os::ConstString &shader_background_frag,
-                             const yarp::os::ConstString &shader_model_vert, const yarp::os::ConstString &shader_model_frag,
-                             const std::unordered_map<std::string, yarp::os::ConstString> &cad_hand, GLFWwindow *window);
+    SiCHCAD(const yarp::os::ConstString &laterality, const yarp::os::ConstString &camera,
+            yarp::dev::PolyDriver &arm_remote_driver, yarp::dev::PolyDriver &arm_cartesian_driver, yarp::dev::PolyDriver &gaze_driver,
+            const yarp::os::ConstString &shader_background_vert, const yarp::os::ConstString &shader_background_frag,
+            const yarp::os::ConstString &shader_model_vert, const yarp::os::ConstString &shader_model_frag,
+            const std::unordered_map<std::string, yarp::os::ConstString> &cad_hand, GLFWwindow *window);
 
     bool threadInit   ();
     void run          ();

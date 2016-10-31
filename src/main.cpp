@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "SuperimposeHand.h"
+#include "SuperimposeiCubHand.h"
 
 #define WINDOW_WIDTH  320
 #define WINDOW_HEIGHT 240
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     if (!openglSetUp(window, WINDOW_WIDTH, WINDOW_HEIGHT)) return -1;
 
     /* SuperimposeHand, derived from RFModule, must be declared by the main thread (thread_0). */
-    SuperimposeHand sh;
+    SuperimposeiCubHand sh;
 
     sh.setWindow(window);
     if (sh.runModuleThreaded(rf) > 0)

@@ -1,7 +1,7 @@
 #ifndef SUPERIMPOSEHANDCAD_H
 #define SUPERIMPOSEHANDCAD_H
 
-#include "SuperimposeHand.h"
+#include "SuperImpose.h"
 
 #include <string>
 
@@ -12,19 +12,19 @@
 #include "Model.h"
 #include "Shader.h"
 
-class SHCAD : public SuperimposeHand
+class SICAD : public SuperImpose
 {
 public:
     typedef typename std::unordered_map<std::string, Model *> HandModel;
 
-    SHCAD (GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY);
+    SICAD (GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY);
 
-    ~SHCAD();
+    ~SICAD();
 
 protected:
-    bool superimposeHand(ObjPoseMap obj2pos_map,
-                         const double * cam_x, const double * cam_o,
-                         cv::Mat img);
+    bool superimpose(ObjPoseMap obj2pos_map,
+                     const double * cam_x, const double * cam_o,
+                     cv::Mat img);
 
 private:
     const std::string  _log_ID;

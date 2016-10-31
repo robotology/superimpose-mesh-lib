@@ -56,9 +56,9 @@ private:
     yarp::dev::PolyDriver   gaze_driver;
     yarp::dev::IGazeControl *itf_head_gaze;
 
-    SuperimposeHandSkeletonThread *trd_left_cam_skeleton = nullptr;
+    SiCHSkeleton             *trd_left_cam_skeleton = nullptr;
 
-    SuperimposeHandCADThread *trd_left_cam_cad = nullptr;
+    SiCHCAD                  *trd_left_cam_cad = nullptr;
     yarp::os::ConstString    shader_background_vert;
     yarp::os::ConstString    shader_background_frag;
     yarp::os::ConstString    shader_model_vert;
@@ -105,7 +105,7 @@ protected:
     std::string quit      ();
 
 public:
-    SuperimposeHand     ();
+    SuperimposeiCubHand ();
     double getPeriod    () { return 0.0; }
     bool configure      (yarp::os::ResourceFinder &rf);
     void setWindow      (GLFWwindow *window) { this->window = window; }

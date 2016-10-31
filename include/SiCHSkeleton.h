@@ -12,7 +12,7 @@
 #include <iCub/iKin/iKinFwd.h>
 
 
-class SuperimposeHandSkeletonThread : public yarp::os::Thread
+class SiCHSkeleton : public yarp::os::Thread
 {
 private:
     const yarp::os::ConstString log_ID;
@@ -36,7 +36,7 @@ private:
     yarp::os::BufferedPort<yarp::os::Bottle>                        port_cam_pose;
 
 public:
-    SuperimposeHandSkeletonThread(const yarp::os::ConstString &laterality, const yarp::os::ConstString &camera, yarp::dev::PolyDriver &arm_remote_driver, yarp::dev::PolyDriver &arm_cartesian_driver, yarp::dev::PolyDriver &gaze_driver);
+    SiCHSkeleton(const yarp::os::ConstString &laterality, const yarp::os::ConstString &camera, yarp::dev::PolyDriver &arm_remote_driver, yarp::dev::PolyDriver &arm_cartesian_driver, yarp::dev::PolyDriver &gaze_driver);
 
     bool threadInit   ();
     void run          ();

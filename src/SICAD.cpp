@@ -1,4 +1,4 @@
-#include "SHCAD.h"
+#include "SICAD.h"
 
 #include <iostream>
 
@@ -23,7 +23,7 @@
 #define FAR          1000.0f
 
 
-SHCAD::SHCAD(GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY) :
+SICAD::SICAD(GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY) :
         _log_ID("[SH-CAD]"), _window(window), _obj2fil_map(obj2fil_map), _EYE_L_FX(EYE_L_FX), _EYE_L_FY(EYE_L_FY), _EYE_L_CX(EYE_L_CX), _EYE_L_CY(EYE_L_CY) {
 
     std::cout << _log_ID << "Setting up OpenGL renderers." << std::endl;
@@ -102,7 +102,7 @@ SHCAD::SHCAD(GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EY
 }
 
 
-SHCAD::~SHCAD() {
+SICAD::~SICAD() {
     std::cout << _log_ID << "Deallocating OpenGL resources..." << std::endl;
 
     for (auto map = _model_obj.begin(); map != _model_obj.end(); ++map)
@@ -129,9 +129,9 @@ SHCAD::~SHCAD() {
 }
 
 
-bool SHCAD::superimposeHand(ObjPoseMap obj2pos_map,
-                            const double * cam_x, const double * cam_o,
-                            cv::Mat img)
+bool SICAD::superimpose(ObjPoseMap obj2pos_map,
+                        const double * cam_x, const double * cam_o,
+                        cv::Mat img)
 {
     unsigned char * ogl_pixel = new unsigned char [3 * FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT];
 
@@ -226,19 +226,19 @@ bool SHCAD::superimposeHand(ObjPoseMap obj2pos_map,
 }
 
 
-bool SHCAD::getBackgroundOpt() const
+bool SICAD::getBackgroundOpt() const
 {
     return _show_background;
 }
 
 
-bool SHCAD::getWireframeOpt() const
+bool SICAD::getWireframeOpt() const
 {
     return _mesh_wires;
 }
 
 
-SHCAD::MipMaps SHCAD::getMipmapsOpt() const
+SICAD::MipMaps SICAD::getMipmapsOpt() const
 {
     return _mesh_mmaps;
 }

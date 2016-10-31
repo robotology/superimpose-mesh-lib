@@ -46,9 +46,9 @@ set(ICUB_HAND_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/icub_right_hand/${ICUB_MESH_
 set(INCLUDE_FILES       ${INCLUDE_DIR}/Mesh.h
                         ${INCLUDE_DIR}/Model.h
                         ${INCLUDE_DIR}/Shader.h
-                        ${INCLUDE_DIR}/SuperimposeHand.h
-                        ${INCLUDE_DIR}/SHCAD.h
-                        ${INCLUDE_DIR}/SHSkeleton.h
+                        ${INCLUDE_DIR}/SuperImpose.h
+                        ${INCLUDE_DIR}/SICAD.h
+                        ${INCLUDE_DIR}/SISkeleton.h
                         ${INCLUDE_DIR}/ThreadControllerSHC.h
                         ${INCLUDE_DIR}/SuperimposeiCubHand.h
                         ${INCLUDE_DIR}/SiCHCAD.h
@@ -57,8 +57,8 @@ set(SOURCE_FILES        src/main.cpp
                         src/Mesh.cpp
                         src/Model.cpp
                         src/Shader.cpp
-                        src/SHCAD.cpp
-                        src/SHSkeleton.cpp
+                        src/SICAD.cpp
+                        src/SISkeleton.cpp
                         src/ThreadControllerSHC.cpp
                         src/SuperimposeiCubHand.cpp
                         src/SiCHCAD.cpp

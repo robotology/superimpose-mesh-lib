@@ -17,7 +17,7 @@ using namespace yarp::sig;
 using namespace yarp::math;
 
 
-bool SuperimposeHand::fileFound (const ConstString &file) {
+bool SuperimposeiCubHand::fileFound (const ConstString &file) {
     if (file.empty()) {
         yError() << log_ID << "File not found!";
         return false;
@@ -26,7 +26,7 @@ bool SuperimposeHand::fileFound (const ConstString &file) {
 }
 
 
-bool SuperimposeHand::setRightArmRemoteControlboard()
+bool SuperimposeiCubHand::setRightArmRemoteControlboard()
 {
     Property rightarm_remote_options;
     rightarm_remote_options.put("device", "remote_controlboard");
@@ -83,7 +83,7 @@ bool SuperimposeHand::setRightArmRemoteControlboard()
 }
 
 
-bool SuperimposeHand::setRightArmCartesianController()
+bool SuperimposeiCubHand::setRightArmCartesianController()
 {
     Property rightarm_cartesian_options;
     rightarm_cartesian_options.put("device", "cartesiancontrollerclient");
@@ -107,7 +107,7 @@ bool SuperimposeHand::setRightArmCartesianController()
 }
 
 
-bool SuperimposeHand::setHeadRemoteControlboard()
+bool SuperimposeiCubHand::setHeadRemoteControlboard()
 {
     Property head_option;
     head_option.put("device", "remote_controlboard");
@@ -155,7 +155,7 @@ bool SuperimposeHand::setHeadRemoteControlboard()
 }
 
 
-bool SuperimposeHand::setGazeController()
+bool SuperimposeiCubHand::setGazeController()
 {
     Property gaze_option;
     gaze_option.put("device", "gazecontrollerclient");
@@ -178,7 +178,7 @@ bool SuperimposeHand::setGazeController()
 }
 
 
-bool SuperimposeHand::setTorsoDOF()
+bool SuperimposeiCubHand::setTorsoDOF()
 {
     Vector curDOF;
     itf_rightarm_cart->getDOF(curDOF);
@@ -199,7 +199,7 @@ bool SuperimposeHand::setTorsoDOF()
 }
 
 
-bool SuperimposeHand::setCommandPort()
+bool SuperimposeiCubHand::setCommandPort()
 {
     yInfo() << log_ID << "Opening command port.";
     if (!port_command.open("/"+PROJECT_NAME+"/cmd")) {
@@ -216,7 +216,7 @@ bool SuperimposeHand::setCommandPort()
 }
 
 
-bool SuperimposeHand::moveFingers(const double (&joint)[6])
+bool SuperimposeiCubHand::moveFingers(const double (&joint)[6])
 {
     /* Close iCub hand. */
     yInfo() << log_ID << "Closing fingers.";
@@ -242,7 +242,7 @@ bool SuperimposeHand::moveFingers(const double (&joint)[6])
 }
 
 
-bool SuperimposeHand::moveHand(const Matrix &R, const Vector &init_x)
+bool SuperimposeiCubHand::moveHand(const Matrix &R, const Vector &init_x)
 {
     /* Setting hand pose */
     yInfo() << log_ID << "Moving hand to the initial position.";
@@ -271,7 +271,7 @@ bool SuperimposeHand::moveHand(const Matrix &R, const Vector &init_x)
 }
 
 
-bool SuperimposeHand::move_hand()
+bool SuperimposeiCubHand::move_hand()
 {
     if (!init_position) {
         yInfo() << log_ID << "Starting single hand motion.";
@@ -287,7 +287,7 @@ bool SuperimposeHand::move_hand()
 }
 
 
-bool SuperimposeHand::move_hand_freerun()
+bool SuperimposeiCubHand::move_hand_freerun()
 {
     if (!init_position) {
         yInfo() << log_ID << "Starting freerun hand motion.";
@@ -304,7 +304,7 @@ bool SuperimposeHand::move_hand_freerun()
 }
 
 
-bool SuperimposeHand::stop_hand()
+bool SuperimposeiCubHand::stop_hand()
 {
     yInfo() << log_ID << "Stopping hand motion when reaching the initial position.";
 
@@ -315,7 +315,7 @@ bool SuperimposeHand::stop_hand()
 }
 
 
-bool SuperimposeHand::initial_position()
+bool SuperimposeiCubHand::initial_position()
 {
     if (!init_position) {
         yWarning() << log_ID << "Already in initial position settings!";
@@ -333,7 +333,7 @@ bool SuperimposeHand::initial_position()
 }
 
 
-bool SuperimposeHand::view_hand()
+bool SuperimposeiCubHand::view_hand()
 {
     if (!start) {
         yInfo() << log_ID << "Reaching a position close to iCub left camera with the right hand...";
@@ -351,7 +351,7 @@ bool SuperimposeHand::view_hand()
 }
 
 
-bool SuperimposeHand::open_fingers()
+bool SuperimposeiCubHand::open_fingers()
 {
     yInfo() << log_ID << "Opening fingers...";
 
@@ -363,7 +363,7 @@ bool SuperimposeHand::open_fingers()
 }
 
 
-bool SuperimposeHand::close_fingers()
+bool SuperimposeiCubHand::close_fingers()
 {
     yInfo() << log_ID << "Closing fingers...";
 
@@ -375,10 +375,10 @@ bool SuperimposeHand::close_fingers()
 }
 
 
-bool SuperimposeHand::view_skeleton(const bool status)
+bool SuperimposeiCubHand::view_skeleton(const bool status)
 {
     if (!superimpose_skeleton && status) {
-        trd_left_cam_skeleton = new SuperimposeHandSkeletonThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
+        trd_left_cam_skeleton = new SiCHSkeleton("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver);
 
         if (trd_left_cam_skeleton != NULL) {
             yInfo() << log_ID << "Starting skeleton superimposing thread for the right hand on the left camera images...";
@@ -422,9 +422,9 @@ bool SuperimposeHand::view_skeleton(const bool status)
 }
 
 
-bool SuperimposeHand::view_mesh(const bool status) {
+bool SuperimposeiCubHand::view_mesh(const bool status) {
     if (!superimpose_mesh && status) {
-        trd_left_cam_cad = new SuperimposeHandCADThread("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver, shader_background_vert, shader_background_frag, shader_model_vert, shader_model_frag, cad_hand, window);
+        trd_left_cam_cad = new SiCHCAD("right", "left", rightarm_remote_driver, rightarm_cartesian_driver, gaze_driver, shader_background_vert, shader_background_frag, shader_model_vert, shader_model_frag, cad_hand, window);
 
         if (trd_left_cam_cad != NULL) {
             yInfo() << log_ID << "Starting mesh superimposing thread for the right hand on the left camera images...";
@@ -468,7 +468,7 @@ bool SuperimposeHand::view_mesh(const bool status) {
 }
 
 
-std::string SuperimposeHand::quit() {
+std::string SuperimposeiCubHand::quit() {
     yInfo() << log_ID << "Quitting...";
 
     this->stopModule();
@@ -477,10 +477,10 @@ std::string SuperimposeHand::quit() {
 }
 
 
-SuperimposeHand::SuperimposeHand() : log_ID("[SuperimposeHand]") {}
+SuperimposeiCubHand::SuperimposeiCubHand() : log_ID("[SuperimposeiCubHand]") {}
 
 
-bool SuperimposeHand::configure(ResourceFinder &rf)
+bool SuperimposeiCubHand::configure(ResourceFinder &rf)
 {
     this->setName(PROJECT_NAME.c_str());
 
@@ -614,7 +614,7 @@ bool SuperimposeHand::configure(ResourceFinder &rf)
 }
 
 
-bool SuperimposeHand::updateModule()
+bool SuperimposeiCubHand::updateModule()
 {
     if (start) {
         Vector motion_axis;
@@ -639,7 +639,7 @@ bool SuperimposeHand::updateModule()
 }
 
 
-bool SuperimposeHand::close()
+bool SuperimposeiCubHand::close()
 {
     yInfo() << log_ID << "Calling close functions...";
 

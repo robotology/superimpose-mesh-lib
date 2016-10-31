@@ -1,4 +1,4 @@
-#include "SHSkeleton.h"
+#include "SISkeleton.h"
 
 #include <iostream>
 
@@ -12,7 +12,7 @@
 #define FRAME_HEIGHT 240
 
 
-SHSkeleton::SHSkeleton(const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY) : _log_ID("[SH-Skeleton]"), _EYE_L_FX(EYE_L_FX), _EYE_L_FY(EYE_L_FY), _EYE_L_CX(EYE_L_CX), _EYE_L_CY(EYE_L_CY)
+SISkeleton::SISkeleton(const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY) : _log_ID("[SH-Skeleton]"), _EYE_L_FX(EYE_L_FX), _EYE_L_FY(EYE_L_FY), _EYE_L_CX(EYE_L_CX), _EYE_L_CY(EYE_L_CY)
 {
     _hand_part = { "palm",
                    "thumb",
@@ -44,7 +44,7 @@ SHSkeleton::SHSkeleton(const float EYE_L_FX, const float EYE_L_FY, const float E
 }
 
 
-SHSkeleton::~SHSkeleton()
+SISkeleton::~SISkeleton()
 {
     std::cout << _log_ID << "Deallocating OpenCV resources..." << std::endl;
 
@@ -52,9 +52,10 @@ SHSkeleton::~SHSkeleton()
 }
 
 
-bool SHSkeleton::superimposeHand(ObjPoseMap obj2pos_map,
-                                 const double * cam_x, const double * cam_o,
-                                 cv::Mat img)
+bool SISkeleton::superimpose(ObjPoseMap obj2pos_map,
+                             const double * cam_x, const double * cam_o,
+                             cv::Mat img)
+// TODO: maybe create a ObjPosMap with translation only info and a ObjRotMap with rotation only info.
 {
     glm::mat4 root_eye_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
     glm::mat4 root_eye_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])));
@@ -66,6 +67,7 @@ bool SHSkeleton::superimposeHand(ObjPoseMap obj2pos_map,
     /* 3D to Pixel */
 //    glm::vec3 ee_px_h = _projection * _view * glm::vec4(glm::make_vec3((obj2pos_map.find("palm")->second).first), 1.0f);
 //    glm::vec2 ee_px   = glm::vec2(ee_px_h) / ee_px_h.z;
+    // TODO: simplify (obj2pos_map.find("palm")->second).first call. Maybe with a superclass getter.
     glm::vec2 ee_px = getWorldToPixel((obj2pos_map.find("palm")->second).first);
 
     cv::Point endeffector_point(static_cast<int>(ee_px.x), static_cast<int>(ee_px.y));
@@ -92,7 +94,7 @@ bool SHSkeleton::superimposeHand(ObjPoseMap obj2pos_map,
 }
 
 
-glm::vec2 SHSkeleton::getWorldToPixel(double * world_point)
+glm::vec2 SISkeleton::getWorldToPixel(double * world_point)
 {
     glm::vec3 px_h = _projection * _view * glm::vec4(glm::make_vec3(world_point), 1.0f);
     return glm::vec2(px_h) / px_h.z;
