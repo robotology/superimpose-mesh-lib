@@ -1,5 +1,5 @@
-#ifndef SUPERIMPOSEHAND_H
-#define SUPERIMPOSEHAND_H
+#ifndef SUPERIMPOSEHANDTHREAD_H
+#define SUPERIMPOSEHANDTHREAD_H
 
 #include <unordered_map>
 
@@ -113,4 +113,4 @@ public:
     bool close          ();    
 };
 
-#endif /* SUPERIMPOSEHAND_H */
+#endif /* SUPERIMPOSEHANDTHREAD_H */

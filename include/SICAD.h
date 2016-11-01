@@ -1,5 +1,5 @@
-#ifndef SUPERIMPOSEHANDCAD_H
-#define SUPERIMPOSEHANDCAD_H
+#ifndef SUPERIMPOSECAD_H
+#define SUPERIMPOSECAD_H
 
 #include "SuperImpose.h"
 
@@ -17,23 +17,21 @@ class SICAD : public SuperImpose
 public:
     typedef typename std::unordered_map<std::string, Model *> HandModel;
 
-    SICAD (GLFWwindow * window, const ObjFileMap & obj2fil_map, const float EYE_L_FX, const float EYE_L_FY, const float EYE_L_CX, const float EYE_L_CY);
+    SICAD();
 
     ~SICAD();
 
+    bool Configure(GLFWwindow *& window, const ObjFileMap & obj2fil_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY);
+
 protected:
-    bool superimpose(ObjPoseMap obj2pos_map,
+    bool Superimpose(ObjPoseMap obj2pos_map,
                      const double * cam_x, const double * cam_o,
                      cv::Mat img);
 
 private:
-    const std::string  _log_ID;
-    GLFWwindow *       _window;
-    const ObjFileMap & _obj2fil_map;
-    const float        _EYE_L_FX;
-    const float        _EYE_L_FY;
-    const float        _EYE_L_CX;
-    const float        _EYE_L_CY;
+    const std::string  log_ID_;
+    
+    GLFWwindow * window_;
 
     enum MipMaps
     {
@@ -41,23 +39,23 @@ private:
         LINEAR  = 1
     };
 
-    bool      _show_background;
-    bool      _mesh_wires;
-    MipMaps   _mesh_mmaps;
-    GLuint    _texture;
-    GLuint    _vao;
-    GLuint    _ebo;
-    GLuint    _vbo;
-    glm::mat4 _root_to_ogl;
-    glm::mat4 _back_proj;
-    glm::mat4 _projection;
-    HandModel _model_obj;
-    Shader *  _shader_background = nullptr;
-    Shader *  _shader_cad        = nullptr;
+    bool      show_background_;
+    bool      mesh_wires_;
+    MipMaps   mesh_mmaps_;
+    GLuint    texture_;
+    GLuint    vao_;
+    GLuint    ebo_;
+    GLuint    vbo_;
+    glm::mat4 root_to_ogl_;
+    glm::mat4 back_proj_;
+    glm::mat4 projection_;
+    HandModel model_obj_;
+    Shader *  shader_background_ = nullptr;
+    Shader *  shader_cad_        = nullptr;
 
     bool    getBackgroundOpt() const;
     bool    getWireframeOpt()  const;
     MipMaps getMipmapsOpt()    const;
 };
 
-#endif /* SUPERIMPOSEHANDCAD_H */
+#endif /* SUPERIMPOSECAD_H */
