@@ -5,6 +5,7 @@
 #include <map>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include <opencv2/core/core.hpp>
 
@@ -14,14 +15,13 @@ public:
 
     typedef typename std::unordered_map<std::string, std::string> ObjFileMap;
 
-    typedef typename std::multimap<std::string, std::pair<double *, double *>> ObjPoseMap;
+    typedef typename std::vector<double> ObjPose;
+
+    typedef typename std::multimap<std::string, ObjPose> ObjPoseMap;
 
     ~SuperImpose() {};
 
-protected:
-    virtual bool Superimpose(ObjPoseMap obj2pos_map,
-                             const double * cam_x, const double * cam_o,
-                             cv::Mat img) = 0;
+    virtual bool Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img) = 0;
 
 };
 

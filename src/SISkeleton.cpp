@@ -52,9 +52,7 @@ bool SISkeleton::Configure(const float EYE_FX, const float EYE_FY, const float E
 }
 
 
-bool SISkeleton::Superimpose(ObjPoseMap obj2pos_map,
-                             const double * cam_x, const double * cam_o,
-                             cv::Mat img)
+bool SISkeleton::Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img)
 // TODO: maybe create a ObjPosMap with translation only info and a ObjRotMap with rotation only info.
 {
     glm::mat4 root_eye_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
@@ -68,7 +66,7 @@ bool SISkeleton::Superimpose(ObjPoseMap obj2pos_map,
 //    glm::vec3 ee_px_h = _projection * _view * glm::vec4(glm::make_vec3((obj2pos_map.find("palm")->second).first), 1.0f);
 //    glm::vec2 ee_px   = glm::vec2(ee_px_h) / ee_px_h.z;
     // TODO: simplify (obj2pos_map.find("palm")->second).first call. Maybe with a superclass getter.
-    glm::vec2 ee_px = getWorldToPixel((obj2pos_map.find("palm")->second).first);
+    glm::vec2 ee_px = getWorldToPixel((obj2pos_map.find("palm")->second).data());
 
     cv::Point endeffector_point(static_cast<int>(ee_px.x), static_cast<int>(ee_px.y));
     cv::circle(img, endeffector_point, 4, cv::Scalar(0, 255, 0), 4);
@@ -78,7 +76,7 @@ bool SISkeleton::Superimpose(ObjPoseMap obj2pos_map,
     {
         for (auto map = obj2pos_map.equal_range(*part).first; map != obj2pos_map.equal_range(*part).second; ++map)
         {
-            glm::vec2 joint_px = getWorldToPixel((map->second).first);
+            glm::vec2 joint_px = getWorldToPixel((map->second).data());
 
             cv::Point joint_point(static_cast<int>(joint_px.x), static_cast<int>(joint_px.y));
 
@@ -94,7 +92,7 @@ bool SISkeleton::Superimpose(ObjPoseMap obj2pos_map,
 }
 
 
-glm::vec2 SISkeleton::getWorldToPixel(double * world_point)
+glm::vec2 SISkeleton::getWorldToPixel(const double * world_point)
 {
     glm::vec3 px_h = projection_ * view_ * glm::vec4(glm::make_vec3(world_point), 1.0f);
     return glm::vec2(px_h) / px_h.z;

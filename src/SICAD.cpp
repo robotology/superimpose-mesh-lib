@@ -8,6 +8,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <opencv2/imgproc/imgproc.hpp>
+
 #define WINDOW_WIDTH       320
 #define WINDOW_HEIGHT      240
 #ifdef GLFW_RETINA
@@ -23,17 +25,25 @@
 #define FAR          1000.0f
 
 
-SICAD::SICAD() : log_ID_("[SH-CAD]") {}
+SICAD::SICAD() : log_ID_("[SH-CAD]")
+{
+    show_background_ = true;
+    mesh_wires_      = false;
+    mesh_mmaps_      = NEAREST;
+}
 
 
 SICAD::~SICAD() {
     std::cout << log_ID_ << "Deallocating OpenGL resources..." << std::endl;
+
+    glfwMakeContextCurrent(window_);
 
     for (auto map = model_obj_.begin(); map != model_obj_.end(); ++map)
     {
         std::cout << log_ID_ << "Deleting OpenGL "+map->first+" model." << std::endl;
         delete map->second;
     }
+
     glDeleteVertexArrays(1, &vao_);
     glDeleteBuffers     (1, &ebo_);
     glDeleteBuffers     (1, &vbo_);
@@ -46,7 +56,7 @@ SICAD::~SICAD() {
     std::cout << log_ID_ << "Closing OpenGL context." << std::endl;
     glfwMakeContextCurrent(NULL);
 
-    std::cout << log_ID_ << "Closing OpenGL window. << std::endl" << std::endl;
+    std::cout << log_ID_ << "Closing OpenGL window." << std::endl;
     glfwSetWindowShouldClose(window_, GL_TRUE);
 
     std::cout << log_ID_ << "OpenGL resource deallocation completed!" << std::endl;
@@ -68,12 +78,12 @@ bool SICAD::Configure(GLFWwindow *& window, const ObjFileMap & obj2fil_map, cons
     /* Crate the squared support for the backround texture. */
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
-    GLfloat vertices[] = {// Positions    // Colors           // Texture Coords
-                             1.0f,  1.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,      // Top Right
-                             1.0f, -1.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,      // Bottom Right
-                            -1.0f, -1.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,      // Bottom Left
-                            -1.0f,  1.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f       // Top Left
-    };
+    GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
+                             1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
+                             1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
+                            -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
+                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f    // Top Left
+                         };
 
     GLuint indices[] = { 0, 1, 3,   // First Triangle
                          1, 2, 3 }; // Second Triangle
@@ -138,11 +148,9 @@ bool SICAD::Configure(GLFWwindow *& window, const ObjFileMap & obj2fil_map, cons
     return true;
 }
 
-bool SICAD::Superimpose(ObjPoseMap obj2pos_map,
-                        const double * cam_x, const double * cam_o,
-                        cv::Mat img)
+bool SICAD::Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img)
 {
-    unsigned char * ogl_pixel = new unsigned char [3 * FRAMEBUFFER_WIDTH * FRAMEBUFFER_HEIGHT];
+    glfwMakeContextCurrent(window_);
 
     /* Load and generate the texture. */
     glBindTexture(GL_TEXTURE_2D, texture_);
@@ -159,7 +167,7 @@ bool SICAD::Superimpose(ObjPoseMap obj2pos_map,
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.cols, img.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, img.data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.cols, img.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, img.data);
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -205,11 +213,10 @@ bool SICAD::Superimpose(ObjPoseMap obj2pos_map,
     /* Model transformation matrix. */
     for (auto map = obj2pos_map.cbegin(); map != obj2pos_map.cend(); ++map)
     {
-        double * j_x = map->second.first;
-        double * j_o = map->second.second;
+        const double * pose = map->second.data();
 
-        glm::mat4 root_j_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(j_x[0]), static_cast<float>(j_x[1]), static_cast<float>(j_x[2])));
-        glm::mat4 root_j_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(j_o[3]), glm::vec3(static_cast<float>(j_o[0]), static_cast<float>(j_o[1]), static_cast<float>(j_o[2])));
+        glm::mat4 root_j_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(pose[0]), static_cast<float>(pose[1]), static_cast<float>(pose[2])));
+        glm::mat4 root_j_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
 
         glm::mat4 model = root_to_ogl_ * (root_j_t * root_j_o);
 
@@ -218,18 +225,18 @@ bool SICAD::Superimpose(ObjPoseMap obj2pos_map,
         model_obj_[map->first]->Draw(*shader_cad_);
     }
 
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, ogl_pixel);
-    for (size_t i = 0; i < (FRAMEBUFFER_HEIGHT / 2); ++i) {
-        unsigned char(&row_bot)[3 * FRAMEBUFFER_WIDTH] = *reinterpret_cast<unsigned char(*)[3 * FRAMEBUFFER_WIDTH]>(&ogl_pixel[3 * FRAMEBUFFER_WIDTH * i]);
-        unsigned char(&row_up) [3 * FRAMEBUFFER_WIDTH] = *reinterpret_cast<unsigned char(*)[3 * FRAMEBUFFER_WIDTH]>(&ogl_pixel[3 * FRAMEBUFFER_WIDTH * (FRAMEBUFFER_HEIGHT-1 - i)]);
-        std::swap(row_bot, row_up);
-    }
+    /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
+     and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
+    cv::Mat ogl_pixel(FRAMEBUFFER_HEIGHT, FRAMEBUFFER_WIDTH, CV_8UC3);
+    glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
+    glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
+    glReadPixels(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
+    cv::flip(ogl_pixel, ogl_pixel, 0);
+
+    cv::resize(ogl_pixel, img, img.size(), 0, 0, cv::INTER_LINEAR);
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
-
-    delete [] ogl_pixel;
 
     return true;
 }

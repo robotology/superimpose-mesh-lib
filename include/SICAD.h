@@ -15,7 +15,7 @@
 class SICAD : public SuperImpose
 {
 public:
-    typedef typename std::unordered_map<std::string, Model *> HandModel;
+    typedef typename std::unordered_map<std::string, Model *> ObjModel;
 
     SICAD();
 
@@ -23,10 +23,7 @@ public:
 
     bool Configure(GLFWwindow *& window, const ObjFileMap & obj2fil_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY);
 
-protected:
-    bool Superimpose(ObjPoseMap obj2pos_map,
-                     const double * cam_x, const double * cam_o,
-                     cv::Mat img);
+    bool Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img);
 
 private:
     const std::string  log_ID_;
@@ -49,9 +46,9 @@ private:
     glm::mat4 root_to_ogl_;
     glm::mat4 back_proj_;
     glm::mat4 projection_;
-    HandModel model_obj_;
-    Shader *  shader_background_ = nullptr;
-    Shader *  shader_cad_        = nullptr;
+    ObjModel  model_obj_;
+    Shader    * shader_background_ = nullptr;
+    Shader    * shader_cad_        = nullptr;
 
     bool    getBackgroundOpt() const;
     bool    getWireframeOpt()  const;

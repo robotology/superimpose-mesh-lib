@@ -57,10 +57,6 @@ private:
     SkeletonSuperimposer         * trd_left_cam_skeleton_ = nullptr;
 
     CADSuperimposer              * trd_left_cam_cad_ = nullptr;
-    yarp::os::ConstString          shader_background_vert_;
-    yarp::os::ConstString          shader_background_frag_;
-    yarp::os::ConstString          shader_model_vert_;
-    yarp::os::ConstString          shader_model_frag_;
     SuperImpose::ObjFileMap        cad_hand_;
 
     yarp::os::Port                 port_command_;
@@ -79,7 +75,7 @@ private:
     double                         motion_time_;
     double                         path_time_;
 
-    bool FileFound                     (const yarp::os::ConstString &file);
+    bool FileFound                     (const yarp::os::ConstString & file);
     bool setRightArmRemoteControlboard ();
     bool setRightArmCartesianController();
     bool setHeadRemoteControlboard     ();
@@ -87,7 +83,7 @@ private:
     bool setTorsoDOF                   ();
     bool setCommandPort                ();
     bool MoveFingers                   (const double (&joint)[6]);
-    bool MoveHand                      (const yarp::sig::Matrix &R, const yarp::sig::Vector &init_x);
+    bool MoveHand                      (const yarp::sig::Matrix & R, const yarp::sig::Vector & init_x);
 
 protected:
     bool move_hand        ();
@@ -105,7 +101,7 @@ public:
     SuperimposerFactory();
     double getPeriod   () { return 0.0; }
     bool configure     (yarp::os::ResourceFinder &rf);
-    void setWindow     (GLFWwindow *window) { this->window_ = window; }
+    void setWindow     (GLFWwindow *& window) { this->window_ = window; }
     bool updateModule  ();
     bool close         ();
 };

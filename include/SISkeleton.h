@@ -17,10 +17,7 @@ public:
 
     bool Configure(const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY);
 
-protected:
-    bool Superimpose(ObjPoseMap obj2pos_map,
-                     const double * cam_x, const double * cam_o,
-                     cv::Mat img);
+    bool Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img);
 
 private:
     const std::string      log_ID_;
@@ -30,7 +27,7 @@ private:
     glm::mat4              view_;
     glm::mat4              projection_;
 
-    glm::vec2 getWorldToPixel(double * world_point);
+    glm::vec2 getWorldToPixel(const double * world_point);
 };
 
 #endif /* SUPERIMPOSESKELETON_H */

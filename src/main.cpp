@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "SuperimposeiCubHand.h"
+#include "SuperimposerFactory.h"
 
 #define WINDOW_WIDTH  320
 #define WINDOW_HEIGHT 240
@@ -13,7 +13,7 @@
 using namespace yarp::os;
 
 
-bool openglSetUp(GLFWwindow * window, const int width, const int height);
+bool openglSetUp(GLFWwindow *& window, const int width, const int height);
 
 
 int main(int argc, char *argv[])
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     if (!openglSetUp(window, WINDOW_WIDTH, WINDOW_HEIGHT)) return -1;
 
     /* SuperimposeHand, derived from RFModule, must be declared by the main thread (thread_0). */
-    SuperimposeiCubHand sh;
+    SuperimposerFactory sh;
 
     sh.setWindow(window);
     if (sh.runModuleThreaded(rf) > 0)
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-bool openglSetUp(GLFWwindow * window, const int width, const int height)
+bool openglSetUp(GLFWwindow *& window, const int width, const int height)
 {
     ConstString log_ID = "[OpenGL]";
     yInfo() << log_ID << "Start setting up...";

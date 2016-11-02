@@ -17,7 +17,8 @@ using namespace yarp::sig;
 using namespace yarp::math;
 
 
-bool SuperimposerFactory::FileFound (const ConstString &file) {
+bool SuperimposerFactory::FileFound (const ConstString & file)
+{
     if (file.empty()) {
         yError() << log_ID_ << "File not found!";
         return false;
@@ -210,7 +211,7 @@ bool SuperimposerFactory::setCommandPort()
         yError() << log_ID_ << "Cannot attach the command port.";
         return false;
     }
-    yInfo() << log_ID_ << "Command port succesfully opened and attached. Ready to start_ and recieve commands.";
+    yInfo() << log_ID_ << "Command port and helper succesfully opened and attached. Ready to recieve commands.";
 
     return true;
 }
@@ -424,7 +425,7 @@ bool SuperimposerFactory::view_skeleton(const bool status)
 
 bool SuperimposerFactory::view_mesh(const bool status) {
     if (!superimpose_mesh_ && status) {
-        trd_left_cam_cad_ = new CADSuperimposer("right", "left", rightarm_remote_driver_, rightarm_cartesian_driver_, gaze_driver_, shader_background_vert_, shader_background_frag_, shader_model_vert_, shader_model_frag_, cad_hand_, window_);
+        trd_left_cam_cad_ = new CADSuperimposer("right", "left", rightarm_remote_driver_, rightarm_cartesian_driver_, gaze_driver_, cad_hand_, window_);
         if (trd_left_cam_cad_ != NULL) {
             yInfo() << log_ID_ << "Starting mesh superimposing thread for the right hand on the left camera images...";
 
@@ -492,28 +493,16 @@ bool SuperimposerFactory::configure(ResourceFinder &rf)
 
     /* Parsing parameters from config file. */
     robot_ = rf.findGroup("PARAMETER").check("robot", Value("icub")).asString();
-    if (!rf.findGroup("ARMJOINT").findGroup("vel").isNull() && rf.findGroup("ARMJOINT").findGroup("vel").tail().size() == 16) {
+    if (!rf.findGroup("ARMJOINT").findGroup("vel").isNull() && rf.findGroup("ARMJOINT").findGroup("vel").tail().size() == 16)
+    {
         Vector arm_vel(16);
-        for (int i = 0; i < rf.findGroup("ARMJOINT").findGroup("vel").tail().size(); ++i) {
+        for (int i = 0; i < rf.findGroup("ARMJOINT").findGroup("vel").tail().size(); ++i)
+        {
             arm_vel[i] = rf.findGroup("ARMJOINT").findGroup("vel").tail().get(i).asDouble();
         }
         yInfo() << log_ID_ << arm_vel.toString();
     }
 
-    /* Looking for OpenGL shaders and CAD files. */
-    shader_background_vert_ = rf.findFileByName("shader_background.vert");
-    if (!FileFound(shader_background_vert_)) return false;
-
-    shader_background_frag_ = rf.findFileByName("shader_background.frag");
-    if (!FileFound(shader_background_frag_)) return false;
-
-    shader_model_vert_ = rf.findFileByName("shader_model.vert");
-    if (!FileFound(shader_model_vert_)) return false;
-
-    shader_model_frag_ = rf.findFileByName("shader_model_simple.frag");
-    if (!FileFound(shader_model_frag_)) return false;
-
-    //TODO: use simplified dae instead of obj
     cad_hand_["palm"] = rf.findFileByName("r_palm.obj");
     if (!FileFound(cad_hand_["palm"])) return false;
     cad_hand_["thumb1"] = rf.findFileByName("r_tl0.obj");
@@ -615,7 +604,8 @@ bool SuperimposerFactory::configure(ResourceFinder &rf)
 
 bool SuperimposerFactory::updateModule()
 {
-    if (start_) {
+    if (start_)
+    {
         Vector motion_axis;
         Vector motion_angle;
         itf_rightarm_cart_->getPose(motion_axis, motion_angle);
@@ -624,7 +614,8 @@ bool SuperimposerFactory::updateModule()
         center[1] = motion_axis[1] - radius_;
 
         yInfo() << log_ID_ << "Starting finger motion.";
-        for (double alpha = 0.0; alpha < (2* M_PI); alpha += M_PI / angle_ratio_) {
+        for (double alpha = 0.0; alpha < (2* M_PI); alpha += M_PI / angle_ratio_)
+        {
             motion_axis[0] = (center[0] - (radius_ * sin(alpha)));
             motion_axis[1] = (center[1] + (radius_ * cos(alpha)));
             yInfo() << log_ID_ << "Next position: [" << motion_axis.toString() << "].";
@@ -651,10 +642,10 @@ bool SuperimposerFactory::close()
     itf_rightarm_cart_->removeTipFrame();
     
     if (rightarm_cartesian_driver_.isValid()) rightarm_cartesian_driver_.close();
-    if (rightarm_remote_driver_.isValid()) rightarm_remote_driver_.close();
-    if (head_remote_driver_.isValid()) head_remote_driver_.close();
-    if (gaze_driver_.isValid()) gaze_driver_.close();
-    
+    if (rightarm_remote_driver_.isValid())    rightarm_remote_driver_.close();
+    if (head_remote_driver_.isValid())        head_remote_driver_.close();
+    if (gaze_driver_.isValid())               gaze_driver_.close();
+
     if (port_command_.isOpen()) port_command_.close();
     return true;
 }
