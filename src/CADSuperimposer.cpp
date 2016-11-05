@@ -119,7 +119,7 @@ bool CADSuperimposer::threadInit()
     // FIXME: far diventare la camera parametrica utilizzando CAMERA e rinominare le variabili
     Bottle btl_cam_left_info;
     itf_head_gaze_->getInfo(btl_cam_left_info);
-    Bottle *cam_left_info = btl_cam_left_info.findGroup("camera_intrinsics_left").get(1).asList();
+    Bottle * cam_left_info = btl_cam_left_info.findGroup("camera_intrinsics_left").get(1).asList();
     yInfo() << log_ID_ << "Camera Info: [" + cam_left_info->toString() + "].";
     EYE_FX_ = static_cast<float>(cam_left_info->get(0).asDouble());
     EYE_CX_ = static_cast<float>(cam_left_info->get(2).asDouble());

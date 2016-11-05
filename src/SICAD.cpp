@@ -197,28 +197,30 @@ bool SICAD::Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, co
     /* Use/Activate the shader. */
     shader_cad_->Use();
 
+    /* Projection transformation matrix. */
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
+
     /* View transformation matrix. */
-    /* Extrinsic camera matrix: */
     glm::mat4 root_eye_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
-    glm::mat4 root_eye_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])));
+    glm::mat4 eye_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])));
 
     glm::mat4 view = glm::lookAt(glm::mat3(root_to_ogl_) * glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z),
-                                 glm::mat3(root_to_ogl_) * (glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z) + glm::mat3(root_eye_o) * glm::vec3(0.0f, 0.0f, 1.0f)),
-                                 glm::mat3(root_to_ogl_) * glm::mat3(root_eye_o) * glm::vec3(0.0f, -1.0f, 0.0f));
+                                 glm::mat3(root_to_ogl_) * (glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z) + glm::mat3(eye_to_root) * glm::vec3(0.0f, 0.0f, 1.0f)),
+                                 glm::mat3(root_to_ogl_) * glm::mat3(eye_to_root) * glm::vec3(0.0f, -1.0f, 0.0f));
 
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
 
     /* Model transformation matrix. */
     for (auto map = obj2pos_map.cbegin(); map != obj2pos_map.cend(); ++map)
     {
         const double * pose = map->second.data();
 
-        glm::mat4 root_j_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(pose[0]), static_cast<float>(pose[1]), static_cast<float>(pose[2])));
-        glm::mat4 root_j_o = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
+        glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
+        obj_to_root[3][0] = pose[0];
+        obj_to_root[3][1] = pose[1];
+        obj_to_root[3][2] = pose[2];
 
-        glm::mat4 model = root_to_ogl_ * (root_j_t * root_j_o);
+        glm::mat4 model = root_to_ogl_ * obj_to_root;
 
         glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
