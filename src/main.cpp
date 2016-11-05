@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     SuperimposerFactory sh;
 
     sh.setWindow(window);
-    if (sh.runModuleThreaded(rf) > 0)
+    if (sh.runModuleThreaded(rf) == 0)
     {
         while (!sh.isStopping())
         {
