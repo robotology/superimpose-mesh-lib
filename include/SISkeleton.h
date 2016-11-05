@@ -23,9 +23,9 @@ private:
     const std::string      log_ID_;
 
     std::list<std::string> hand_part_;
-    glm::mat4              root_to_ocv_;
-    glm::mat4              view_;
-    glm::mat4              projection_;
+    glm::mat3              projection_;
+    glm::mat3              root_to_eye_;
+    glm::vec3              cam_pos_;
 
     glm::vec2 getWorldToPixel(const double * world_point);
 };
