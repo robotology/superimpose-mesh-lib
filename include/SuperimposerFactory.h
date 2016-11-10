@@ -101,7 +101,7 @@ public:
     SuperimposerFactory();
     double getPeriod   () { return 0.0; }
     bool configure     (yarp::os::ResourceFinder &rf);
-    void setWindow     (GLFWwindow *& window) { this->window_ = window; }
+    void setWindow     (GLFWwindow *& window) { window_ = window; }
     bool updateModule  ();
     bool close         ();
 };
