@@ -30,9 +30,6 @@ set(SH_INCLUDE_FILES    ${INCLUDE_DIR}/Mesh.h
                         ${INCLUDE_DIR}/CADSuperimposer.h
                         ${INCLUDE_DIR}/SkeletonSuperimposer.h
                         ${INCLUDE_DIR}/ThreadControllerSHC.h)
-set(SH_INCLUDE_DEPR     ${INCLUDE_DIR}/SuperimposeiCubHand.h
-                        ${INCLUDE_DIR}/SiCHCAD.h
-                        ${INCLUDE_DIR}/SiCHSkeleton.h)
 
 set(SOURCE_DIR          ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(SH_SOURCE_FILES     ${SOURCE_DIR}/main.cpp
@@ -45,9 +42,6 @@ set(SH_SOURCE_FILES     ${SOURCE_DIR}/main.cpp
                         ${SOURCE_DIR}/SICAD.cpp
                         ${SOURCE_DIR}/SISkeleton.cpp
                         ${SOURCE_DIR}/ThreadControllerSHC.cpp)
-set(SH_SOURCE_DEPR      ${SOURCE_DIR}/SuperimposeiCubHand.cpp
-                        ${SOURCE_DIR}/SiCHCAD.cpp
-                        ${SOURCE_DIR}/SiCHSkeleton.cpp)
 
 list(APPEND             INCLUDE_FILES   ${SH_INCLUDE_FILES} ${SH_INCLUDE_DEPR})
 list(APPEND             SOURCE_FILES    ${SH_SOURCE_FILES}  ${SH_SOURCE_DEPR})
@@ -158,8 +152,6 @@ if(${CMAKE_GENERATOR} MATCHES "Xcode")
                                                       ${PROGRAM_FILES}
                                                       ${RESOURCE_FILES})
 
-    source_group("Deprecated\\include"          FILES ${SH_INCLUDE_DEPR})
-    source_group("Deprecated\\src"              FILES ${SH_SOURCE_DEPR})
     source_group("Thrift IDL"                   FILES ${THIRFT_FILES})
     source_group("Resource\\Shader Files"       FILES ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES})
     source_group("Resource\\CAD Files"          FILES ${ICUB_HAND_FILES})
