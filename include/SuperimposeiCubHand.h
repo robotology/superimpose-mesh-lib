@@ -1,5 +1,5 @@
-#ifndef SUPERIMPOSEHAND_H
-#define SUPERIMPOSEHAND_H
+#ifndef SUPERIMPOSEHANDTHREAD_H
+#define SUPERIMPOSEHANDTHREAD_H
 
 #include <unordered_map>
 
@@ -17,15 +17,15 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "SuperimposeHandSkeletonThread.h"
-#include "SuperimposeHandCADThread.h"
+#include "SiCHSkeleton.h"
+#include "SiCHCAD.h"
 #include "src/SuperimposeHandIDL.h"
 
 typedef std::unordered_map<std::string, yarp::os::ConstString> PartFileMap;
 
 
-class SuperimposeHand : public yarp::os::RFModule,
-                        public SuperimposeHandIDL
+class SuperimposeiCubHand : public yarp::os::RFModule,
+                            public SuperimposeHandIDL
 {
 private:
     const yarp::os::ConstString log_ID;
@@ -56,9 +56,9 @@ private:
     yarp::dev::PolyDriver   gaze_driver;
     yarp::dev::IGazeControl *itf_head_gaze;
 
-    SuperimposeHandSkeletonThread *trd_left_cam_skeleton = nullptr;
+    SiCHSkeleton             *trd_left_cam_skeleton = nullptr;
 
-    SuperimposeHandCADThread *trd_left_cam_cad = nullptr;
+    SiCHCAD                  *trd_left_cam_cad = nullptr;
     yarp::os::ConstString    shader_background_vert;
     yarp::os::ConstString    shader_background_frag;
     yarp::os::ConstString    shader_model_vert;
@@ -105,7 +105,7 @@ protected:
     std::string quit      ();
 
 public:
-    SuperimposeHand     ();
+    SuperimposeiCubHand ();
     double getPeriod    () { return 0.0; }
     bool configure      (yarp::os::ResourceFinder &rf);
     void setWindow      (GLFWwindow *window) { this->window = window; }
@@ -113,4 +113,4 @@ public:
     bool close          ();    
 };
 
-#endif /* SUPERIMPOSEHAND_H */
+#endif /* SUPERIMPOSEHANDTHREAD_H */

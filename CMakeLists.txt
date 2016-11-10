@@ -12,54 +12,57 @@ else()
     set(SH_VERSION "${SH_VERSION_MAJOR}.${SH_VERSION_MINOR}.${SH_VERSION_PATCH}")
 endif()
 
-#[[                            DEPENDENCIES BEGIN                             ]]
-list(APPEND CMAKE_MODULE_PATH   "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-find_package(PkgConfig      REQUIRED)
-find_package(YARP           REQUIRED)
-find_package(ICUB           REQUIRED)
-find_package(ICUBcontrib    REQUIRED)
-find_package(OpenCV         REQUIRED)
-find_package(OpenGL         REQUIRED)
-find_package(GLEW           REQUIRED)
-find_package(GLFW3          REQUIRED)
-#pkg_search_module(GLFW      REQUIRED    glfw3)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    pkg_search_module(glm   REQUIRED    glm)
-else()
-    find_package(glm        REQUIRED)
-endif()
-find_package(assimp         REQUIRED)
-
-list(APPEND CMAKE_MODULE_PATH   ${YARP_MODULE_PATH}
-                                ${ICUB_MODULE_PATH}
-                                ${ICUBCONTRIB_MODULE_PATH})
-#[[                             DEPENDENCIES END                              ]]
-
-
+### --- FILES --- ###
+set(INCLUDE_FILES)
+set(SOURCE_FILES)
+set(PROGRAM_FILES)
+set(RESOURCE_FILES)
+### --- INCLUDE & SOURCE FILES --- ###
 set(INCLUDE_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(SHADERS_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/shader)
-set(ICUB_MESH_EXT       obj)
-set(ICUB_HAND_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/icub_right_hand/${ICUB_MESH_EXT})
-
-
-set(INCLUDE_FILES       ${INCLUDE_DIR}/Shader.h
-                        ${INCLUDE_DIR}/Mesh.h
+set(SH_INCLUDE_FILES    ${INCLUDE_DIR}/Mesh.h
                         ${INCLUDE_DIR}/Model.h
-                        ${INCLUDE_DIR}/SuperimposeHandCADThread.h
-                        ${INCLUDE_DIR}/ThreadControllerSHC.h
-                        ${INCLUDE_DIR}/SuperimposeHandSkeletonThread.h
-                        ${INCLUDE_DIR}/SuperimposeHand.h)
-set(SOURCE_FILES        src/main.cpp
-                        src/Shader.cpp
-                        src/Mesh.cpp
-                        src/Model.cpp
-                        src/SuperimposeHandCADThread.cpp
-                        src/ThreadControllerSHC.cpp
-                        src/SuperimposeHandSkeletonThread.cpp
-                        src/SuperimposeHand.cpp)
-set(THIRFT_FILES        src/idl_rfm.thrift
-                        src/idl_mesh.thrift)
+                        ${INCLUDE_DIR}/Shader.h
+                        ${INCLUDE_DIR}/SuperImpose.h
+                        ${INCLUDE_DIR}/SICAD.h
+                        ${INCLUDE_DIR}/SISkeleton.h
+                        ${INCLUDE_DIR}/SuperimposerFactory.h
+                        ${INCLUDE_DIR}/CADSuperimposer.h
+                        ${INCLUDE_DIR}/SkeletonSuperimposer.h
+                        ${INCLUDE_DIR}/ThreadControllerSHC.h)
+set(SH_INCLUDE_DEPR     ${INCLUDE_DIR}/SuperimposeiCubHand.h
+                        ${INCLUDE_DIR}/SiCHCAD.h
+                        ${INCLUDE_DIR}/SiCHSkeleton.h)
+
+set(SOURCE_DIR          ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(SH_SOURCE_FILES     ${SOURCE_DIR}/main.cpp
+                        ${SOURCE_DIR}/Mesh.cpp
+                        ${SOURCE_DIR}/Model.cpp
+                        ${SOURCE_DIR}/Shader.cpp
+                        ${SOURCE_DIR}/SuperimposerFactory.cpp
+                        ${SOURCE_DIR}/CADSuperimposer.cpp
+                        ${SOURCE_DIR}/SkeletonSuperimposer.cpp
+                        ${SOURCE_DIR}/SICAD.cpp
+                        ${SOURCE_DIR}/SISkeleton.cpp
+                        ${SOURCE_DIR}/ThreadControllerSHC.cpp)
+set(SH_SOURCE_DEPR      ${SOURCE_DIR}/SuperimposeiCubHand.cpp
+                        ${SOURCE_DIR}/SiCHCAD.cpp
+                        ${SOURCE_DIR}/SiCHSkeleton.cpp)
+
+list(APPEND             INCLUDE_FILES   ${SH_INCLUDE_FILES} ${SH_INCLUDE_DEPR})
+list(APPEND             SOURCE_FILES    ${SH_SOURCE_FILES}  ${SH_SOURCE_DEPR})
+
+
+### --- EXTRA FILES --- ###
+set(THIRFT_FILES        ${SOURCE_DIR}/idl_rfm.thrift
+                        ${SOURCE_DIR}/idl_mesh.thrift)
+
+set(SHADERS_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/shader)
+set(SHADERS_VERT_FILES  ${SHADERS_DIR}/shader_model.vert
+                        ${SHADERS_DIR}/shader_background.vert)
+set(SHADERS_FRAG_FILES  ${SHADERS_DIR}/shader_model.frag
+                        ${SHADERS_DIR}/shader_model_simple.frag
+                        ${SHADERS_DIR}/shader_background.frag)
 
 set(PROGRAM_CONFIG      config/superimpose-hand_config.ini)
 set(PROGRAM_APP         applications/superimpose-hand.xml.template
@@ -71,12 +74,8 @@ set(SIM_PROGRAM_APP     applications/SIM_superimpose-hand.xml
                         applications/SIM_Background_Apps.xml
                         applications/SIM_Gazebo_Background_Apps.xml)
 
-set(SHADERS_VERT_FILES  ${SHADERS_DIR}/shader_model.vert
-                        ${SHADERS_DIR}/shader_background.vert)
-set(SHADERS_FRAG_FILES  ${SHADERS_DIR}/shader_model.frag
-                        ${SHADERS_DIR}/shader_model_simple.frag
-                        ${SHADERS_DIR}/shader_background.frag)
-
+set(ICUB_MESH_EXT       obj)
+set(ICUB_HAND_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/icub_right_hand/${ICUB_MESH_EXT})
 set(ICUB_HAND_FILES     ${ICUB_HAND_DIR}/r_palm.${ICUB_MESH_EXT}
                         ${ICUB_HAND_DIR}/r_ail0.${ICUB_MESH_EXT}
                         ${ICUB_HAND_DIR}/r_ail1.${ICUB_MESH_EXT}
@@ -94,14 +93,32 @@ set(ICUB_HAND_FILES     ${ICUB_HAND_DIR}/r_palm.${ICUB_MESH_EXT}
                         ${ICUB_HAND_DIR}/r_tl3.${ICUB_MESH_EXT}
                         ${ICUB_HAND_DIR}/r_tl4.${ICUB_MESH_EXT})
 
+list(APPEND             PROGRAM_FILES   ${PROGRAM_CONFIG}
+                                        ${PROGRAM_APP}
+                                        ${SIM_PROGRAM_CONFIG}
+                                        ${SIM_PROGRAM_APP})
+list(APPEND             RESOURCE_FILES  ${SHADERS_VERT_FILES}
+                                        ${SHADERS_FRAG_FILES}
+                                        ${ICUB_HAND_FILES})
 
-set(PROGRAM_FILES       ${PROGRAM_CONFIG}       ${PROGRAM_APP}
-                        ${SIM_PROGRAM_CONFIG}   ${SIM_PROGRAM_APP})
-set(RESOURCE_FILES      ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES}
-                        ${ICUB_HAND_FILES})
 
-option(IS_ICUB_SIM
-       "Choose to use the iCub_SIM and the associated application files" ON)
+### --- INCLUDE & EXECUTABLE VARS --- ###
+list(APPEND CMAKE_MODULE_PATH   "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+find_package(PkgConfig      REQUIRED)
+find_package(YARP           REQUIRED)
+find_package(ICUB           REQUIRED)
+find_package(ICUBcontrib    REQUIRED)
+find_package(OpenCV         REQUIRED)
+find_package(OpenGL         REQUIRED)
+find_package(GLEW           REQUIRED)
+find_package(GLFW3          REQUIRED)
+find_package(glm            REQUIRED)
+find_package(assimp         REQUIRED)
+
+list(APPEND CMAKE_MODULE_PATH   ${YARP_MODULE_PATH}
+                                ${ICUB_MODULE_PATH}
+                                ${ICUBCONTRIB_MODULE_PATH})
 
 include(YarpInstallationHelpers)
 include(ICUBcontribHelpers)
@@ -115,6 +132,8 @@ include_directories(${INCLUDE_DIR}
                     ${OPENGL_INCLUDE_DIR}
                     ${ASSIMP_INCLUDE_DIRS})
 
+
+### --- PACKAGES --- ###
 set(LIBS    ${YARP_LIBRARIES}
             ${ICUB_LIBRARIES}
             ctrlLib
@@ -126,25 +145,39 @@ set(LIBS    ${YARP_LIBRARIES}
             glfw
             -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES})
 
-yarp_add_idl(IDL_GEN_FILES ${THIRFT_FILES})
+yarp_add_idl(IDL_GEN_SOURCE ${THIRFT_FILES})
 
+LIST(APPEND SOURCE_FILES ${IDL_GEN_SOURCE})
+
+
+### --- MAIN --- ###
 if(${CMAKE_GENERATOR} MATCHES "Xcode")
-    add_executable(${PROJECT_NAME}  ${INCLUDE_FILES}
-                                    ${SOURCE_FILES}
-                                    ${THIRFT_FILES}
-                                    ${PROGRAM_FILES}
-                                    ${RESOURCE_FILES}
-                                    ${IDL_GEN_FILES})
+    add_executable(${PROJECT_NAME}                    ${INCLUDE_FILES}
+                                                      ${SOURCE_FILES}
+                                                      ${THIRFT_FILES}
+                                                      ${PROGRAM_FILES}
+                                                      ${RESOURCE_FILES})
+
+    source_group("Deprecated\\include"          FILES ${SH_INCLUDE_DEPR})
+    source_group("Deprecated\\src"              FILES ${SH_SOURCE_DEPR})
     source_group("Thrift IDL"                   FILES ${THIRFT_FILES})
     source_group("Resource\\Shader Files"       FILES ${SHADERS_VERT_FILES} ${SHADERS_FRAG_FILES})
     source_group("Resource\\CAD Files"          FILES ${ICUB_HAND_FILES})
     source_group("YARP\\Configuration Files"    FILES ${PROGRAM_CONFIG} ${SIM_PROGRAM_CONFIG})
     source_group("YARP\\Application Files"      FILES ${PROGRAM_APP} ${SIM_PROGRAM_APP})
 else()
-    add_executable(${PROJECT_NAME}  ${INCLUDE_FILES}
-                                    ${SOURCE_FILES}
-                                    ${IDL_GEN_FILES})
+    add_executable(${PROJECT_NAME}                    ${INCLUDE_FILES}
+                                                      ${SOURCE_FILES})
 endif()
+
+target_link_libraries(${PROJECT_NAME} ${LIBS})
+
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_nullptr cxx_constexpr)
+
+
+### --- CUSTOM --- ###
+option(IS_ICUB_SIM
+       "Choose to use the iCub_SIM and the associated application files" ON)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-D GLFW_MAC)
@@ -158,11 +191,6 @@ endif()
 add_custom_command(TARGET  ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E make_directory                       $<TARGET_FILE_DIR:${PROJECT_NAME}>
                    COMMAND ${CMAKE_COMMAND} -E copy             ${RESOURCE_FILES}   $<TARGET_FILE_DIR:${PROJECT_NAME}>)
-
-
-target_link_libraries(${PROJECT_NAME} ${LIBS})
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_nullptr cxx_constexpr)
-
 
 install(TARGETS     ${PROJECT_NAME}     DESTINATION bin)
 if(IS_ICUB_SIM)

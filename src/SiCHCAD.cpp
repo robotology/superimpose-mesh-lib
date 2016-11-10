@@ -1,4 +1,4 @@
-#include "SuperimposeHandCADThread.h"
+#include "SiCHCAD.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -36,7 +36,7 @@ using namespace iCub::ctrl;
 using namespace iCub::iKin;
 
 
-bool SuperimposeHandCADThread::setCommandPort()
+bool SiCHCAD::setCommandPort()
 {
     yInfo() << log_ID << "Opening command port.";
     if (!port_command.open("/"+PROJECT_NAME+"/cad/cmd")) {
@@ -53,11 +53,11 @@ bool SuperimposeHandCADThread::setCommandPort()
 }
 
 
-SuperimposeHandCADThread::SuperimposeHandCADThread(const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver, const ConstString &shader_background_vert, const ConstString &shader_background_frag, const ConstString &shader_model_vert, const ConstString &shader_model_frag, const std::unordered_map<std::string, ConstString> &cad_hand, GLFWwindow *window) :
-        log_ID("[SuperimposeHandCADThread]"), laterality(laterality), camera(camera), arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver), shader_background_vert(shader_background_vert), shader_background_frag(shader_background_frag), shader_model_vert(shader_model_vert), shader_model_frag(shader_model_frag), cad_hand(cad_hand), camsel((camera == "left")? 0:1), window(window) { }
+SiCHCAD::SiCHCAD(const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver, const ConstString &shader_background_vert, const ConstString &shader_background_frag, const ConstString &shader_model_vert, const ConstString &shader_model_frag, const std::unordered_map<std::string, ConstString> &cad_hand, GLFWwindow *window) :
+        log_ID("[SiCHCAD]"), laterality(laterality), camera(camera), arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver), shader_background_vert(shader_background_vert), shader_background_frag(shader_background_frag), shader_model_vert(shader_model_vert), shader_model_frag(shader_model_frag), cad_hand(cad_hand), camsel((camera == "left")? 0:1), window(window) { }
 
 
-bool SuperimposeHandCADThread::threadInit() {
+bool SiCHCAD::threadInit() {
     yInfo() << log_ID << "Initializing hand CAD drawing thread.";
 
     yInfo() << log_ID << "Setting interfaces";
@@ -221,7 +221,7 @@ bool SuperimposeHandCADThread::threadInit() {
 }
 
 
-void SuperimposeHandCADThread::run() {
+void SiCHCAD::run() {
     Vector ee_x(3);
     Vector ee_o(4);
     Vector cam_x(3);
@@ -374,12 +374,12 @@ void SuperimposeHandCADThread::run() {
 }
 
 
-void SuperimposeHandCADThread::onStop() {
+void SiCHCAD::onStop() {
     inport_renderer_img.interrupt();
 }
 
 
-void SuperimposeHandCADThread::threadRelease() {
+void SiCHCAD::threadRelease() {
     yInfo() << log_ID << "Deallocating resource of renderer thread.";
 
     outport_renderer_img.interrupt();

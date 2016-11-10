@@ -1,4 +1,4 @@
-#include "SuperimposeHandSkeletonThread.h"
+#include "SiCHSkeleton.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -17,11 +17,11 @@ using namespace iCub::ctrl;
 using namespace iCub::iKin;
 
 
-SuperimposeHandSkeletonThread::SuperimposeHandSkeletonThread(const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) :
-    log_ID("[SuperimposeHandSkeletonThread]"), laterality(laterality), camera(camera), camsel((camera == "left")? 0:1), arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {}
+SiCHSkeleton::SiCHSkeleton(const ConstString &laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) :
+    log_ID("[SiCHSkeleton]"), laterality(laterality), camera(camera), camsel((camera == "left")? 0:1), arm_remote_driver(arm_remote_driver), arm_cartesian_driver(arm_cartesian_driver), gaze_driver(gaze_driver) {}
 
 
-bool SuperimposeHandSkeletonThread::threadInit() {
+bool SiCHSkeleton::threadInit() {
     yInfo() << log_ID << "Initializing hand skeleton drawing thread.";
 
     yInfo() << log_ID << "Setting interfaces";
@@ -100,7 +100,7 @@ bool SuperimposeHandSkeletonThread::threadInit() {
 }
 
 
-void SuperimposeHandSkeletonThread::run() {
+void SiCHSkeleton::run() {
     Vector ee_x(3);
     Vector ee_o(4);
     Vector cam_x(3);
@@ -169,12 +169,12 @@ void SuperimposeHandSkeletonThread::run() {
 }
 
 
-void SuperimposeHandSkeletonThread::onStop() {
+void SiCHSkeleton::onStop() {
     inport_skeleton_img.interrupt();
 }
 
 
-void SuperimposeHandSkeletonThread::threadRelease() {
+void SiCHSkeleton::threadRelease() {
     yInfo() << log_ID << "Deallocating resource of hand skeleton drawing thread.";
 
     outport_skeleton_img.interrupt();
@@ -183,6 +183,6 @@ void SuperimposeHandSkeletonThread::threadRelease() {
     if (!inport_skeleton_img.isClosed())  inport_skeleton_img.close();
     if (!outport_skeleton_img.isClosed()) outport_skeleton_img.close();
     if (!port_cam_pose.isClosed())        port_cam_pose.close();
-    
+
     yInfo() << log_ID << "Deallocation completed!";
 }
