@@ -27,7 +27,7 @@
 
 SICAD::SICAD() : log_ID_("[SH-CAD]")
 {
-    show_background_ = true;
+    show_background_ = false;
     mesh_wires_      = false;
     mesh_mmaps_      = NEAREST;
 }
@@ -247,6 +247,12 @@ bool SICAD::Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, co
 bool SICAD::getBackgroundOpt() const
 {
     return show_background_;
+}
+
+
+void SICAD::setBackgroundOpt(bool show_background)
+{
+    show_background_ = show_background;;
 }
 
 

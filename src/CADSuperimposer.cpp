@@ -6,7 +6,6 @@
 #include <yarp/os/LogStream.h>
 #include <iCub/ctrl/math.h>
 
-#define PROJECT_NAME yarp::os::ConstString("superimpose_hand")
 #define WINDOW_WIDTH  320
 #define WINDOW_HEIGHT 240
 #ifdef GLFW_RETINA
@@ -32,7 +31,7 @@ using namespace iCub::iKin;
 bool CADSuperimposer::setCommandPort()
 {
 //    yInfo() << log_ID_ << "Opening command port.";
-//    if (!port_command.open("/"+PROJECT_NAME+"/cad/cmd"))
+//    if (!port_command.open("/"+project_name_+"/cad/cmd"))
 //    {
 //        yError() << log_ID_ << "Cannot open the command port.";
 //        return false;
@@ -48,7 +47,7 @@ bool CADSuperimposer::setCommandPort()
 }
 
 
-CADSuperimposer::CADSuperimposer(const ConstString & laterality, const ConstString & camera, PolyDriver & arm_remote_driver, PolyDriver & arm_cartesian_driver, PolyDriver & gaze_driver, const SuperImpose::ObjFileMap & cad_hand, GLFWwindow *& window) : log_ID_("[CADSuperimposer]"), laterality_(laterality), camera_(camera), camsel_((camera == "left")? 0:1), arm_remote_driver_(arm_remote_driver), arm_cartesian_driver_(arm_cartesian_driver), gaze_driver_(gaze_driver), cad_hand_(cad_hand), window_(window) {}
+CADSuperimposer::CADSuperimposer(const ConstString & project_name, const ConstString & laterality, const ConstString & camera, PolyDriver & arm_remote_driver, PolyDriver & arm_cartesian_driver, PolyDriver & gaze_driver, const SuperImpose::ObjFileMap & cad_hand, GLFWwindow *& window) : log_ID_("[CADSuperimposer]"), project_name_(project_name), laterality_(laterality), camera_(camera), camsel_((camera == "left")? 0:1), arm_remote_driver_(arm_remote_driver), arm_cartesian_driver_(arm_cartesian_driver), gaze_driver_(gaze_driver), cad_hand_(cad_hand), window_(window) {}
 
 
 bool CADSuperimposer::threadInit()
@@ -92,13 +91,13 @@ bool CADSuperimposer::threadInit()
 
     yInfo() << log_ID_ << "Opening ports for CAD images...";
 
-    if (!inport_renderer_img_.open("/"+PROJECT_NAME+"/cad/cam/"+camera_+":i"))
+    if (!inport_renderer_img_.open("/"+project_name_+"/cad/cam/"+camera_+":i"))
     {
         yError() << log_ID_ << "Cannot open input image port for "+camera_+" camera!";
         return false;
     }
 
-    if (!outport_renderer_img_.open("/"+PROJECT_NAME+"/cad/cam/"+camera_+":o"))
+    if (!outport_renderer_img_.open("/"+project_name_+"/cad/cam/"+camera_+":o"))
     {
         yError() << log_ID_ << "Cannot open output image port for "+camera_+" camera!";
         return false;
@@ -108,7 +107,7 @@ bool CADSuperimposer::threadInit()
 
     yInfo() << log_ID_ << "Opening ports for "+camera_+" camera pose...";
 
-    if (!port_cam_pose_.open("/"+PROJECT_NAME+"/cad/"+camera_+"/pose:o"))
+    if (!port_cam_pose_.open("/"+project_name_+"/cad/"+camera_+"/pose:o"))
     {
         yError() << log_ID_ << "Cannot open "+camera_+" camera pose output port!";
         return false;

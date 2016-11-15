@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     if (!openglSetUp(window, WINDOW_WIDTH, WINDOW_HEIGHT)) return -1;
 
     /* SuperimposeHand, derived from RFModule, must be declared by the main thread (thread_0). */
-    SuperimposerFactory sh;
+    SuperimposerFactory sh("superimpose_hand");
 
     sh.setWindow(window);
     if (sh.runModuleThreaded(rf) == 0)

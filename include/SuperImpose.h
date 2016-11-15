@@ -19,7 +19,7 @@ public:
 
     typedef typename std::multimap<std::string, ObjPose> ObjPoseMap;
 
-    ~SuperImpose() {};
+    virtual ~SuperImpose() {};
 
     virtual bool Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img) = 0;
 

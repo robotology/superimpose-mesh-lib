@@ -18,6 +18,7 @@ class SkeletonSuperimposer : public yarp::os::Thread
 {
 private:
     const yarp::os::ConstString     log_ID_;
+    const yarp::os::ConstString     project_name_;
     const yarp::os::ConstString     laterality_;
     const yarp::os::ConstString     camera_;
     const int                       camsel_;
@@ -43,7 +44,7 @@ private:
     SISkeleton drawer_;
 
 public:
-    SkeletonSuperimposer(const yarp::os::ConstString & laterality, const yarp::os::ConstString & camera, yarp::dev::PolyDriver & arm_remote_driver, yarp::dev::PolyDriver & arm_cartesian_driver, yarp::dev::PolyDriver & gaze_driver);
+    SkeletonSuperimposer(const yarp::os::ConstString & project_name, const yarp::os::ConstString & laterality, const yarp::os::ConstString & camera, yarp::dev::PolyDriver & arm_remote_driver, yarp::dev::PolyDriver & arm_cartesian_driver, yarp::dev::PolyDriver & gaze_driver);
 
     bool threadInit   ();
     void run          ();

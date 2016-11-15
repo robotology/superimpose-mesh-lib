@@ -7,7 +7,6 @@
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>
 
-#define PROJECT_NAME ConstString("superimpose_hand")
 
 using namespace yarp::dev;
 using namespace yarp::math;
@@ -17,7 +16,7 @@ using namespace iCub::ctrl;
 using namespace iCub::iKin;
 
 
-SkeletonSuperimposer::SkeletonSuperimposer(const ConstString & laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : log_ID_("[SkeletonSuperimposer]"), laterality_(laterality), camera_(camera), camsel_((camera == "left")? 0:1), arm_remote_driver_(arm_remote_driver), arm_cartesian_driver_(arm_cartesian_driver), gaze_driver_(gaze_driver) {}
+SkeletonSuperimposer::SkeletonSuperimposer(const ConstString & project_name, const ConstString & laterality, const ConstString &camera, PolyDriver &arm_remote_driver, PolyDriver &arm_cartesian_driver, PolyDriver &gaze_driver) : log_ID_("[SkeletonSuperimposer]"), project_name_(project_name), laterality_(laterality), camera_(camera), camsel_((camera == "left")? 0:1), arm_remote_driver_(arm_remote_driver), arm_cartesian_driver_(arm_cartesian_driver), gaze_driver_(gaze_driver) {}
 
 
 bool SkeletonSuperimposer::threadInit() {
@@ -87,13 +86,13 @@ bool SkeletonSuperimposer::threadInit() {
 
     yInfo() << log_ID_ << "Opening ports for skeleton images.";
 
-    if (!inport_skeleton_img_.open("/"+PROJECT_NAME+"/skeleton/cam/"+camera_+":i"))
+    if (!inport_skeleton_img_.open("/"+project_name_+"/skeleton/cam/"+camera_+":i"))
     {
         yError() << log_ID_ << "Cannot open input image port for "+camera_+".";
         return false;
     }
 
-    if (!outport_skeleton_img_.open("/"+PROJECT_NAME+"/skeleton/cam/"+camera_+":o"))
+    if (!outport_skeleton_img_.open("/"+project_name_+"/skeleton/cam/"+camera_+":o"))
     {
         yError() << log_ID_ << "Cannot open output image port for "+camera_+".";
         return false;
@@ -103,7 +102,7 @@ bool SkeletonSuperimposer::threadInit() {
 
     yInfo() << log_ID_ << "Opening ports for "+camera_+" camera_ pose.";
 
-    if (!port_cam_pose_.open("/"+PROJECT_NAME+"/skeleton/cam/"+camera_+"/pose:o"))
+    if (!port_cam_pose_.open("/"+project_name_+"/skeleton/cam/"+camera_+"/pose:o"))
     {
         yError() << log_ID_ << "Cannot open "+camera_+" camera_ pose output port.";
         return false;

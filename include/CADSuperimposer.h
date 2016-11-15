@@ -25,7 +25,8 @@
 class CADSuperimposer : public yarp::os::Thread
 {
 private:
-    const yarp::os::ConstString     log_ID_;
+    const yarp::os::ConstString      log_ID_;
+    const yarp::os::ConstString      project_name_;
 
     // TODO: rivedere il costruttore ed instanziare i PolyDriver in ThreadInit.
     const yarp::os::ConstString      laterality_;
@@ -60,7 +61,7 @@ private:
     bool setCommandPort();
 
 public:
-    CADSuperimposer(const yarp::os::ConstString & laterality, const yarp::os::ConstString & camera, yarp::dev::PolyDriver & arm_remote_driver, yarp::dev::PolyDriver & arm_cartesian_driver, yarp::dev::PolyDriver & gaze_driver, const SuperImpose::ObjFileMap & cad_hand, GLFWwindow *& window);
+    CADSuperimposer(const yarp::os::ConstString & project_name, const yarp::os::ConstString & laterality, const yarp::os::ConstString & camera, yarp::dev::PolyDriver & arm_remote_driver, yarp::dev::PolyDriver & arm_cartesian_driver, yarp::dev::PolyDriver & gaze_driver, const SuperImpose::ObjFileMap & cad_hand, GLFWwindow *& window);
 
     bool threadInit   ();
     void run          ();

@@ -17,39 +17,41 @@ class SICAD : public SuperImpose
 public:
     typedef typename std::unordered_map<std::string, Model *> ObjModel;
 
-    SICAD();
-
-    ~SICAD();
-
-    bool Configure(GLFWwindow *& window, const ObjFileMap & obj2fil_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY);
-
-    bool Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img);
-
 private:
-    const std::string  log_ID_;
-    
-    GLFWwindow * window_;
-
     enum MipMaps
     {
         NEAREST = 0,
         LINEAR  = 1
     };
 
-    bool      show_background_;
-    bool      mesh_wires_;
-    MipMaps   mesh_mmaps_;
-    GLuint    texture_;
-    GLuint    vao_;
-    GLuint    ebo_;
-    GLuint    vbo_;
-    glm::mat4 root_to_ogl_;
-    glm::mat4 back_proj_;
-    glm::mat4 projection_;
-    ObjModel  model_obj_;
-    Shader    * shader_background_ = nullptr;
-    Shader    * shader_cad_        = nullptr;
+    const std::string   log_ID_;
+    
+    GLFWwindow        * window_;
 
+    bool                show_background_;
+    bool                mesh_wires_;
+    MipMaps             mesh_mmaps_;
+    GLuint              texture_;
+    GLuint              vao_;
+    GLuint              ebo_;
+    GLuint              vbo_;
+    glm::mat4           root_to_ogl_;
+    glm::mat4           back_proj_;
+    glm::mat4           projection_;
+    ObjModel            model_obj_;
+    Shader            * shader_background_ = nullptr;
+    Shader            * shader_cad_        = nullptr;
+
+public:
+    SICAD();
+
+    virtual ~SICAD();
+
+    bool Configure(GLFWwindow *& window, const ObjFileMap & obj2fil_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY);
+
+    bool Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img);
+
+    void    setBackgroundOpt(bool show_background);
     bool    getBackgroundOpt() const;
     bool    getWireframeOpt()  const;
     MipMaps getMipmapsOpt()    const;

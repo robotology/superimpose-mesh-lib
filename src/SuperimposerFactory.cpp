@@ -9,8 +9,6 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 
-#define PROJECT_NAME ConstString("superimpose_hand")
-
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -31,7 +29,7 @@ bool SuperimposerFactory::setRightArmRemoteControlboard()
 {
     Property rightarm_remote_options;
     rightarm_remote_options.put("device", "remote_controlboard");
-    rightarm_remote_options.put("local", "/"+PROJECT_NAME+"/control_right_arm");
+    rightarm_remote_options.put("local", "/"+project_name_+"/control_right_arm");
     rightarm_remote_options.put("remote", "/"+robot_+"/right_arm");
 
     rightarm_remote_driver_.open(rightarm_remote_options);
@@ -88,7 +86,7 @@ bool SuperimposerFactory::setRightArmCartesianController()
 {
     Property rightarm_cartesian_options;
     rightarm_cartesian_options.put("device", "cartesiancontrollerclient");
-    rightarm_cartesian_options.put("local", "/"+PROJECT_NAME+"/cart_right_arm");
+    rightarm_cartesian_options.put("local", "/"+project_name_+"/cart_right_arm");
     rightarm_cartesian_options.put("remote", "/"+robot_+"/cartesianController/right_arm");
 
     rightarm_cartesian_driver_.open(rightarm_cartesian_options);
@@ -112,7 +110,7 @@ bool SuperimposerFactory::setHeadRemoteControlboard()
 {
     Property head_option;
     head_option.put("device", "remote_controlboard");
-    head_option.put("local", "/"+PROJECT_NAME+"/control_head");
+    head_option.put("local", "/"+project_name_+"/control_head");
     head_option.put("remote", "/"+robot_+"/head");
 
     head_remote_driver_.open(head_option);
@@ -160,7 +158,7 @@ bool SuperimposerFactory::setGazeController()
 {
     Property gaze_option;
     gaze_option.put("device", "gazecontrollerclient");
-    gaze_option.put("local", "/"+PROJECT_NAME+"/gaze");
+    gaze_option.put("local", "/"+project_name_+"/gaze");
     gaze_option.put("remote", "/iKinGazeCtrl");
 
     gaze_driver_.open(gaze_option);
@@ -203,7 +201,7 @@ bool SuperimposerFactory::setTorsoDOF()
 bool SuperimposerFactory::setCommandPort()
 {
     yInfo() << log_ID_ << "Opening command port.";
-    if (!port_command_.open("/"+PROJECT_NAME+"/cmd")) {
+    if (!port_command_.open("/"+project_name_+"/cmd")) {
         yError() << log_ID_ << "Cannot open the command port.";
         return false;
     }
@@ -379,7 +377,7 @@ bool SuperimposerFactory::close_fingers()
 bool SuperimposerFactory::view_skeleton(const bool status)
 {
     if (!superimpose_skeleton_ && status) {
-        trd_left_cam_skeleton_ = new SkeletonSuperimposer("right", "left", rightarm_remote_driver_, rightarm_cartesian_driver_, gaze_driver_);
+        trd_left_cam_skeleton_ = new SkeletonSuperimposer(project_name_, "right", "left", rightarm_remote_driver_, rightarm_cartesian_driver_, gaze_driver_);
 
         if (trd_left_cam_skeleton_ != NULL) {
             yInfo() << log_ID_ << "Starting skeleton superimposing thread for the right hand on the left camera images...";
@@ -425,7 +423,7 @@ bool SuperimposerFactory::view_skeleton(const bool status)
 
 bool SuperimposerFactory::view_mesh(const bool status) {
     if (!superimpose_mesh_ && status) {
-        trd_left_cam_cad_ = new CADSuperimposer("right", "left", rightarm_remote_driver_, rightarm_cartesian_driver_, gaze_driver_, cad_hand_, window_);
+        trd_left_cam_cad_ = new CADSuperimposer(project_name_, "right", "left", rightarm_remote_driver_, rightarm_cartesian_driver_, gaze_driver_, cad_hand_, window_);
         if (trd_left_cam_cad_ != NULL) {
             yInfo() << log_ID_ << "Starting mesh superimposing thread for the right hand on the left camera images...";
 
@@ -477,12 +475,15 @@ std::string SuperimposerFactory::quit() {
 }
 
 
-SuperimposerFactory::SuperimposerFactory() : log_ID_("[SuperimposerFactory]") {}
+SuperimposerFactory::SuperimposerFactory(const yarp::os::ConstString & project_name) : log_ID_("[SuperimposerFactory]"), project_name_(project_name) {}
+
+
+SuperimposerFactory::SuperimposerFactory() : log_ID_("[SuperimposerFactory]"), project_name_("SuperimposerModule") {}
 
 
 bool SuperimposerFactory::configure(ResourceFinder &rf)
 {
-    this->setName(PROJECT_NAME.c_str());
+    this->setName(project_name_.c_str());
 
     /* Setting default parameters. */
     start_ = false;
