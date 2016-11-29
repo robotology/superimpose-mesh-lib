@@ -61,12 +61,9 @@ set(SHADERS_FRAG_FILES  ${SHADERS_DIR}/shader_model.frag
 set(PROGRAM_CONFIG      config/superimpose-hand_config.ini)
 set(PROGRAM_APP         applications/superimpose-hand.xml.template
                         applications/superimpose-hand-dump.xml.template)
-set(SIM_PROGRAM_CONFIG  config/SIM_superimpose-hand_config.ini
-                        config/SIM_Gazebo_superimpose-hand_config.ini)
+set(SIM_PROGRAM_CONFIG  config/SIM_superimpose-hand_config.ini)
 set(SIM_PROGRAM_APP     applications/SIM_superimpose-hand.xml
-                        applications/SIM_Gazebo_superimpose-hand.xml
-                        applications/SIM_Background_Apps.xml
-                        applications/SIM_Gazebo_Background_Apps.xml)
+                        applications/SIM_Background_Apps.xml)
 
 set(ICUB_MESH_EXT       obj)
 set(ICUB_HAND_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/icub_right_hand/${ICUB_MESH_EXT})
@@ -168,9 +165,6 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_nullptr cxx_constexpr)
 
 
 ### --- CUSTOM --- ###
-option(IS_ICUB_SIM
-       "Choose to use the iCub_SIM and the associated application files" ON)
-
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-D GLFW_MAC)
     option(IS_APPLE_RETINA
@@ -185,13 +179,11 @@ add_custom_command(TARGET  ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy             ${RESOURCE_FILES}   $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
 install(TARGETS     ${PROJECT_NAME}     DESTINATION bin)
-if(IS_ICUB_SIM)
-    yarp_install(FILES  ${SIM_PROGRAM_APP}      DESTINATION     ${ICUBCONTRIB_APPLICATIONS_INSTALL_DIR})
-    yarp_install(FILES  ${SIM_PROGRAM_CONFIG}   DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
-else()
-    yarp_install(FILES  ${PROGRAM_APP}          DESTINATION     ${ICUBCONTRIB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
-    yarp_install(FILES  ${PROGRAM_CONFIG}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
-endif()
-yarp_install(FILES      ${RESOURCE_FILES}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
+
+yarp_install(FILES  ${SIM_PROGRAM_APP}      DESTINATION     ${ICUBCONTRIB_APPLICATIONS_INSTALL_DIR})
+yarp_install(FILES  ${SIM_PROGRAM_CONFIG}   DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
+yarp_install(FILES  ${PROGRAM_APP}          DESTINATION     ${ICUBCONTRIB_APPLICATIONS_TEMPLATES_INSTALL_DIR})
+yarp_install(FILES  ${PROGRAM_CONFIG}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
+yarp_install(FILES  ${RESOURCE_FILES}       DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
 
 icubcontrib_add_uninstall_target()

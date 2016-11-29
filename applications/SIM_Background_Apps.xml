@@ -11,7 +11,7 @@
     <!-- GENERIC INFORMATION-->
     <name>SIM_Background_Apps</name>
     <description>Background applications for iCubSim-based simulations</description>
-    <version>1.4.0</version>
+    <version>1.5.0</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
@@ -33,8 +33,16 @@
     </module>
 
     <module>
-        <name>simCartesianControl</name>
-        <parameters>--robot icubSim</parameters>
+        <name>gazebo</name>
+        <node>yarprun</node>
+        <dependencies>
+            <port timeout="5.0">/yarplogger</port>
+        </dependencies>
+    </module>
+
+    <module>
+        <name>yarprobotinterface</name>
+        <parameters>--context simCartesianControl</parameters>
         <node>yarprun</node>
         <dependencies>
         	<port timeout="5.0">/icubSim/right_arm/state:o</port>
@@ -43,7 +51,7 @@
 
     <module>
         <name>iKinCartesianSolver</name>
-        <parameters>--part right_arm --context cartesianSolver</parameters>
+        <parameters>--context simCartesianControl --part right_arm</parameters>
         <node>yarprun</node>
         <dependencies>
         	<port timeout="5.0">/icubSim/right_arm/state:o</port>
