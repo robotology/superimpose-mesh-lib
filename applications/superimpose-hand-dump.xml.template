@@ -5,7 +5,7 @@
     <!-- GENERIC INFORMATION -->
     <name>superimpose-hand-dump</name>
     <description>Collect data for superimpose-hand module</description>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <authors>
         <author email="claudio.fantacci@iit.it">Claudio Fantacci</author>
@@ -16,6 +16,7 @@
     <module>
         <name>superimpose-hand</name>
         <node>localhost</node>
+        <parameters>--from superimpose-hand_config.ini</parameters>
         <dependencies>
             <port>/icub/camcalib/left/out</port>
             <port>/icub/camcalib/right/out</port>
