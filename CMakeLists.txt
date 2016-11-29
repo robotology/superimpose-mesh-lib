@@ -178,7 +178,9 @@ add_custom_command(TARGET  ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E make_directory                       $<TARGET_FILE_DIR:${PROJECT_NAME}>
                    COMMAND ${CMAKE_COMMAND} -E copy             ${RESOURCE_FILES}   $<TARGET_FILE_DIR:${PROJECT_NAME}>)
 
-install(TARGETS     ${PROJECT_NAME}     DESTINATION bin)
+install(TARGETS     ${PROJECT_NAME}         DESTINATION     bin)
+install(FILES       ${SHADERS_VERT_FILES}
+                    ${SHADERS_FRAG_FILES}   DESTINATION     bin)
 
 yarp_install(FILES  ${SIM_PROGRAM_APP}      DESTINATION     ${ICUBCONTRIB_APPLICATIONS_INSTALL_DIR})
 yarp_install(FILES  ${SIM_PROGRAM_CONFIG}   DESTINATION     ${ICUBCONTRIB_CONTEXTS_INSTALL_DIR}/${PROJECT_NAME})
