@@ -56,27 +56,27 @@ bool SuperimposerFactory::setRightArmRemoteControlboard()
         return false;
     }
 
-    num_rightarm_joint_ = 0;
-    itf_rightarm_pos_->getAxes(&num_rightarm_joint_);
-    yInfo() << log_ID_ << "Total number of right arm joints: " << num_rightarm_joint_ << ".";
-    Vector tmp(static_cast<size_t>(num_rightarm_joint_));
-    for (int i = 0; i < num_rightarm_joint_; ++i) {
-        tmp[i] = 10.0;
-    }
-    if (!itf_rightarm_pos_->setRefAccelerations(tmp.data()))
-    {
-        yError() << log_ID_ << "Error setting right arm joint accelerations.\n";
-        return false;
-    }
-    for (int i = 0; i < num_rightarm_joint_; ++i) {
-        tmp[i] = 15.0;
-        if (!itf_rightarm_pos_->setRefSpeed(i, tmp[i]))
-        {
-            yError() << log_ID_ << "Error setting right arm joint speeds.\n";
-            return false;
-        }
-    }
-    yInfo() << log_ID_ << "Right arm joint speeds and accelerations succesfully set.";
+//    num_rightarm_joint_ = 0;
+//    itf_rightarm_pos_->getAxes(&num_rightarm_joint_);
+//    yInfo() << log_ID_ << "Total number of right arm joints: " << num_rightarm_joint_ << ".";
+//    Vector tmp(static_cast<size_t>(num_rightarm_joint_));
+//    for (int i = 0; i < num_rightarm_joint_; ++i) {
+//        tmp[i] = 10.0;
+//    }
+//    if (!itf_rightarm_pos_->setRefAccelerations(tmp.data()))
+//    {
+//        yError() << log_ID_ << "Error setting right arm joint accelerations.\n";
+//        return false;
+//    }
+//    for (int i = 0; i < num_rightarm_joint_; ++i) {
+//        tmp[i] = 15.0;
+//        if (!itf_rightarm_pos_->setRefSpeed(i, tmp[i]))
+//        {
+//            yError() << log_ID_ << "Error setting right arm joint speeds.\n";
+//            return false;
+//        }
+//    }
+//    yInfo() << log_ID_ << "Right arm joint speeds and accelerations succesfully set.";
 
     return true;
 }
@@ -101,6 +101,20 @@ bool SuperimposerFactory::setRightArmCartesianController()
         yError() << log_ID_ << "Error opening cartesiancontrollerclient device.\n";
         return false;
     }
+
+    if (!itf_rightarm_cart_->setTrajTime(10.0))
+    {
+        yError() << log_ID_ << "Error setting ICartesianControl trajectory time.\n";
+        return false;
+    }
+    yInfo() << log_ID_ << "Succesfully set ICartesianControl trajectory time!\n";
+
+    if(!itf_rightarm_cart_->setInTargetTol(0.01))
+    {
+        yError() << log_ID_ << "Error setting ICartesianControl target tolerance.\n";
+        return false;
+    }
+    yInfo() << log_ID_ << "Succesfully set ICartesianControl target tolerance!\n";
 
     return true;
 }
@@ -128,27 +142,27 @@ bool SuperimposerFactory::setHeadRemoteControlboard()
         return false;
     }
 
-    num_head_joint_ = 0;
-    itf_head_pos_->getAxes(&num_head_joint_);
-    yInfo() << log_ID_ << "Total number of head joints: " << num_head_joint_ << ".";
-    Vector tmp(static_cast<size_t>(num_head_joint_));
-    for (int i = 0; i < num_head_joint_; ++i) {
-        tmp[i] = 10.0;
-    }
-    if (!itf_head_pos_->setRefAccelerations(tmp.data()))
-    {
-        yError() << log_ID_ << "Error setting head joint accelerations.\n";
-        return false;
-    }
-    for (int i = 0; i < num_head_joint_; ++i) {
-        tmp[i] = 15.0;
-        if (!itf_head_pos_->setRefSpeed(i, tmp[i]))
-        {
-            yError() << log_ID_ << "Error setting head joint speeds.\n";
-            return false;
-        }
-    }
-    yInfo() << log_ID_ << "Head joint speeds and accelerations set.";
+//    num_head_joint_ = 0;
+//    itf_head_pos_->getAxes(&num_head_joint_);
+//    yInfo() << log_ID_ << "Total number of head joints: " << num_head_joint_ << ".";
+//    Vector tmp(static_cast<size_t>(num_head_joint_));
+//    for (int i = 0; i < num_head_joint_; ++i) {
+//        tmp[i] = 10.0;
+//    }
+//    if (!itf_head_pos_->setRefAccelerations(tmp.data()))
+//    {
+//        yError() << log_ID_ << "Error setting head joint accelerations.\n";
+//        return false;
+//    }
+//    for (int i = 0; i < num_head_joint_; ++i) {
+//        tmp[i] = 15.0;
+//        if (!itf_head_pos_->setRefSpeed(i, tmp[i]))
+//        {
+//            yError() << log_ID_ << "Error setting head joint speeds.\n";
+//            return false;
+//        }
+//    }
+//    yInfo() << log_ID_ << "Head joint speeds and accelerations set.";
 
     return true;
 }
@@ -245,15 +259,17 @@ bool SuperimposerFactory::MoveHand(const Matrix &R, const Vector &init_x)
 {
     /* Setting hand pose */
     yInfo() << log_ID_ << "Moving hand to the initial position.";
+    yInfo() << log_ID_ << "R = " << R.toString();
+    yInfo() << log_ID_ << "x = " << init_x.toString();
 
     Vector init_o(dcm2axis(R));
 
     itf_rightarm_cart_->goToPoseSync(init_x, init_o);
-    itf_rightarm_cart_->waitMotionDone(0.1, 6.0);
+    itf_rightarm_cart_->waitMotionDone(0.2, 15.0);
 
     yInfo() << log_ID_ << "The hand is in position.";
 
-    /* Set initial fixation point */
+    /* Set fixation point */
     Vector tmp;
     itf_head_gaze_->getFixationPoint(tmp);
     Vector init_fixation(init_x);
@@ -262,7 +278,7 @@ bool SuperimposerFactory::MoveHand(const Matrix &R, const Vector &init_x)
     if (norm(tmp - init_fixation) > 0.10) {
         yInfo() << log_ID_ << "Moving head to initial fixation point: [" << init_fixation.toString() << "].";
         itf_head_gaze_->lookAtFixationPoint(init_fixation);
-        itf_head_gaze_->waitMotionDone(0.1, 6.0);
+        itf_head_gaze_->waitMotionDone(0.1, 15.0);
     }
     yInfo() << log_ID_ << "Gaze motion done.";
 
@@ -493,7 +509,10 @@ bool SuperimposerFactory::configure(ResourceFinder &rf)
     superimpose_mesh_ = false;
 
     /* Parsing parameters from config file. */
+    /* Robot name */
     robot_ = rf.findGroup("PARAMETER").check("robot", Value("icub")).asString();
+
+    /* Joint velocities/accelerations */
     if (!rf.findGroup("ARMJOINT").findGroup("vel").isNull() && rf.findGroup("ARMJOINT").findGroup("vel").tail().size() == 16)
     {
         Vector arm_vel(16);
@@ -501,7 +520,16 @@ bool SuperimposerFactory::configure(ResourceFinder &rf)
         {
             arm_vel[i] = rf.findGroup("ARMJOINT").findGroup("vel").tail().get(i).asDouble();
         }
-        yInfo() << log_ID_ << arm_vel.toString();
+        yWarning() << log_ID_ << "Unused config velocities!";
+        yInfo()    << log_ID_ << arm_vel.toString();
+
+        Vector arm_acc(16);
+        for (int i = 0; i < rf.findGroup("ARMJOINT").findGroup("acc").tail().size(); ++i)
+        {
+            arm_acc[i] = rf.findGroup("ARMJOINT").findGroup("acc").tail().get(i).asDouble();
+        }
+        yWarning() << log_ID_ << "Unused config accelerations!";
+        yInfo()    << log_ID_ << arm_acc.toString();
     }
 
     cad_hand_["palm"] = rf.findFileByName("r_palm.obj");
@@ -596,7 +624,6 @@ bool SuperimposerFactory::configure(ResourceFinder &rf)
     angle_ratio_ = 12;
     motion_time_ = 10.0;
     path_time_   = motion_time_ / angle_ratio_;
-    itf_rightarm_cart_->setTrajTime(path_time_);
 
     /* Open a remote command port and allow the program be started */
     return setCommandPort();
@@ -609,8 +636,13 @@ bool SuperimposerFactory::updateModule()
     {
         Vector motion_axis;
         Vector motion_angle;
-        itf_rightarm_cart_->getPose(motion_axis, motion_angle);
         Vector center(2);
+        double old_traj_time;
+
+        itf_rightarm_cart_->getTrajTime(&old_traj_time);
+        itf_rightarm_cart_->setTrajTime(path_time_);
+
+        itf_rightarm_cart_->getPose(motion_axis, motion_angle);
         center[0] = motion_axis[0];
         center[1] = motion_axis[1] - radius_;
 
@@ -625,6 +657,8 @@ bool SuperimposerFactory::updateModule()
         }
         yInfo() << log_ID_ << "Motion done.";
         if (!freerunning_) start_ = false;
+
+        itf_rightarm_cart_->setTrajTime(old_traj_time);
     }
     return true;
 }
