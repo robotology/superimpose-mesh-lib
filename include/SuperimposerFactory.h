@@ -42,7 +42,6 @@ private:
     yarp::dev::PolyDriver              rightarm_remote_driver_;
     yarp::dev::IEncoders             * itf_rightarm_enc_;
     yarp::dev::IPositionControl2     * itf_rightarm_pos_;
-    int                                num_rightarm_joint_;
     int                                num_rightarm_enc_;
 
     yarp::dev::PolyDriver              rightarm_cartesian_driver_;
@@ -50,7 +49,6 @@ private:
 
     yarp::dev::PolyDriver              head_remote_driver_;
     yarp::dev::IPositionControl2     * itf_head_pos_;
-    int                                num_head_joint_;
 
     yarp::dev::PolyDriver              gaze_driver_;
     yarp::dev::IGazeControl          * itf_head_gaze_;

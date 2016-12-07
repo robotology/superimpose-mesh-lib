@@ -56,28 +56,6 @@ bool SuperimposerFactory::setRightArmRemoteControlboard()
         return false;
     }
 
-//    num_rightarm_joint_ = 0;
-//    itf_rightarm_pos_->getAxes(&num_rightarm_joint_);
-//    yInfo() << log_ID_ << "Total number of right arm joints: " << num_rightarm_joint_ << ".";
-//    Vector tmp(static_cast<size_t>(num_rightarm_joint_));
-//    for (int i = 0; i < num_rightarm_joint_; ++i) {
-//        tmp[i] = 10.0;
-//    }
-//    if (!itf_rightarm_pos_->setRefAccelerations(tmp.data()))
-//    {
-//        yError() << log_ID_ << "Error setting right arm joint accelerations.\n";
-//        return false;
-//    }
-//    for (int i = 0; i < num_rightarm_joint_; ++i) {
-//        tmp[i] = 15.0;
-//        if (!itf_rightarm_pos_->setRefSpeed(i, tmp[i]))
-//        {
-//            yError() << log_ID_ << "Error setting right arm joint speeds.\n";
-//            return false;
-//        }
-//    }
-//    yInfo() << log_ID_ << "Right arm joint speeds and accelerations succesfully set.";
-
     return true;
 }
 
@@ -141,28 +119,6 @@ bool SuperimposerFactory::setHeadRemoteControlboard()
         yError() << log_ID_ << "Error opening head remote_controlboard device.";
         return false;
     }
-
-//    num_head_joint_ = 0;
-//    itf_head_pos_->getAxes(&num_head_joint_);
-//    yInfo() << log_ID_ << "Total number of head joints: " << num_head_joint_ << ".";
-//    Vector tmp(static_cast<size_t>(num_head_joint_));
-//    for (int i = 0; i < num_head_joint_; ++i) {
-//        tmp[i] = 10.0;
-//    }
-//    if (!itf_head_pos_->setRefAccelerations(tmp.data()))
-//    {
-//        yError() << log_ID_ << "Error setting head joint accelerations.\n";
-//        return false;
-//    }
-//    for (int i = 0; i < num_head_joint_; ++i) {
-//        tmp[i] = 15.0;
-//        if (!itf_head_pos_->setRefSpeed(i, tmp[i]))
-//        {
-//            yError() << log_ID_ << "Error setting head joint speeds.\n";
-//            return false;
-//        }
-//    }
-//    yInfo() << log_ID_ << "Head joint speeds and accelerations set.";
 
     return true;
 }
