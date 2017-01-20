@@ -1,0 +1,2 @@
+add_subdirectory(SuperImpose)
+add_subdirectory(iCubLimbSuperimposer)

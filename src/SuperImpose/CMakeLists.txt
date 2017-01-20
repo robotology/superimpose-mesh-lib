@@ -1,0 +1,106 @@
+set(LIBRARY_TARGET_NAME SuperImpose)
+
+# List of CPP (source) library files
+set(${LIBRARY_TARGET_NAME}_SRC
+        src/CADSuperimposer.cpp
+        src/Mesh.cpp
+        src/Model.cpp
+        src/Shader.cpp
+        src/SICAD.cpp
+        src/SISkeleton.cpp
+        src/SkeletonSuperimposer.cpp
+        src/SuperimposerFactory.cpp
+        src/ThreadControllerSHC.cpp)
+
+# List of HPP (header) library files
+set(${LIBRARY_TARGET_NAME}_HDR
+        include/SuperImpose/CADSuperimposer.h
+        include/SuperImpose/Mesh.h
+        include/SuperImpose/Model.h
+        include/SuperImpose/Shader.h
+        include/SuperImpose/SICAD.h
+        include/SuperImpose/SISkeleton.h
+        include/SuperImpose/SkeletonSuperimposer.h
+        include/SuperImpose/SuperImpose.h
+        include/SuperImpose/SuperimposerFactory.h
+        include/SuperImpose/ThreadControllerSHC.h)
+
+# List of EXTRA files
+set(${LIBRARY_TARGET_NAME}_SHADERS_VERT
+        shader/shader_model.vert
+        shader/shader_background.vert)
+
+set(${LIBRARY_TARGET_NAME}_SHADERS_FRAG
+        shader/shader_model.frag
+        shader/shader_model_simple.frag
+        shader/shader_background.frag)
+
+set(${LIBRARY_TARGET_NAME}_MESH
+        mesh/icub_right_hand/r_palm.obj
+        mesh/icub_right_hand/r_ail0.obj
+        mesh/icub_right_hand/r_ail1.obj
+        mesh/icub_right_hand/r_ail2.obj
+        mesh/icub_right_hand/r_ail3.obj
+        mesh/icub_right_hand/r_indexbase.obj
+        mesh/icub_right_hand/r_ml0.obj
+        mesh/icub_right_hand/r_ml1.obj
+        mesh/icub_right_hand/r_ml2.obj
+        mesh/icub_right_hand/r_ml3.obj
+        mesh/icub_right_hand/r_palm.obj
+        mesh/icub_right_hand/r_tl0.obj
+        mesh/icub_right_hand/r_tl1.obj
+        mesh/icub_right_hand/r_tl2.obj
+        mesh/icub_right_hand/r_tl3.obj
+        mesh/icub_right_hand/r_tl4.obj)
+
+# Depndencies
+find_package(OpenCV REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(GLEW   REQUIRED)
+find_package(GLFW3  REQUIRED)
+find_package(glm    REQUIRED)
+find_package(assimp REQUIRED)
+
+# Library main
+add_library(${LIBRARY_TARGET_NAME} ${${LIBRARY_TARGET_NAME}_SRC} ${${LIBRARY_TARGET_NAME}_HDR})
+
+target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                                         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}>"
+                                                         ${OPENGL_INCLUDE_DIR}
+                                                         ${ASSIMP_INCLUDE_DIRS})
+
+target_link_libraries(${LIBRARY_TARGET_NAME}    ${OpenCV_LIBS}
+                                                ${OPENGL_LIBRARIES}
+                                                glew
+                                                glm
+                                                glfw
+                                                -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES})
+
+target_compile_features(${LIBRARY_TARGET_NAME} PUBLIC cxx_nullptr cxx_constexpr)
+
+set_target_properties(${LIBRARY_TARGET_NAME} PROPERTIES VERSION       ${${PROJECT_NAME}_VERSION}
+                                                        PUBLIC_HEADER "${${LIBRARY_TARGET_NAME}_HDR}")
+
+set_property(GLOBAL APPEND PROPERTY ${PROJECT_NAME}_TARGETS ${LIBRARY_TARGET_NAME})
+
+install(TARGETS ${LIBRARY_TARGET_NAME}
+        EXPORT  ${PROJECT_NAME}
+        LIBRARY       DESTINATION "${CMAKE_INSTALL_LIBDIR}"                            COMPONENT shlib
+        ARCHIVE       DESTINATION "${CMAKE_INSTALL_LIBDIR}"                            COMPONENT lib
+        RUNTIME       DESTINATION "${CMAKE_INSTALL_BINDIR}"                            COMPONENT bin
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${LIBRARY_TARGET_NAME}" COMPONENT dev)
+
+install(FILES ${LIBRARY_TARGET_NAME}_SHADERS_VERT ${LIBRARY_TARGET_NAME}_SHADERS_FRAG DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+
+# Custom commands
+if(${CMAKE_GENERATOR} MATCHES "Xcode")
+    source_group("Resource\\Shader Files"       FILES ${LIBRARY_TARGET_NAME}_SHADERS_VERT
+                                                      ${LIBRARY_TARGET_NAME}_SHADERS_FRAG)
+    source_group("Resource\\CAD Files"          FILES ${LIBRARY_TARGET_NAME}_MESH)
+endif()
+
+add_custom_command(TARGET  ${LIBRARY_TARGET_NAME} POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E make_directory                             $<TARGET_FILE_DIR:${LIBRARY_TARGET_NAME}>
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LIBRARY_TARGET_NAME}_SHADERS_VERT   $<TARGET_FILE_DIR:${LIBRARY_TARGET_NAME}>
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LIBRARY_TARGET_NAME}_SHADERS_FRAG   $<TARGET_FILE_DIR:${LIBRARY_TARGET_NAME}>
+                   COMMAND ${CMAKE_COMMAND} -E copy ${LIBRARY_TARGET_NAME}_MESH           $<TARGET_FILE_DIR:${LIBRARY_TARGET_NAME}>)
