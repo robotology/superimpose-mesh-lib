@@ -1,12 +1,9 @@
-#ifndef SHADER_CPP
-#define SHADER_CPP
+#include "SuperImpose/Shader.h"
 
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
-
-#include "Shader.h"
 
 
 Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath) {
@@ -93,5 +90,3 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath) {
 void Shader::Use() {
     glUseProgram(this->Program);
 }
-
-#endif

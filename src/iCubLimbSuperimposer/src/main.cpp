@@ -1,11 +1,11 @@
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/ResourceFinder.h>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-
-#include "SuperimposerFactory.h"
+#include "iCubLimbSuperimposer/SuperimposerFactory.h"
 
 #define WINDOW_WIDTH  320
 #define WINDOW_HEIGHT 240

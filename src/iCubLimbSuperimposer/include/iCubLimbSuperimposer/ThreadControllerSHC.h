@@ -5,7 +5,7 @@
 
 #include <yarp/os/ConstString.h>
 
-#include "src/SuperimposeHandCADIDL.h"
+#include "thrift/SuperimposeHandCADIDL.h"
 
 
 enum MipMaps

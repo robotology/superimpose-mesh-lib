@@ -18,8 +18,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "SICAD.h"
-//#include "ThreadControllerSHC.h"
+#include <SuperImpose/SICAD.h>
+//#include "iCubLimbSuperimposer/ThreadControllerSHC.h"
 
 
 class CADSuperimposer : public yarp::os::Thread

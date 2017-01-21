@@ -32,13 +32,13 @@ set(${EXE_TARGET_NAME}_APP_SIM
         app/SIM_Background_Apps.xml)
 
 # Dependencies
-find_package(YARP        REQUIRED)
+find_package(GLEW        REQUIRED)
+find_package(GLFW3       REQUIRED)
 find_package(ICUB        REQUIRED)
 find_package(ICUBcontrib REQUIRED)
 find_package(OpenCV      REQUIRED)
 find_package(OpenGL      REQUIRED)
-find_package(GLEW        REQUIRED)
-find_package(GLFW3       REQUIRED)
+find_package(YARP        REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH   ${YARP_MODULE_PATH}
                                 ${ICUB_MODULE_PATH}
@@ -56,7 +56,9 @@ yarp_add_idl(${EXE_TARGET_NAME}_THRIFT_SRC ${${EXE_TARGET_NAME}_THRIFT_HDR})
 add_executable(${EXE_TARGET_NAME} ${${EXE_TARGET_NAME}_SRC}     ${${EXE_TARGET_NAME}_HDR}
                                   ${${EXE_TARGET_NAME}_THRIFT_SRC} ${${EXE_TARGET_NAME}_THRIFT})
 
-target_include_directories(${EXE_TARGET_NAME} PRIVATE ${YARP_INCLUDE_DIRS}
+target_include_directories(${EXE_TARGET_NAME} PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                                      ${GLEW_INCLUDE_DIRS}
+                                                      ${YARP_INCLUDE_DIRS}
                                                       ${ICUB_INCLUDE_DIRS}
                                                       ${OPENGL_INCLUDE_DIR}
                                                       ${ASSIMP_INCLUDE_DIRS})
@@ -68,7 +70,7 @@ target_link_libraries(${EXE_TARGET_NAME} PRIVATE SuperImpose
                                                  iKin
                                                  ${OpenCV_LIBS}
                                                  ${OPENGL_LIBRARIES}
-                                                 glew
+                                                 ${GLEW_LIBRARIES}
                                                  glfw)
 
 target_compile_features(${EXE_TARGET_NAME} PUBLIC cxx_nullptr cxx_constexpr)

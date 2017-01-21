@@ -1,4 +1,4 @@
-#include "SuperimposerFactory.h"
+#include "iCubLimbSuperimposer/SuperimposerFactory.h"
 
 #include <list>
 

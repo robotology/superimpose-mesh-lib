@@ -11,7 +11,7 @@
 #include <yarp/sig/Image.h>
 #include <iCub/iKin/iKinFwd.h>
 
-#include "SISkeleton.h"
+#include <SuperImpose/SISkeleton.h>
 
 
 class SkeletonSuperimposer : public yarp::os::Thread

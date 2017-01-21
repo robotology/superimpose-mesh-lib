@@ -1,11 +1,11 @@
+#include "SuperImpose/Model.h"
+
 #include <iostream>
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <glm/glm.hpp>
-//#include <SOIL/SOIL.h>
-
-#include "Model.h"
+// #include <SOIL/SOIL.h>
 
 
 Model::Model(const GLchar* path) {

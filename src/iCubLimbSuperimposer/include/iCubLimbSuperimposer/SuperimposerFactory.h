@@ -17,10 +17,11 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "SuperImpose.h"
-#include "SkeletonSuperimposer.h"
-#include "CADSuperimposer.h"
-#include "src/SuperimposeHandIDL.h"
+#include <SuperImpose/SuperImpose.h>
+
+#include "iCubLimbSuperimposer/SkeletonSuperimposer.h"
+#include "iCubLimbSuperimposer/CADSuperimposer.h"
+#include "thrift/SuperimposeHandIDL.h"
 
 
 class SuperimposerFactory : public yarp::os::RFModule, public SuperimposeHandIDL

@@ -1,4 +1,4 @@
-#include "ThreadControllerSHC.h"
+#include "iCubLimbSuperimposer/ThreadControllerSHC.h"
 
 #include <yarp/os/LogStream.h>
 
