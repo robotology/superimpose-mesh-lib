@@ -25,10 +25,6 @@ find_package(glm        REQUIRED)
 find_package(OpenCV     REQUIRED)
 find_package(OpenGL     REQUIRED)
 
-message("GLEW_INCLUDE_DIRS: " ${GLEW_INCLUDE_DIRS})
-message("GLEW_LIBRARY_DIRS: " ${GLEW_LIBRARY_DIRS})
-message("GLEW_LIBRARIES: " ${GLEW_LIBRARIES})
-
 # Library main
 add_library(${LIBRARY_TARGET_NAME} ${${LIBRARY_TARGET_NAME}_SRC} ${${LIBRARY_TARGET_NAME}_HDR})
 
