@@ -13,9 +13,9 @@ set(${EXE_TARGET_NAME}_HDR
         include/iCubLimbSuperimposer/SuperimposerFactory.h
         include/iCubLimbSuperimposer/ThreadControllerSHC.h)
 
-set(${EXE_TARGET_NAME}_THIRFT_HDR
+set(${EXE_TARGET_NAME}_THRIFT_HDR
         thrift/idl_rfm.thrift
-        thirft/idl_mesh.thrift)
+        thrift/idl_mesh.thrift)
 
 set(${EXE_TARGET_NAME}_CONFIG
         config/superimpose-hand_config.ini)
@@ -50,35 +50,34 @@ include(ICUBcontribOptions)
 
 icubcontrib_set_default_prefix()
 
-yarp_add_idl(${EXE_TARGET_NAME}_THIRFT_SRC ${EXE_TARGET_NAME}_THIRFT)
+yarp_add_idl(${EXE_TARGET_NAME}_THRIFT_SRC ${${EXE_TARGET_NAME}_THRIFT_HDR})
 
 # Executable main
 add_executable(${EXE_TARGET_NAME} ${${EXE_TARGET_NAME}_SRC}     ${${EXE_TARGET_NAME}_HDR}
-                                  ${EXE_TARGET_NAME}_THIRFT_SRC ${${EXE_TARGET_NAME}_THIRFT})
+                                  ${${EXE_TARGET_NAME}_THRIFT_SRC} ${${EXE_TARGET_NAME}_THRIFT})
 
-target_include_directories(${EXE_TARGET_NAME} ${INCLUDE_DIR}
-                                              ${YARP_INCLUDE_DIRS}
-                                              ${ICUB_INCLUDE_DIRS}
-                                              ${OPENGL_INCLUDE_DIR}
-                                              ${ASSIMP_INCLUDE_DIRS})
+target_include_directories(${EXE_TARGET_NAME} PRIVATE ${YARP_INCLUDE_DIRS}
+                                                      ${ICUB_INCLUDE_DIRS}
+                                                      ${OPENGL_INCLUDE_DIR}
+                                                      ${ASSIMP_INCLUDE_DIRS})
 
-target_link_libraries(${EXE_TARGET_NAME} SuperImpose
-                                         ${YARP_LIBRARIES}
-                                         ${ICUB_LIBRARIES}
-                                         ctrlLib
-                                         iKin
-                                         ${OpenCV_LIBS}
-                                         ${OPENGL_LIBRARIES}
-                                         glew
-                                         glfw)
+target_link_libraries(${EXE_TARGET_NAME} PRIVATE SuperImpose
+                                                 ${YARP_LIBRARIES}
+                                                 ${ICUB_LIBRARIES}
+                                                 ctrlLib
+                                                 iKin
+                                                 ${OpenCV_LIBS}
+                                                 ${OPENGL_LIBRARIES}
+                                                 glew
+                                                 glfw)
 
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_nullptr cxx_constexpr)
+target_compile_features(${EXE_TARGET_NAME} PUBLIC cxx_nullptr cxx_constexpr)
 
 install(TARGETS ${EXE_TARGET_NAME} DESTINATION bin)
 
 # Custom commands
 if(${CMAKE_GENERATOR} MATCHES "Xcode")
-    source_group("Thrift IDL"                   FILES ${${EXE_TARGET_NAME}_THIRFT_HDR} ${${EXE_TARGET_NAME}_THIRFT_SRC})
+    source_group("Thrift IDL"                   FILES ${${EXE_TARGET_NAME}_THRIFT_HDR} ${${EXE_TARGET_NAME}_THRIFT_SRC})
     source_group("YARP\\Configuration Files"    FILES ${${EXE_TARGET_NAME}_CONFIG} ${${EXE_TARGET_NAME}_CONFIG_SIM})
     source_group("YARP\\Application Files"      FILES ${${EXE_TARGET_NAME}_APP} ${${EXE_TARGET_NAME}_APP_SIM})
 endif()

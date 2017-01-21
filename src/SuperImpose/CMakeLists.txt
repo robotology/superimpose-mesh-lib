@@ -2,28 +2,20 @@ set(LIBRARY_TARGET_NAME SuperImpose)
 
 # List of CPP (source) library files
 set(${LIBRARY_TARGET_NAME}_SRC
-        src/CADSuperimposer.cpp
         src/Mesh.cpp
         src/Model.cpp
         src/Shader.cpp
         src/SICAD.cpp
-        src/SISkeleton.cpp
-        src/SkeletonSuperimposer.cpp
-        src/SuperimposerFactory.cpp
-        src/ThreadControllerSHC.cpp)
+        src/SISkeleton.cpp)
 
 # List of HPP (header) library files
 set(${LIBRARY_TARGET_NAME}_HDR
-        include/SuperImpose/CADSuperimposer.h
         include/SuperImpose/Mesh.h
         include/SuperImpose/Model.h
         include/SuperImpose/Shader.h
         include/SuperImpose/SICAD.h
         include/SuperImpose/SISkeleton.h
-        include/SuperImpose/SkeletonSuperimposer.h
-        include/SuperImpose/SuperImpose.h
-        include/SuperImpose/SuperimposerFactory.h
-        include/SuperImpose/ThreadControllerSHC.h)
+        include/SuperImpose/SuperImpose.h)
 
 # List of EXTRA files
 set(${LIBRARY_TARGET_NAME}_SHADERS_VERT
@@ -69,12 +61,12 @@ target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${CM
                                                          ${OPENGL_INCLUDE_DIR}
                                                          ${ASSIMP_INCLUDE_DIRS})
 
-target_link_libraries(${LIBRARY_TARGET_NAME}    ${OpenCV_LIBS}
-                                                ${OPENGL_LIBRARIES}
-                                                glew
-                                                glm
-                                                glfw
-                                                -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES})
+target_link_libraries(${LIBRARY_TARGET_NAME} PRIVATE ${OpenCV_LIBS}
+                                                     ${OPENGL_LIBRARIES}
+                                                     glew
+                                                     glm
+                                                     glfw
+                                                     -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES})
 
 target_compile_features(${LIBRARY_TARGET_NAME} PUBLIC cxx_nullptr cxx_constexpr)
 
