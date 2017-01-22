@@ -1,12 +1,12 @@
 /**
  *
- * \author Name Surname <name.surname@example.org>
+ * \author Claudio Fantacci <claudio.fantacci@iit.it>
  *
- * \copyright specify license (e.g. for open source code this can be: Released under the terms of the GNU GPL v2.0.)
+ * \copyright BSD-3-Clause
  *
  * \section Description
- * This is a simple template library.
- * Add here a description of the library and its use.
+ * The SuperImpose library.
+ * Documentation is "Work In Progress".
  *
- *  This file can be edited at doc/main.dox
+ * This file can be edited at doc/main.dox
  */
