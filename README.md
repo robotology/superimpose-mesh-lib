@@ -1,7 +1,7 @@
 SuperImpose
 ===
 
-The SuperImpose provides modern C++ augmented-reality library to superimpose 3D objects on an image plane.
+The SuperImpose project provides a modern C++ augmented-reality library to superimpose 3D objects on an image plane.
 
 SuperImpose works on Linux, macOS and Windows.
 
