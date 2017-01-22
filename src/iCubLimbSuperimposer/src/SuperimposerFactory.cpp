@@ -466,7 +466,7 @@ bool SuperimposerFactory::configure(ResourceFinder &rf)
 
     /* Parsing parameters from config file. */
     /* Robot name */
-    robot_ = rf.findGroup("PARAMETER").check("robot", Value("icub")).asString();
+    robot_ = rf.findGroup("PARAMETER").check("robot", Value("icubSim")).asString();
 
     /* Joint velocities/accelerations */
     if (!rf.findGroup("ARMJOINT").findGroup("vel").isNull() && rf.findGroup("ARMJOINT").findGroup("vel").tail().size() == 16)

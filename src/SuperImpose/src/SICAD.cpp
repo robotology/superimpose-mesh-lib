@@ -228,7 +228,7 @@ bool SICAD::Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, co
     }
 
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
-     and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
+       and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
     cv::Mat ogl_pixel(FRAMEBUFFER_HEIGHT, FRAMEBUFFER_WIDTH, CV_8UC3);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());

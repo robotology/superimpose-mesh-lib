@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     if (!yarp.checkNetwork(3.0))
     {
         yError() << log_ID << "YARP seems unavailable.";
-        return -1;
+        return EXIT_FAILURE;
     }
 
     ResourceFinder rf;
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
     yInfo() << log_ID << "Main returning.";
     yInfo() << log_ID << "Application closed.";
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 bool openglSetUp(GLFWwindow *& window, const int width, const int height)

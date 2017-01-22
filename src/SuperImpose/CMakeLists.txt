@@ -54,39 +54,3 @@ install(TARGETS ${LIBRARY_TARGET_NAME}
         ARCHIVE       DESTINATION "${CMAKE_INSTALL_LIBDIR}"                            COMPONENT lib
         RUNTIME       DESTINATION "${CMAKE_INSTALL_BINDIR}"                            COMPONENT bin
         PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${LIBRARY_TARGET_NAME}" COMPONENT dev)
-
-# EXTRA files
-set(${LIBRARY_TARGET_NAME}_SHADERS_VERT
-        ${CMAKE_CURRENT_SOURCE_DIR}/shader/shader_model.vert
-        ${CMAKE_CURRENT_SOURCE_DIR}/shader/shader_background.vert)
-
-set(${LIBRARY_TARGET_NAME}_SHADERS_FRAG
-        ${CMAKE_CURRENT_SOURCE_DIR}/shader/shader_model.frag
-        ${CMAKE_CURRENT_SOURCE_DIR}/shader/shader_model_simple.frag
-        ${CMAKE_CURRENT_SOURCE_DIR}/shader/shader_background.frag)
-
-set(${LIBRARY_TARGET_NAME}_MESH
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_palm.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_ail0.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_ail1.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_ail2.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_ail3.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_indexbase.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_ml0.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_ml1.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_ml2.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_ml3.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_palm.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_tl0.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_tl1.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_tl2.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_tl3.obj
-        ${CMAKE_CURRENT_SOURCE_DIR}/mesh/icub_right_hand/r_tl4.obj)
-
-add_custom_command(TARGET  ${LIBRARY_TARGET_NAME} POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E make_directory                              $<TARGET_FILE_DIR:${LIBRARY_TARGET_NAME}>
-                   COMMAND ${CMAKE_COMMAND} -E copy ${${LIBRARY_TARGET_NAME}_SHADERS_VERT} $<TARGET_FILE_DIR:${LIBRARY_TARGET_NAME}>
-                   COMMAND ${CMAKE_COMMAND} -E copy ${${LIBRARY_TARGET_NAME}_SHADERS_FRAG} $<TARGET_FILE_DIR:${LIBRARY_TARGET_NAME}>
-                   COMMAND ${CMAKE_COMMAND} -E copy ${${LIBRARY_TARGET_NAME}_MESH}         $<TARGET_FILE_DIR:${LIBRARY_TARGET_NAME}>)
-
-install(FILES ${${LIBRARY_TARGET_NAME}_SHADERS_VERT} ${${LIBRARY_TARGET_NAME}_SHADERS_FRAG} DESTINATION "${CMAKE_INSTALL_LIBDIR}")
