@@ -7,19 +7,11 @@ SuperImpose works on Linux, macOS and Windows.
 
 ## Dependencies
 SuperImpose depends on
- - [iCub](https://wiki.icub.org/wiki/Main_Page)
-     - Debian, macOS, WIN: [icub-main on GitHub](https://github.com/robotology/icub-main)
- - [Yet Another Robot Platform, YARP](http://www.yarp.it)
-     - Debian, macOS, WIN: [yarp on GitHub](https://github.com/robotology/yarp)
- - [OpenCV](http://opencv.org)
-     - Debian: apt
-     - macOS: brew
-     - WIN: TBD
  - [GLFW](http://www.glfw.org)
      - Debian: apt
      - macOS: brew
      - WIN: TBT
- - [OpenGL Mathematics, GLM](http://glm.g-truc.net)
+ - [Open Asset Import Library, ASSIMP](http://assimp.org)
      - Debian: apt
      - macOS: brew
      - WIN: TBD
@@ -27,7 +19,11 @@ SuperImpose depends on
      - Debian: apt
      - macOS: brew
      - WIN: TBD
- - [Open Asset Import Library, ASSIMP](http://assimp.org)
+ - [OpenCV](http://opencv.org)
+     - Debian: apt
+     - macOS: brew
+     - WIN: TBD
+ - [OpenGL Mathematics, GLM](http://glm.g-truc.net)
      - Debian: apt
      - macOS: brew
      - WIN: TBD
@@ -51,7 +47,7 @@ SuperImpose depends on
  ...
  find_package(SuperImpose REQUIRED)
  ...
- target_link_libraries(<target> SuperImpose)
+ target_link_libraries(<target> SuperImpose::SuperImpose)
  ...
  ~~~
 
