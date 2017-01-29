@@ -244,15 +244,21 @@ bool SICAD::Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, co
 }
 
 
+void SICAD::setBackgroundOpt(bool show_background)
+{
+    show_background_ = show_background;
+}
+
+
 bool SICAD::getBackgroundOpt() const
 {
     return show_background_;
 }
 
 
-void SICAD::setBackgroundOpt(bool show_background)
+void SICAD::setWireframeOpt(bool mesh_wires)
 {
-    show_background_ = show_background;;
+    mesh_wires_ = mesh_wires;
 }
 
 

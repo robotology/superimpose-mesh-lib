@@ -52,9 +52,12 @@ public:
 
     bool Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img);
 
-    void    setBackgroundOpt(bool show_background);
     bool    getBackgroundOpt() const;
+    void    setBackgroundOpt(bool show_background);
+
     bool    getWireframeOpt()  const;
+    void    setWireframeOpt(bool mesh_wires);
+
     MipMaps getMipmapsOpt()    const;
 };
 
