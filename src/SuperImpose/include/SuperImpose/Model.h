@@ -14,17 +14,18 @@
 class Model
 {
 public:
-    /* Functions. */
+    /* Functions */
     Model(const GLchar* path);
+    
     void Draw(Shader shader);
     
 private:
-    /* Model Data. */
+    /* Model Data */
     std::vector<Mesh> meshes;
     std::string directory;
     std::vector<Texture> textures_loaded;
     
-    /* Functions. */
+    /* Functions */
     void loadModel(std::string path);
     void processNode(aiNode* node, const aiScene* scene);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);

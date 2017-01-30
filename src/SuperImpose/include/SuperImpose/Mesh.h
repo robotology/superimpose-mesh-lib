@@ -23,27 +23,27 @@ struct Texture {
     std::string type;
     aiString path;
 };
-/* Note: structs have a great property in C++, their memory layout is sequential. */
 
 
 class Mesh {
 public:
-    /* Mesh Data. */
-    std::vector<Vertex> vertices;
-    std::vector<GLuint> indices;
-    std::vector<Texture> textures;
-    
-    /* Functions. */
+    /* Functions */
     Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
+
     void Draw(Shader shader);
     
+    /* Mesh Data */
+    std::vector<Vertex>  vertices;
+    std::vector<GLuint>  indices;
+    std::vector<Texture> textures;
+
 private:
-    /* Render data. */
+    /* Render data */
     GLuint VAO;
     GLuint VBO;
     GLuint EBO;
     
-    /* Functions. */
+    /* Functions */
     void setupMesh();
 };
 
