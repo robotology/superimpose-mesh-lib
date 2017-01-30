@@ -13,7 +13,24 @@
 #define FRAME_HEIGHT 240
 
 
-SISkeleton::SISkeleton() : log_ID_("[SH-Skeleton]"), hand_part_({ "palm", "thumb", "index", "medium" }) {}
+SISkeleton::SISkeleton(const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY) :
+    log_ID_("[SH-Skeleton]"), hand_part_({ "palm", "thumb", "index", "medium" })
+{
+    std::cout << log_ID_ << "Setting up OpenCV porjection matrices." << std::endl;
+
+    /* Projection matrix. */
+    /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
+                                   0.0      232.43    125.738    0.0
+                                   0.0        0.0       1.0      0.0)
+       Remember that GLM is column-major.                             */
+    projection_ = glm::mat3(EYE_FX,     0.0f,       0.0f,
+                            0.0f,       EYE_FY,     0.0f,
+                            EYE_CX,     EYE_CY,     1.0f);
+
+    std::cout << log_ID_ << "OpenCV projection matrices succesfully set up!" << std::endl;
+
+    std::cout << log_ID_ << "Initialization completed!" << std::endl;
+}
 
 
 SISkeleton::~SISkeleton()
@@ -24,28 +41,7 @@ SISkeleton::~SISkeleton()
 }
 
 
-bool SISkeleton::Configure(const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY)
-{
-    std::cout << log_ID_ << "Setting up OpenCV porjection matrices." << std::endl;
-
-    /* Projection matrix. */
-    /* Intrinsic camera matrix: (232.921 0.0     162.202 0.0
-                                 0.0     232.43  125.738 0.0
-                                 0.0     0.0     1.0     0.0)
-       Remember that GLM is column-major.                    */
-    projection_ = glm::mat3(EYE_FX,     0.0f,       0.0f,
-                            0.0f,       EYE_FY,     0.0f,
-                            EYE_CX,     EYE_CY,     1.0f);
-
-    std::cout << log_ID_ << "OpenCV projection matrices succesfully set up!" << std::endl;
-
-    std::cout << log_ID_ << "Initialization completed!" << std::endl;
-
-    return true;
-}
-
-
-bool SISkeleton::Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img)
+bool SISkeleton::superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img)
 // TODO: maybe create a ObjPosMap with translation only info and a ObjRotMap with rotation only info.
 {
     cam_pos_ = glm::make_vec3(cam_x);

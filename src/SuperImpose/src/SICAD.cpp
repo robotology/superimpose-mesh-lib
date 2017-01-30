@@ -1,6 +1,7 @@
 #include "SuperImpose/SICAD.h"
 
 #include <iostream>
+#include <exception>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -19,17 +20,92 @@
 #define FRAMEBUFFER_WIDTH  WINDOW_WIDTH
 #define FRAMEBUFFER_HEIGHT WINDOW_HEIGHT
 #endif
-#define FRAME_WIDTH  320
-#define FRAME_HEIGHT 240
-#define NEAR         0.001f
-#define FAR          1000.0f
+#define FRAME_WIDTH        320
+#define FRAME_HEIGHT       240
+#define NEAR               0.001f
+#define FAR                1000.0f
 
 
-SICAD::SICAD() : log_ID_("[SH-CAD]")
+SICAD::SICAD(GLFWwindow*& window, const ObjFileMap& obj2fil_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY) :
+    log_ID_("[SH-CAD]"), window_(window)
 {
-    show_background_ = false;
-    mesh_wires_      = false;
-    mesh_mmaps_      = NEAREST;
+    std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
+
+    /* Make the OpenGL context of window the current one handled by this thread. */
+    glfwMakeContextCurrent(window_);
+
+    /* Create a background texture. */
+    glGenTextures(1, &texture_);
+
+    /* Crate the squared support for the backround texture. */
+    glGenVertexArrays(1, &vao_);
+    glBindVertexArray(vao_);
+    GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
+                             1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
+                             1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
+                            -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
+                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f    // Top Left
+    };
+
+    GLuint indices[] = { 0, 1, 3,   // First Triangle
+                         1, 2, 3 }; // Second Triangle
+
+    /* Create and bind an element buffer object. */
+    glGenBuffers(1, &ebo_);
+
+    glGenBuffers(1, &vbo_);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(0));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
+
+    /* Crate shader program. */
+    shader_background_ = new (std::nothrow) Shader("shader_background.vert", "shader_background.frag");
+    if (shader_background_ == nullptr) throw std::runtime_error("Runtime error: shader_background files not found!");
+
+    shader_cad_ = new (std::nothrow) Shader("shader_model.vert", "shader_model_simple.frag");
+    if (shader_cad_ == nullptr) throw std::runtime_error("Runtime error: shader_model files not found!");
+
+    /* Load models. */
+    for (auto map = obj2fil_map.cbegin(); map != obj2fil_map.cend(); ++map)
+    {
+        std::cout << log_ID_ << "Loading OpenGL "+map->first+" model." << std::endl;
+        model_obj_[map->first] = new (std::nothrow) Model(map->second.c_str());
+        if (model_obj_[map->first] == nullptr) throw std::runtime_error("Runtime error: file "+map->second+" not found!");
+    }
+
+    /* Predefined rotation matrices. */
+    root_to_ogl_ = glm::mat4(0.0f, 0.0f, 1.0f, 0.0f,
+                             1.0f, 0.0f, 0.0f, 0.0f,
+                             0.0f, 1.0f, 0.0f, 0.0f,
+                             0.0f, 0.0f, 0.0f, 1.0f);
+
+    back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, FAR*100.f);
+
+    /* Projection matrix. */
+    /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
+                                   0.0      232.43    125.738    0.0
+                                   0.0        0.0       1.0      0.0) */
+    projection_ = glm::mat4(2.0f*(EYE_FX/FRAME_WIDTH),      0,                              0,                              0,
+                            0,                              2.0f*(EYE_FY/FRAME_HEIGHT),     0,                              0,
+                            2.0f*(EYE_CX/FRAME_WIDTH)-1,    2.0f*(EYE_CY/FRAME_HEIGHT)-1,   -(FAR+NEAR)/(FAR-NEAR),        -1,
+                            0,                              0,                              -2.0f*(FAR*NEAR)/(FAR-NEAR),    0);
+
+    std::cout << log_ID_ << "OpenGL renderers succesfully set up!" << std::endl;
+
+    std::cout << log_ID_ << "Initialization completed!" << std::endl;
 }
 
 
@@ -63,92 +139,7 @@ SICAD::~SICAD() {
 }
 
 
-bool SICAD::Configure(GLFWwindow *& window, const ObjFileMap & obj2fil_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY)
-{
-    std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
-
-    window_ = window;
-
-    /* Make the OpenGL context of window the current one handled by this thread. */
-    glfwMakeContextCurrent(window_);
-
-    /* Create a background texture. */
-    glGenTextures(1, &texture_);
-
-    /* Crate the squared support for the backround texture. */
-    glGenVertexArrays(1, &vao_);
-    glBindVertexArray(vao_);
-    GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
-                             1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
-                             1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
-                            -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
-                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f    // Top Left
-                         };
-
-    GLuint indices[] = { 0, 1, 3,   // First Triangle
-                         1, 2, 3 }; // Second Triangle
-
-    /* Create and bind an element buffer object. */
-    glGenBuffers(1, &ebo_);
-
-    glGenBuffers(1, &vbo_);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-    glBindVertexArray(0);
-
-    /* Crate shader program. */
-    shader_background_ = new (std::nothrow) Shader("shader_background.vert", "shader_background.frag");
-    if (shader_background_ == nullptr) return false;
-
-    shader_cad_ = new (std::nothrow) Shader("shader_model.vert", "shader_model_simple.frag");
-    if (shader_cad_ == nullptr) return false;
-
-    /* Load models. */
-    for (auto map = obj2fil_map.cbegin(); map != obj2fil_map.cend(); ++map)
-    {
-        std::cout << log_ID_ << "Loading OpenGL "+map->first+" model." << std::endl;
-        model_obj_[map->first] = new (std::nothrow) Model(map->second.c_str());
-        if (model_obj_[map->first] == nullptr) return false;
-    }
-
-    /* Predefined rotation matrices. */
-    root_to_ogl_ = glm::mat4(0.0f, 0.0f, 1.0f, 0.0f,
-                             1.0f, 0.0f, 0.0f, 0.0f,
-                             0.0f, 1.0f, 0.0f, 0.0f,
-                             0.0f, 0.0f, 0.0f, 1.0f);
-
-    back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, FAR*100.f);
-
-    /* Projection matrix. */
-    /* Intrinsic camera matrix: (232.921 0.0     162.202 0.0
-                                 0.0     232.43  125.738 0.0
-                                 0.0     0.0     1.0     0.0) */
-    projection_ = glm::mat4(2.0f*(EYE_FX/FRAME_WIDTH),      0,                              0,                              0,
-                            0,                              2.0f*(EYE_FY/FRAME_HEIGHT),     0,                              0,
-                            2.0f*(EYE_CX/FRAME_WIDTH)-1,    2.0f*(EYE_CY/FRAME_HEIGHT)-1,   -(FAR+NEAR)/(FAR-NEAR),        -1,
-                            0,                              0,                              -2.0f*(FAR*NEAR)/(FAR-NEAR),    0);
-
-    std::cout << log_ID_ << "OpenGL renderers succesfully set up!" << std::endl;
-
-    std::cout << log_ID_ << "Initialization completed!" << std::endl;
-
-    return true;
-}
-
-bool SICAD::Superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img)
+bool SICAD::superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img)
 {
     glfwMakeContextCurrent(window_);
 
@@ -256,15 +247,15 @@ bool SICAD::getBackgroundOpt() const
 }
 
 
-void SICAD::setWireframeOpt(bool mesh_wires)
+void SICAD::setWireframeOpt(bool show_mesh_wires)
 {
-    mesh_wires_ = mesh_wires;
+    show_mesh_wires_ = show_mesh_wires;
 }
 
 
 bool SICAD::getWireframeOpt() const
 {
-    return mesh_wires_;
+    return show_mesh_wires_;
 }
 
 
