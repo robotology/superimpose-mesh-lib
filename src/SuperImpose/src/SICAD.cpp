@@ -27,7 +27,7 @@
 
 
 SICAD::SICAD(GLFWwindow*& window, const ObjFileMap& obj2fil_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY) :
-    log_ID_("[SH-CAD]"), window_(window)
+    log_ID_("[SICAD]"), window_(window)
 {
     std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
 

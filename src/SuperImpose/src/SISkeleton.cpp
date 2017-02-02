@@ -14,7 +14,7 @@
 
 
 SISkeleton::SISkeleton(const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY) :
-    log_ID_("[SH-Skeleton]"), hand_part_({ "palm", "thumb", "index", "medium" })
+    log_ID_("[SI-Skeleton]"), hand_part_({ "palm", "thumb", "index", "medium" })
 {
     std::cout << log_ID_ << "Setting up OpenCV porjection matrices." << std::endl;
 
