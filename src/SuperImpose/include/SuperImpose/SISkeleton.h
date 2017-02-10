@@ -16,7 +16,7 @@ public:
 
     ~SISkeleton();
 
-    bool superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img);
+    bool superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img);
 
 private:
     const std::string      log_ID_;
@@ -26,7 +26,7 @@ private:
     glm::mat3              root_to_eye_;
     glm::vec3              cam_pos_;
 
-    glm::vec2              getWorldToPixel(const double * world_point);
+    glm::vec2              getWorldToPixel(const double* world_point);
 };
 
 #endif /* SUPERIMPOSESKELETON_H */

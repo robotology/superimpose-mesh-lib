@@ -16,7 +16,7 @@
 class SICAD : public SuperImpose
 {
 public:
-    typedef typename std::unordered_map<std::string, Model *> ObjModel;
+    typedef typename std::unordered_map<std::string, Model*> ObjModel;
 
     enum MipMaps
     {
@@ -24,11 +24,11 @@ public:
         LINEAR  = 1
     };
 
-    SICAD(GLFWwindow*& window, const ObjFileMap& obj2fil_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY);
+    SICAD(GLFWwindow*& window, const ObjFileMap& objfile_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY);
 
     virtual ~SICAD();
 
-    bool    superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img);
+    bool    superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img);
 
     bool    getBackgroundOpt() const;
     void    setBackgroundOpt(bool show_background);
@@ -39,23 +39,23 @@ public:
     MipMaps getMipmapsOpt()    const;
 
 private:
-    const std::string   log_ID_;
+    const std::string  log_ID_;
     
-    GLFWwindow        * window_;
+    GLFWwindow       * window_;
 
-    bool                show_background_   = false;
-    bool                show_mesh_wires_   = false;
-    MipMaps             mesh_mmaps_        = NEAREST;
-    Shader            * shader_background_ = nullptr;
-    Shader            * shader_cad_        = nullptr;
-    ObjModel            model_obj_;
-    GLuint              texture_;
-    GLuint              vao_;
-    GLuint              ebo_;
-    GLuint              vbo_;
-    glm::mat4           root_to_ogl_;
-    glm::mat4           back_proj_;
-    glm::mat4           projection_;
+    bool               show_background_   = false;
+    bool               show_mesh_wires_   = false;
+    MipMaps            mesh_mmaps_        = NEAREST;
+    Shader           * shader_background_ = nullptr;
+    Shader           * shader_cad_        = nullptr;
+    ObjModel           model_obj_;
+    GLuint             texture_;
+    GLuint             vao_;
+    GLuint             ebo_;
+    GLuint             vbo_;
+    glm::mat4          root_to_ogl_;
+    glm::mat4          back_proj_;
+    glm::mat4          projection_;
 };
 
 #endif /* SUPERIMPOSECAD_H */

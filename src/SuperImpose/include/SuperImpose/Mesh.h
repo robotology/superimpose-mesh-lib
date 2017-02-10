@@ -19,9 +19,9 @@ struct Vertex {
 
 
 struct Texture {
-    GLuint id;
+    GLuint      id;
     std::string type;
-    aiString path;
+    aiString    path;
 };
 
 

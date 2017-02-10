@@ -26,7 +26,7 @@
 #define FAR                1000.0f
 
 
-SICAD::SICAD(GLFWwindow*& window, const ObjFileMap& obj2fil_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY) :
+SICAD::SICAD(GLFWwindow*& window, const ObjFileMap& objfile_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY) :
     log_ID_("[SICAD]"), window_(window)
 {
     std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
@@ -44,8 +44,7 @@ SICAD::SICAD(GLFWwindow*& window, const ObjFileMap& obj2fil_map, const float EYE
                              1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
                              1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
                             -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
-                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f    // Top Left
-    };
+                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
 
     GLuint indices[] = { 0, 1, 3,   // First Triangle
                          1, 2, 3 }; // Second Triangle
@@ -79,7 +78,7 @@ SICAD::SICAD(GLFWwindow*& window, const ObjFileMap& obj2fil_map, const float EYE
     if (shader_cad_ == nullptr) throw std::runtime_error("Runtime error: shader_model files not found!");
 
     /* Load models. */
-    for (auto map = obj2fil_map.cbegin(); map != obj2fil_map.cend(); ++map)
+    for (auto map = objfile_map.cbegin(); map != objfile_map.cend(); ++map)
     {
         std::cout << log_ID_ << "Loading OpenGL "+map->first+" model." << std::endl;
         model_obj_[map->first] = new (std::nothrow) Model(map->second.c_str());
@@ -109,7 +108,8 @@ SICAD::SICAD(GLFWwindow*& window, const ObjFileMap& obj2fil_map, const float EYE
 }
 
 
-SICAD::~SICAD() {
+SICAD::~SICAD()
+{
     std::cout << log_ID_ << "Deallocating OpenGL resources..." << std::endl;
 
     glfwMakeContextCurrent(window_);
@@ -139,7 +139,7 @@ SICAD::~SICAD() {
 }
 
 
-bool SICAD::superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, const double * cam_o, cv::Mat & img)
+bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
     glfwMakeContextCurrent(window_);
 
@@ -202,7 +202,7 @@ bool SICAD::superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, co
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
     /* Model transformation matrix. */
-    for (auto map = obj2pos_map.cbegin(); map != obj2pos_map.cend(); ++map)
+    for (auto map = objpos_map.cbegin(); map != objpos_map.cend(); ++map)
     {
         const double * pose = map->second.data();
 
@@ -218,14 +218,15 @@ bool SICAD::superimpose(const ObjPoseMap & obj2pos_map, const double * cam_x, co
         model_obj_[map->first]->Draw(*shader_cad_);
     }
 
+    /* Read before swap. glReadPixels read the current framebuffer, i.e. the back one. */
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
        and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
     cv::Mat ogl_pixel(FRAMEBUFFER_HEIGHT, FRAMEBUFFER_WIDTH, CV_8UC3);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
     glReadPixels(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
-    cv::flip(ogl_pixel, ogl_pixel, 0);
 
+    cv::flip(ogl_pixel, ogl_pixel, 0);
     cv::resize(ogl_pixel, img, img.size(), 0, 0, cv::INTER_LINEAR);
 
     /* Swap the buffers. */
