@@ -25,10 +25,13 @@ public:
         LINEAR  = 1
     };
 
-    SICAD(GLFWwindow*& window, const ObjFileMap& objfile_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY);
+
+    SICAD(const ObjFileMap& objfile_map, const int cam_width, const int cam_height, const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy);
 
     virtual ~SICAD();
 
+
+    static bool initOGL(const GLsizei width, const GLsizei height, const GLint view = 1);
 
     bool        superimpose(const ObjPoseMap& objpos_map,                   const double* cam_x, const double* cam_o, cv::Mat& img);
     bool        superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
@@ -42,10 +45,16 @@ public:
     MipMaps     getMipmapsOpt()    const;
 
 private:
-    const std::string  log_ID_;
-    
-    GLFWwindow       * window_;
+    static bool                     can_init;
+    static GLFWwindow             * window_;
+    static GLsizei                  window_width_;
+    static GLsizei                  window_height_;
+    static GLsizei                  framebuffer_width_;
+    static GLsizei                  framebuffer_height_;
+    constexpr static const GLfloat  near_ = 0.001f;
+    constexpr static const GLfloat  far_  = 1000.0f;
 
+    const std::string  log_ID_;
     bool               show_background_   = false;
     GLenum             show_mesh_mode_    = GL_FILL;
     MipMaps            mesh_mmaps_        = NEAREST;
@@ -62,6 +71,7 @@ private:
 
     void        set_background(cv::Mat& img, const unsigned int unit = 0);
     void        set_wireframe(GLenum mode);
+    static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 };
 
 #endif /* SUPERIMPOSECAD_H */

@@ -18,11 +18,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # Is Apple Retina monitor?
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-D GLFW_MAC)
-    option(IS_APPLE_RETINA
-           "Select this option if the Apple machine has a Retina display" ON)
-    if(IS_APPLE_RETINA)
-        add_definitions(-D GLFW_RETINA)
-    endif()
 endif()
 
 # Shared/Dynamic or Static library?

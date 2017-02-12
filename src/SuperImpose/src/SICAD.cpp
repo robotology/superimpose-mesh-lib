@@ -12,24 +12,12 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
-#define WINDOW_WIDTH       320
-#define WINDOW_HEIGHT      240
-#ifdef GLFW_RETINA
-#define FRAMEBUFFER_WIDTH  2*WINDOW_WIDTH
-#define FRAMEBUFFER_HEIGHT 2*WINDOW_HEIGHT
-#else
-#define FRAMEBUFFER_WIDTH  WINDOW_WIDTH
-#define FRAMEBUFFER_HEIGHT WINDOW_HEIGHT
-#endif
-#define FRAME_WIDTH        320
-#define FRAME_HEIGHT       240
-#define NEAR               0.001f
-#define FAR                1000.0f
 
-
-SICAD::SICAD(GLFWwindow*& window, const ObjFileMap& objfile_map, const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY) :
-    log_ID_("[SICAD]"), window_(window)
+SICAD::SICAD(const ObjFileMap& objfile_map, const int cam_width, const int cam_height, const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy) :
+    log_ID_("[SICAD]")
 {
+    if (!can_init) throw std::runtime_error("Can't create object SICAD before calling static function member SICAD::initOGL.");
+
     std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
 
     /* Make the OpenGL context of window the current one handled by this thread. */
@@ -95,16 +83,16 @@ SICAD::SICAD(GLFWwindow*& window, const ObjFileMap& objfile_map, const float EYE
                              0.0f, 1.0f, 0.0f, 0.0f,
                              0.0f, 0.0f, 0.0f, 1.0f);
 
-    back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, FAR*100.f);
+    back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, far_*100.f);
 
     /* Projection matrix. */
     /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
                                    0.0      232.43    125.738    0.0
                                    0.0        0.0       1.0      0.0) */
-    projection_ = glm::mat4(2.0f*(EYE_FX/FRAME_WIDTH),      0,                              0,                              0,
-                            0,                              2.0f*(EYE_FY/FRAME_HEIGHT),     0,                              0,
-                            2.0f*(EYE_CX/FRAME_WIDTH)-1,    2.0f*(EYE_CY/FRAME_HEIGHT)-1,   -(FAR+NEAR)/(FAR-NEAR),        -1,
-                            0,                              0,                              -2.0f*(FAR*NEAR)/(FAR-NEAR),    0);
+    projection_ = glm::mat4(2.0f*(eye_fx/cam_width),    0,                              0,                                  0,
+                            0,                          2.0f*(eye_fy/cam_height),       0,                                  0,
+                            2.0f*(eye_cx/cam_width)-1,  2.0f*(eye_cy/cam_height)-1,    -(far_+near_)/(far_-near_),         -1,
+                            0,                          0,                             -2.0f*(far_*near_)/(far_-near_),     0);
 
     /* Projection transformation matrix. */
     shader_cad_->Use();
@@ -147,28 +135,81 @@ SICAD::~SICAD()
 }
 
 
+bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint view)
+{
+    std::string log_ID = "[OpenGL]";
+
+    if (can_init)
+    {
+        std::cout << log_ID << "Already set up!" << std::endl;
+        return false;
+    }
+    std::cout << log_ID << "Start setting up..." << std::endl;
+
+    /* Initialize GLFW. */
+    if (glfwInit() == GL_FALSE)
+    {
+        std::cerr << log_ID << "Failed to initialize GLFW.";
+        return false;
+    }
+
+    /* Set context properties by "hinting" specific (property, value) pairs. */
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE,        GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE,             GL_FALSE);
+    glfwWindowHint(GLFW_VISIBLE,               GL_FALSE);
+#ifdef GLFW_MAC
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+    /* Create a window. */
+    window_ = glfwCreateWindow(width * view, height, "OpenGL Window", nullptr, nullptr);
+    if (window_ == nullptr)
+    {
+        std::cerr << log_ID << "Failed to create GLFW window.";
+        glfwTerminate();
+        return false;
+    }
+    glfwGetWindowSize(window_, &window_width_, &window_height_);
+    std::cout << log_ID << "Window set to "+std::to_string(window_width_)+"x"+std::to_string(window_height_)+"." << std::endl;
+
+    /* Make the OpenGL context of window the current one handled by this thread. */
+    glfwMakeContextCurrent(window_);
+
+    /* Set window callback functions. */
+    glfwSetKeyCallback(window_, key_callback);
+
+    /* Initialize GLEW to use the OpenGL implementation provided by the videocard manufacturer. */
+    /* Note: remember that the OpenGL are only specifications, the implementation is provided by the manufacturers. */
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK)
+    {
+        std::cerr << log_ID << "Failed to initialize GLEW.";
+        return false;
+    }
+
+    /* Set default OpenGL viewport for the current window. */
+    /* Note that framebuffer_width_ and framebuffer_height_ may differ w.r.t. width and height in hdpi monitors. */
+    glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
+    glViewport(0, 0, framebuffer_width_, framebuffer_height_);
+    std::cout << log_ID << "Viewport set to "+std::to_string(framebuffer_width_)+"x"+std::to_string(framebuffer_height_)+"." << std::endl;
+
+    /* Set GL property. */
+    glEnable(GL_DEPTH_TEST);
+
+    glfwPollEvents();
+
+    can_init = true;
+    std::cout << log_ID << "Succesfully set up!" << std::endl;
+
+    return true;
+}
+
+
 bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
     glfwMakeContextCurrent(window_);
-
-    /* Load and generate the texture. */
-    glBindTexture(GL_TEXTURE_2D, texture_);
-
-    /* Set the texture wrapping/filtering options (on the currently bound texture object). */
-    if (getMipmapsOpt() == NEAREST)
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    }
-    else if (getMipmapsOpt() == LINEAR)
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.cols, img.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, img.data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
 
     /* Clear the colorbuffer. */
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -213,13 +254,13 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
     /* Read before swap. glReadPixels read the current framebuffer, i.e. the back one. */
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
        and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
-    cv::Mat ogl_pixel(FRAMEBUFFER_HEIGHT, FRAMEBUFFER_WIDTH, CV_8UC3);
+    cv::Mat ogl_pixel(framebuffer_height_, framebuffer_width_, CV_8UC3);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
-    glReadPixels(0, 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
+    glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
 
     cv::flip(ogl_pixel, ogl_pixel, 0);
-    cv::resize(ogl_pixel, img, img.size(), 0, 0, cv::INTER_LINEAR);
+    cv::resize(ogl_pixel, img, cv::Size(window_width_, window_height_), 0, 0, cv::INTER_LINEAR);
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
@@ -374,3 +415,10 @@ void SICAD::key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
+
+bool        SICAD::can_init            = false;
+GLFWwindow* SICAD::window_             = nullptr;
+GLsizei     SICAD::window_width_       = 0;
+GLsizei     SICAD::window_height_      = 0;
+GLsizei     SICAD::framebuffer_width_  = 0;
+GLsizei     SICAD::framebuffer_height_ = 0;
