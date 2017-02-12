@@ -4,6 +4,7 @@
 #include "SuperImpose.h"
 
 #include <string>
+#include <vector>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -28,15 +29,17 @@ public:
 
     virtual ~SICAD();
 
-    bool    superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img);
 
-    bool    getBackgroundOpt() const;
-    void    setBackgroundOpt(bool show_background);
+    bool        superimpose(const ObjPoseMap& objpos_map,                   const double* cam_x, const double* cam_o, cv::Mat& img);
+    bool        superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
 
-    bool    getWireframeOpt()  const;
-    void    setWireframeOpt(bool show_mesh_wires);
+    bool        getBackgroundOpt() const;
+    void        setBackgroundOpt(bool show_background);
 
-    MipMaps getMipmapsOpt()    const;
+    GLenum      getWireframeOpt()  const;
+    void        setWireframeOpt(bool show_mesh_wires);
+
+    MipMaps     getMipmapsOpt()    const;
 
 private:
     const std::string  log_ID_;
@@ -44,7 +47,7 @@ private:
     GLFWwindow       * window_;
 
     bool               show_background_   = false;
-    bool               show_mesh_wires_   = false;
+    GLenum             show_mesh_mode_    = GL_FILL;
     MipMaps            mesh_mmaps_        = NEAREST;
     Shader           * shader_background_ = nullptr;
     Shader           * shader_cad_        = nullptr;
@@ -56,6 +59,9 @@ private:
     glm::mat4          root_to_ogl_;
     glm::mat4          back_proj_;
     glm::mat4          projection_;
+
+    void        set_background(cv::Mat& img, const unsigned int unit = 0);
+    void        set_wireframe(GLenum mode);
 };
 
 #endif /* SUPERIMPOSECAD_H */
