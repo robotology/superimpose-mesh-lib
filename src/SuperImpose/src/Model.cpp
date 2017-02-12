@@ -8,31 +8,39 @@
 // #include <SOIL/SOIL.h>
 
 
-Model::Model(const GLchar* path) {
+Model::Model(const GLchar* path)
+{
     this->loadModel(path);
 }
 
 
-void Model::Draw(Shader shader) {
-    for(GLuint i = 0; i < this->meshes.size(); i++) {
+void Model::Draw(Shader shader)
+{
+    for(GLuint i = 0; i < this->meshes.size(); i++)
+    {
         this->meshes[i].Draw(shader);
     }
 }
 
 
-void Model::loadModel(std::string path) {
+void Model::loadModel(std::string path)
+{
     Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene*   scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     
-    if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+    if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    {
         std::cerr << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
         return;
     }
     
     size_t foundpos = path.find_last_of('/');
-    if (foundpos == std::string::npos) {
+    if (foundpos == std::string::npos)
+    {
         this->directory = ".";
-    } else {
+    }
+    else
+    {
         this->directory = path.substr(0, foundpos);
     }
     
@@ -42,37 +50,43 @@ void Model::loadModel(std::string path) {
 
 void Model::processNode(aiNode* node, const aiScene* scene) {
     /* Process all the node's meshes (if any). */
-    for (GLuint i = 0; i < node->mNumMeshes; ++i) {
+    for (GLuint i = 0; i < node->mNumMeshes; ++i)
+    {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         this->meshes.push_back(this->processMesh(mesh, scene));
     }
     
     /* Then do the same for each of its children. */
-    for (GLuint i = 0; i < node->mNumChildren; ++i) {
+    for (GLuint i = 0; i < node->mNumChildren; ++i)
+    {
         this->processNode(node->mChildren[i], scene);
     }
 }
 /* Note: we could basically forget about processing any of the nodes and simply loop through all of the scene's meshes directly without doing all this complicated stuff with indices. The reason we're doing this is that the initial idea for using nodes like this is that it defines a parent-child relation between meshes. By recursively iterating through these relations we can actually define certain meshes to be parents of other meshes. It is generally recommended to stick with this approach for whenever you want extra control over your mesh data. These node-like relations are after all defined by the artists who created the models. */
 
 
-Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
-    std::vector<Vertex> vertices;
-    std::vector<GLuint> indices;
+Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
+{
+    std::vector<Vertex>  vertices;
+    std::vector<GLuint>  indices;
     std::vector<Texture> textures;
     
     /* Process vertices. */
-    for (GLuint i = 0; i < mesh->mNumVertices; ++i) {
+    for (GLuint i = 0; i < mesh->mNumVertices; ++i)
+    {
         Vertex vertex;
         
         /* Process vertex positions, normals and texture coordinates. */
         vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-        
-        vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+        vertex.Normal   = glm::vec3(mesh->mNormals[i].x,  mesh->mNormals[i].y,  mesh->mNormals[i].z);
         
         /* Does the mesh contain texture coordinates? */
-        if (mesh->mTextureCoords[0]) {
+        if (mesh->mTextureCoords[0])
+        {
             vertex.TexCoords = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-        } else {
+        }
+        else
+        {
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
         }
         /* Note: Assimp allows a model to have up to 8 different texture coordinates per vertex, i.e. mTextureCoords[0:7][*], which we're not going to use. We only care about the first set of texture coordinates. */
@@ -82,9 +96,11 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene) {
     
     /* Process indices. */
     /* Assimp's interface defines meshes with an array of faces, where each face represents a single primitive which, in our case (due to the aiProcess_Triangulate option), are always triangles. A face contains the indices that define which vertices we need to draw in what order for each primitive so if we iterate over all the faces and store all the face's indices in the indices vector we're all set. */
-    for (GLuint i = 0; i < mesh->mNumFaces; ++i) {
+    for (GLuint i = 0; i < mesh->mNumFaces; ++i)
+    {
         aiFace face = mesh->mFaces[i];
-        for (GLuint j = 0; j < face.mNumIndices; ++j) {
+        for (GLuint j = 0; j < face.mNumIndices; ++j)
+        {
             indices.push_back(face.mIndices[j]);
         }
     }

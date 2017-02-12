@@ -7,16 +7,18 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures) {
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures)
+{
     this->vertices = vertices;
-    this->indices = indices;
+    this->indices  = indices;
     this->textures = textures;
     
     this->setupMesh();
 }
 
 
-void Mesh::setupMesh() {
+void Mesh::setupMesh()
+{
     glGenVertexArrays(1, &this->VAO);
     glGenBuffers(1, &this->VBO);
     glGenBuffers(1, &this->EBO);
@@ -45,28 +47,33 @@ void Mesh::setupMesh() {
 }
 
 
-void Mesh::Draw(Shader shader) {
-    GLuint diffuseNr = 1;
-    GLuint specularNr = 1;
-    for (GLuint i = 0; i < this->textures.size(); ++i) {
-        /* Activate proper texture unit before binding. */
-        glActiveTexture(GL_TEXTURE0 + i);
-        
-        /* Retrieve texture number (the N in diffuse_textureN). */
-        std::string number;
-        std::string name = this->textures[i].type;
-        /* Transfer GLuint to stream. */
-        if(name == "texture_diffuse") {
-            number = std::to_string(diffuseNr++);
-        } else if(name == "texture_specular") {
-            number = std::to_string(specularNr++);
-        }
-        
-        glUniform1i(glGetUniformLocation(shader.Program, (name + number).c_str()), i);
-        glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
-    }
-    glActiveTexture(GL_TEXTURE0);
-    
+void Mesh::Draw(Shader shader)
+{
+//    GLuint diffuseNr  = 1;
+//    GLuint specularNr = 1;
+//    for (GLuint i = 0; i < this->textures.size(); ++i)
+//    {
+//        /* Activate proper texture unit before binding. */
+//        glActiveTexture(GL_TEXTURE0 + i);
+//        
+//        /* Retrieve texture number (the N in diffuse_textureN). */
+//        std::string number;
+//        std::string name = this->textures[i].type;
+//        /* Transfer GLuint to stream. */
+//        if(name == "texture_diffuse")
+//        {
+//            number = std::to_string(diffuseNr++);
+//        }
+//        else if(name == "texture_specular")
+//        {
+//            number = std::to_string(specularNr++);
+//        }
+//        
+//        glUniform1i(glGetUniformLocation(shader.Program, (name + number).c_str()), i);
+//        glBindTexture(GL_TEXTURE_2D, this->textures[i].id);
+//    }
+//    glActiveTexture(GL_TEXTURE0);
+
     /* Draw mesh. */
     glBindVertexArray(this->VAO);
     glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
