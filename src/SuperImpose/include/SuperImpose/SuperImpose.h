@@ -20,7 +20,6 @@ public:
     virtual ~SuperImpose() { };
 
     virtual bool superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img) = 0;
-
 };
 
 #endif /* SUPERIMPOSEHAND_H */
