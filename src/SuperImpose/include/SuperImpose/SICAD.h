@@ -33,6 +33,8 @@ public:
 
     static bool initOGL(const GLsizei width, const GLsizei height, const GLint view = 1);
 
+    static int  oglWindowShouldClose();
+
     bool        superimpose(const ObjPoseMap& objpos_map,                   const double* cam_x, const double* cam_o, cv::Mat& img);
     bool        superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
 

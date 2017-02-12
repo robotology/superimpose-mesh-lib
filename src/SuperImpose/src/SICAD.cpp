@@ -207,6 +207,12 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint view)
 }
 
 
+int SICAD::oglWindowShouldClose()
+{
+    return glfwWindowShouldClose(window_);
+}
+
+
 bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
     glfwMakeContextCurrent(window_);
