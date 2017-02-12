@@ -135,7 +135,7 @@ SICAD::~SICAD()
 }
 
 
-bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint view)
+bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint viewports)
 {
     std::string log_ID = "[OpenGL]";
 
@@ -164,7 +164,8 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint view)
 #endif
 
     /* Create a window. */
-    window_ = glfwCreateWindow(width * view, height, "OpenGL Window", nullptr, nullptr);
+    viewports_ = viewports;
+    window_ = glfwCreateWindow(width * viewports_, height, "OpenGL Window", nullptr, nullptr);
     if (window_ == nullptr)
     {
         std::cerr << log_ID << "Failed to create GLFW window.";
@@ -172,7 +173,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint view)
         return false;
     }
     glfwGetWindowSize(window_, &window_width_, &window_height_);
-    std::cout << log_ID << "Window set to "+std::to_string(window_width_)+"x"+std::to_string(window_height_)+"." << std::endl;
+    std::cout << log_ID << "Window created with "+std::to_string(window_width_)+"x"+std::to_string(window_height_)+" size." << std::endl;
 
     /* Make the OpenGL context of window the current one handled by this thread. */
     glfwMakeContextCurrent(window_);
@@ -193,7 +194,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint view)
     /* Note that framebuffer_width_ and framebuffer_height_ may differ w.r.t. width and height in hdpi monitors. */
     glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
     glViewport(0, 0, framebuffer_width_, framebuffer_height_);
-    std::cout << log_ID << "Viewport set to "+std::to_string(framebuffer_width_)+"x"+std::to_string(framebuffer_height_)+"." << std::endl;
+    std::cout << log_ID << "The window framebuffer is "+std::to_string(framebuffer_width_)+"x"+std::to_string(framebuffer_height_)+"." << std::endl;
 
     /* Set GL property. */
     glEnable(GL_DEPTH_TEST);
@@ -216,6 +217,9 @@ int SICAD::oglWindowShouldClose()
 bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
     glfwMakeContextCurrent(window_);
+
+    glViewport(0, 0, framebuffer_width_ / viewports_, framebuffer_height_);
+    glScissor (0, 0, framebuffer_width_ / viewports_, framebuffer_height_);
 
     /* Clear the colorbuffer. */
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -260,13 +264,13 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
     /* Read before swap. glReadPixels read the current framebuffer, i.e. the back one. */
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
        and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
-    cv::Mat ogl_pixel(framebuffer_height_, framebuffer_width_, CV_8UC3);
+    cv::Mat ogl_pixel(framebuffer_height_, framebuffer_width_ / viewports_, CV_8UC3);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
-    glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
+    glReadPixels(0, 0, framebuffer_width_ / viewports_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
 
     cv::flip(ogl_pixel, ogl_pixel, 0);
-    cv::resize(ogl_pixel, img, cv::Size(window_width_, window_height_), 0, 0, cv::INTER_LINEAR);
+    cv::resize(ogl_pixel, img, cv::Size(window_width_ / viewports_, window_height_), 0, 0, cv::INTER_LINEAR);
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
@@ -424,6 +428,7 @@ void SICAD::key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 bool        SICAD::can_init            = false;
 GLFWwindow* SICAD::window_             = nullptr;
+GLint       SICAD::viewports_          = 1;
 GLsizei     SICAD::window_width_       = 0;
 GLsizei     SICAD::window_height_      = 0;
 GLsizei     SICAD::framebuffer_width_  = 0;

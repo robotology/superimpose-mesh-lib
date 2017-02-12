@@ -31,7 +31,7 @@ public:
     virtual ~SICAD();
 
 
-    static bool initOGL(const GLsizei width, const GLsizei height, const GLint view = 1);
+    static bool initOGL(const GLsizei width, const GLsizei height, const GLint viewports = 1);
 
     static int  oglWindowShouldClose();
 
@@ -49,6 +49,7 @@ public:
 private:
     static bool                     can_init;
     static GLFWwindow             * window_;
+    static GLint                    viewports_;
     static GLsizei                  window_width_;
     static GLsizei                  window_height_;
     static GLsizei                  framebuffer_width_;
