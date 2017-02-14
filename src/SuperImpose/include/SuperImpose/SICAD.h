@@ -37,6 +37,10 @@ public:
 
     bool        superimpose(const ObjPoseMap& objpos_map,                   const double* cam_x, const double* cam_o, cv::Mat& img);
     bool        superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
+    bool        superimpose(const std::vector<ObjPoseMap>& objpos_multimap,
+                            const double* cam_x, const double* cam_o,
+                            const int cam_width, const int cam_height, const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy,
+                            cv::Mat& img);
 
     bool        getBackgroundOpt() const;
     void        setBackgroundOpt(bool show_background);

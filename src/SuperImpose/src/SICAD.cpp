@@ -352,6 +352,91 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
 }
 
 
+bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap,
+                        const double* cam_x, const double* cam_o,
+                        const int cam_width, const int cam_height, const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy,
+                        cv::Mat& img)
+{
+    glfwMakeContextCurrent(window_);
+
+    shader_cad_->Use();
+
+    /* View transformation matrix. */
+    glm::mat4 root_eye_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
+    glm::mat4 eye_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])));
+
+    glm::mat4 view = glm::lookAt(glm::mat3(root_to_ogl_) * glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z),
+                                 glm::mat3(root_to_ogl_) * (glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z) + glm::mat3(eye_to_root) * glm::vec3(0.0f, 0.0f, 1.0f)),
+                                 glm::mat3(root_to_ogl_) * glm::mat3(eye_to_root) * glm::vec3(0.0f, -1.0f, 0.0f));
+
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+
+    /* Projection transformation matrix. */
+    projection_ = glm::mat4(2.0f*(eye_fx/cam_width),    0,                              0,                                  0,
+                            0,                          2.0f*(eye_fy/cam_height),       0,                                  0,
+                            2.0f*(eye_cx/cam_width)-1,  2.0f*(eye_cy/cam_height)-1,    -(far_+near_)/(far_-near_),         -1,
+                            0,                          0,                             -2.0f*(far_*near_)/(far_-near_),     0);
+
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
+
+
+    /* Model transformation matrix. */
+    const int num_img = objpos_multimap.size();
+    for (unsigned int i = 0; i < num_img; ++i)
+    {
+        glViewport((framebuffer_width_ / num_img) * i, 0,
+                   (framebuffer_width_ / num_img)    , framebuffer_height_);
+        glScissor ((framebuffer_width_ / num_img) * i, 0,
+                   (framebuffer_width_ / num_img)    , framebuffer_height_);
+
+        /* Clear the colorbuffer. */
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        /* Draw the background picture. */
+        if (getBackgroundOpt()) set_background(img, i);
+
+        /* View mesh filled or as wireframe. */
+        set_wireframe(getWireframeOpt());
+
+        /* Use/Activate the shader. */
+        shader_cad_->Use();
+
+        for (auto map = objpos_multimap[i].cbegin(); map != objpos_multimap[i].cend(); ++map)
+        {
+            const double * pose = map->second.data();
+
+            glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
+            obj_to_root[3][0] = pose[0];
+            obj_to_root[3][1] = pose[1];
+            obj_to_root[3][2] = pose[2];
+
+            glm::mat4 model = root_to_ogl_ * obj_to_root;
+
+            glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+            model_obj_[map->first]->Draw(*shader_cad_);
+        }
+    }
+
+    /* Read before swap. glReadPixels read the current framebuffer, i.e. the back one. */
+    /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
+     and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
+    cv::Mat ogl_pixel(framebuffer_height_, framebuffer_width_, CV_8UC3);
+    glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
+    glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
+    glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
+
+    cv::flip(ogl_pixel, ogl_pixel, 0);
+    cv::resize(ogl_pixel, img, cv::Size(window_width_, window_height_), 0, 0, cv::INTER_LINEAR);
+    
+    /* Swap the buffers. */
+    glfwSwapBuffers(window_);
+    
+    return true;
+}
+
+
 void SICAD::setBackgroundOpt(bool show_background)
 {
     show_background_ = show_background;
