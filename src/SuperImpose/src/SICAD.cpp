@@ -13,7 +13,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 
-SICAD::SICAD(const ObjFileMap& objfile_map, const int cam_width, const int cam_height, const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy) :
+SICAD::SICAD(const ObjFileMap& objfile_map) :
     log_ID_("[SICAD]")
 {
     if (!can_init) throw std::runtime_error("Can't create object SICAD before calling static function member SICAD::initOGL.");
@@ -33,13 +33,13 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const int cam_width, const int cam_h
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
     GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
-                             1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
-                             1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
-                            -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
-                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
+        1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
+        1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
+        -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
+        -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
 
     GLuint indices[] = { 0, 1, 3,   // First Triangle
-                         1, 2, 3 }; // Second Triangle
+        1, 2, 3 }; // Second Triangle
 
     /* Create and bind an element buffer object. */
     glGenBuffers(1, &ebo_);
@@ -85,6 +85,15 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const int cam_width, const int cam_h
 
     back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, far_*100.f);
 
+    std::cout << log_ID_ << "OpenGL renderers succesfully set up!" << std::endl;
+
+    std::cout << log_ID_ << "Initialization completed!" << std::endl;
+}
+
+
+SICAD::SICAD(const ObjFileMap& objfile_map, const int cam_width, const int cam_height, const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy) :
+    SICAD(objfile_map)
+{
     /* Projection matrix. */
     /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
                                    0.0      232.43    125.738    0.0
@@ -97,10 +106,6 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const int cam_width, const int cam_h
     /* Projection transformation matrix. */
     shader_cad_->Use();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
-
-    std::cout << log_ID_ << "OpenGL renderers succesfully set up!" << std::endl;
-
-    std::cout << log_ID_ << "Initialization completed!" << std::endl;
 }
 
 

@@ -25,6 +25,7 @@ public:
         LINEAR  = 1
     };
 
+    SICAD(const ObjFileMap& objfile_map);
 
     SICAD(const ObjFileMap& objfile_map, const int cam_width, const int cam_height, const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy);
 
