@@ -33,13 +33,13 @@ SICAD::SICAD(const ObjFileMap& objfile_map) :
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
     GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
-        1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
-        1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
-        -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
-        -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
+                             1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
+                             1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
+                            -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
+                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
 
     GLuint indices[] = { 0, 1, 3,   // First Triangle
-        1, 2, 3 }; // Second Triangle
+                         1, 2, 3 }; // Second Triangle
 
     /* Create and bind an element buffer object. */
     glGenBuffers(1, &ebo_);
