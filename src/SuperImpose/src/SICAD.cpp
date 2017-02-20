@@ -95,12 +95,13 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const int cam_width, const int cam_h
     SICAD(objfile_map)
 {
     /* Projection matrix. */
+    /* See: https://strawlab.org/2011/11/05/augmented-reality-with-OpenGL */
     /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
                                    0.0      232.43    125.738    0.0
                                    0.0        0.0       1.0      0.0) */
     projection_ = glm::mat4(2.0f*(eye_fx/cam_width),    0,                              0,                                  0,
                             0,                          2.0f*(eye_fy/cam_height),       0,                                  0,
-                            2.0f*(eye_cx/cam_width)-1,  2.0f*(eye_cy/cam_height)-1,    -(far_+near_)/(far_-near_),         -1,
+                            1-2.0f*(eye_cx/cam_width),  1-2.0f*(eye_cy/cam_height),    -(far_+near_)/(far_-near_),         -1,
                             0,                          0,                             -2.0f*(far_*near_)/(far_-near_),     0);
 
     /* Projection transformation matrix. */
@@ -393,7 +394,7 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map,
     /* Projection transformation matrix. */
     projection_ = glm::mat4(2.0f*(eye_fx/cam_width),    0,                              0,                                  0,
                             0,                          2.0f*(eye_fy/cam_height),       0,                                  0,
-                            2.0f*(eye_cx/cam_width)-1,  2.0f*(eye_cy/cam_height)-1,    -(far_+near_)/(far_-near_),         -1,
+                            1-2.0f*(eye_cx/cam_width),  1-2.0f*(eye_cy/cam_height),    -(far_+near_)/(far_-near_),         -1,
                             0,                          0,                             -2.0f*(far_*near_)/(far_-near_),     0);
 
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
@@ -455,7 +456,7 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap,
     /* Projection transformation matrix. */
     projection_ = glm::mat4(2.0f*(eye_fx/cam_width),    0,                              0,                                  0,
                             0,                          2.0f*(eye_fy/cam_height),       0,                                  0,
-                            2.0f*(eye_cx/cam_width)-1,  2.0f*(eye_cy/cam_height)-1,    -(far_+near_)/(far_-near_),         -1,
+                            1-2.0f*(eye_cx/cam_width),  1-2.0f*(eye_cy/cam_height),    -(far_+near_)/(far_-near_),         -1,
                             0,                          0,                             -2.0f*(far_*near_)/(far_-near_),     0);
 
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));

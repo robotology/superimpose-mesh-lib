@@ -13,7 +13,7 @@
 #define FRAME_HEIGHT 240
 
 
-SISkeleton::SISkeleton(const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY) :
+SISkeleton::SISkeleton(const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy) :
     log_ID_("[SI-Skeleton]"), hand_part_({ "palm", "thumb", "index", "medium" })
 {
     std::cout << log_ID_ << "Setting up OpenCV porjection matrices." << std::endl;
@@ -23,9 +23,9 @@ SISkeleton::SISkeleton(const float EYE_FX, const float EYE_FY, const float EYE_C
                                    0.0      232.43    125.738    0.0
                                    0.0        0.0       1.0      0.0)
        Remember that GLM is column-major.                             */
-    projection_ = glm::mat3(EYE_FX,     0.0f,       0.0f,
-                            0.0f,       EYE_FY,     0.0f,
-                            EYE_CX,     EYE_CY,     1.0f);
+    projection_ = glm::mat3(eye_fx,     0.0f,       0.0f,
+                            0.0f,       eye_fy,     0.0f,
+                            eye_cx,     eye_cy,     1.0f);
 
     std::cout << log_ID_ << "OpenCV projection matrices succesfully set up!" << std::endl;
 

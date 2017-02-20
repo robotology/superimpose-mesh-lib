@@ -12,7 +12,7 @@
 class SISkeleton : public SuperImpose
 {
 public:
-    SISkeleton(const float EYE_FX, const float EYE_FY, const float EYE_CX, const float EYE_CY);
+    SISkeleton(const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy);
 
     ~SISkeleton();
 
