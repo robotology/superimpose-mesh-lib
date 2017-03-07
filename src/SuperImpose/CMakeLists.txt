@@ -37,7 +37,6 @@ target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${CM
 target_link_libraries(${LIBRARY_TARGET_NAME} PRIVATE ${OpenCV_LIBS}
                                                      ${OPENGL_LIBRARIES}
                                                      ${GLEW_LIBRARIES}
-                                                     glm
                                                      glfw
                                                      -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES})
 
