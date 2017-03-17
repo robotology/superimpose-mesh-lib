@@ -95,7 +95,13 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 }
 
 
-void Shader::Use()
+void Shader::install()
 {
     glUseProgram(this->Program);
+}
+
+
+void Shader::uninstall()
+{
+    glUseProgram(0);
 }
