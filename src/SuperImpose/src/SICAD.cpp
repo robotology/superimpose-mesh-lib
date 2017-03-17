@@ -15,7 +15,8 @@
 
 SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei width, const GLsizei height, const GLint num_images)
 {
-    if (!initOGL(width, height, num_images)) throw std::runtime_error("Can't create object SICAD before calling static function member SICAD::initOGL.");
+    if (!initOGL(width, height, num_images))
+        throw std::runtime_error("ERROR::SICAD::CTOR::OPENGL\nERROR: Could not initialize OpenGL.");
 
     std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
 
@@ -68,28 +69,30 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei width, const GLsizei h
     {
         shader_background_ = new (std::nothrow) Shader("shader_background.vert", "shader_background.frag");
     }
-    catch(const std::runtime_error& e)
+    catch (const std::runtime_error& e)
     {
         throw std::runtime_error(e.what());
     }
     if (shader_background_ == nullptr)
-        throw std::runtime_error("\nRuntime error: shader_background files not found!\n");
+        throw std::runtime_error("ERROR::SICAD::CTOR::SHADER\nERROR: Background shader source file not found!");
 
     std::cout << log_ID_ << "Background shader succesfully set up!" << std::endl;
 
     std::cout << log_ID_ << "Setting up CAD shader." << std::endl;
 
     shader_cad_ = new (std::nothrow) Shader("shader_model.vert", "shader_model_simple.frag");
-    if (shader_cad_ == nullptr) throw std::runtime_error("Runtime error: shader_model files not found!");
+    if (shader_cad_ == nullptr)
+        throw std::runtime_error("ERROR::SICAD::CTOR::SHADER\nERROR: 3D model shader source file not found!");
 
     std::cout << log_ID_ << "CAD shader succesfully set up!" << std::endl;
 
     /* Load models. */
     for (auto map = objfile_map.cbegin(); map != objfile_map.cend(); ++map)
     {
-        std::cout << log_ID_ << "Loading OpenGL "+map->first+" model." << std::endl;
+        std::cout << log_ID_ << "Loading OpenGL " + map->first + " model." << std::endl;
         model_obj_[map->first] = new (std::nothrow) Model(map->second.c_str());
-        if (model_obj_[map->first] == nullptr) throw std::runtime_error("Runtime error: file "+map->second+" not found!");
+        if (model_obj_[map->first] == nullptr)
+            throw std::runtime_error("ERROR::SICAD::CTOR::OBJ\nERROR: File " + map->second + " not found!");
     }
 
     /* Predefined rotation matrices. */

@@ -35,10 +35,10 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
         vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
     }
-    catch(const std::ifstream::failure& e)
+    catch (const std::ifstream::failure& e)
     {
-        throw std::runtime_error("\nERROR::IFSTREAM::FAILURE\n" + std::string(e.what()) +
-                                 "\nERROR::SHADER::FILE_NOT_SUCCESFULLY_READ\n");
+        throw std::runtime_error("ERROR::IFSTREAM::FAILURE\n" + std::string(e.what()) +
+                                 "\nERROR::SHADER::FILE_NOT_SUCCESFULLY_READ");
     }
     const GLchar* vShaderCode = vertexCode.c_str();
     const GLchar* fShaderCode = fragmentCode.c_str();
@@ -59,7 +59,7 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
     if (!success)
     {
         glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        throw std::runtime_error("\nERROR::SHADER::VERTEX::COMPILATION_FAILED\n" + std::string(infoLog) + "\n");
+        throw std::runtime_error("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" + std::string(infoLog));
     };
     
     /* Fragment Shader. */
@@ -72,7 +72,7 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
     if (!success)
     {
         glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        throw std::runtime_error("\nERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" + std::string(infoLog) + "\n");
+        throw std::runtime_error("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" + std::string(infoLog));
     };
     
     /* Shader Program. */
@@ -86,7 +86,7 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
     if (!success)
     {
         glGetProgramInfoLog(this->Program, 512, NULL, infoLog);
-        throw std::runtime_error("\nERROR::SHADER::PROGRAM::LINKING_FAILED\n" + std::string(infoLog) + "\n");
+        throw std::runtime_error("ERROR::SHADER::PROGRAM::LINKING_FAILED\n" + std::string(infoLog));
     }
     
     /* Delete the shaders as they're linked into our program now and no longer necessery. */
