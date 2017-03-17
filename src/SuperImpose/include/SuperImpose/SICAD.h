@@ -16,7 +16,7 @@
 
 class SICAD : public SuperImpose
 {
-private:
+protected:
     typedef typename std::unordered_map<std::string, Model*> ObjModel;
 
     enum MIPMaps
