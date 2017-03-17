@@ -13,7 +13,7 @@ public:
 	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
   	
     /* Install (i.e. use) the program object. */
-  	void install();
+    void install();
 
     /* Uninstall (i.e. use) the program object. */
     void uninstall();
