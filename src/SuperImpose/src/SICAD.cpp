@@ -181,7 +181,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     std::cout << log_ID_ << "Max renderbuffer size is "+std::to_string(rb_size)+"x"+std::to_string(rb_size)+" size." << std::endl;
 
     /* Close the test window */
-    glfwSetWindowShouldClose(window_, GL_TRUE);
+    glfwDestroyWindow(window_);
 
     /* Compute the maximum number of images that can be rendered conditioned on the maximum framebuffer size */
     factorize_int(num_images, std::floor(rb_size / width), std::floor(rb_size / width), tiles_cols_, tiles_rows_);
@@ -415,6 +415,8 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
 
 bool SICAD::setProjectionMatrix(const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy)
 {
+    glfwMakeContextCurrent(window_);
+
     /* Projection matrix. */
     /* See: https://strawlab.org/2011/11/05/augmented-reality-with-OpenGL */
     /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
