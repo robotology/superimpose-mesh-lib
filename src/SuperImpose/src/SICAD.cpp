@@ -13,10 +13,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 
-SICAD::SICAD(const ObjFileMap& objfile_map) :
-    log_ID_("[SICAD]")
+SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei width, const GLsizei height, const GLint num_images)
 {
-    if (!can_init) throw std::runtime_error("Can't create object SICAD before calling static function member SICAD::initOGL.");
+    if (!initOGL(width, height, num_images)) throw std::runtime_error("Can't create object SICAD before calling static function member SICAD::initOGL.");
 
     std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
 
@@ -63,11 +62,27 @@ SICAD::SICAD(const ObjFileMap& objfile_map) :
     glBindVertexArray(0);
 
     /* Crate shader program. */
-    shader_background_ = new (std::nothrow) Shader("shader_background.vert", "shader_background.frag");
-    if (shader_background_ == nullptr) throw std::runtime_error("Runtime error: shader_background files not found!");
+    std::cout << log_ID_ << "Setting up background shader." << std::endl;
+
+    try
+    {
+        shader_background_ = new (std::nothrow) Shader("shader_background.vert", "shader_background.frag");
+    }
+    catch(const std::runtime_error& e)
+    {
+        throw std::runtime_error(e.what());
+    }
+    if (shader_background_ == nullptr)
+        throw std::runtime_error("\nRuntime error: shader_background files not found!\n");
+
+    std::cout << log_ID_ << "Background shader succesfully set up!" << std::endl;
+
+    std::cout << log_ID_ << "Setting up CAD shader." << std::endl;
 
     shader_cad_ = new (std::nothrow) Shader("shader_model.vert", "shader_model_simple.frag");
     if (shader_cad_ == nullptr) throw std::runtime_error("Runtime error: shader_model files not found!");
+
+    std::cout << log_ID_ << "CAD shader succesfully set up!" << std::endl;
 
     /* Load models. */
     for (auto map = objfile_map.cbegin(); map != objfile_map.cend(); ++map)
@@ -91,22 +106,13 @@ SICAD::SICAD(const ObjFileMap& objfile_map) :
 }
 
 
-SICAD::SICAD(const ObjFileMap& objfile_map, const int cam_width, const int cam_height, const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy) :
-    SICAD(objfile_map)
+SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei width, const GLsizei height, const GLint num_images,
+             const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy) :
+    SICAD(objfile_map, width, height, num_images)
 {
-    /* Projection matrix. */
-    /* See: https://strawlab.org/2011/11/05/augmented-reality-with-OpenGL */
-    /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
-                                   0.0      232.43    125.738    0.0
-                                   0.0        0.0       1.0      0.0) */
-    projection_ = glm::mat4(2.0f*(eye_fx/cam_width),    0,                              0,                                  0,
-                            0,                          2.0f*(eye_fy/cam_height),       0,                                  0,
-                            1-2.0f*(eye_cx/cam_width),  1-2.0f*(eye_cy/cam_height),    -(far_+near_)/(far_-near_),         -1,
-                            0,                          0,                             -2.0f*(far_*near_)/(far_-near_),     0);
+    std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
 
-    /* Projection transformation matrix. */
-    shader_cad_->Use();
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
+    setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 }
 
 
@@ -141,21 +147,14 @@ SICAD::~SICAD()
 }
 
 
-bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint viewports)
+bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_images)
 {
-    std::string log_ID = "[OpenGL]";
-
-    if (can_init)
-    {
-        std::cout << log_ID << "Already set up!" << std::endl;
-        return false;
-    }
-    std::cout << log_ID << "Start setting up..." << std::endl;
+    std::cout << log_ID_ << "Start setting up..." << std::endl;
 
     /* Initialize GLFW. */
     if (glfwInit() == GL_FALSE)
     {
-        std::cerr << log_ID << "Failed to initialize GLFW.";
+        std::cerr << log_ID_ << "Failed to initialize GLFW.";
         return false;
     }
 
@@ -169,17 +168,34 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint viewp
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
+    /* Create test window to enquire for OpenGL for the maximum size of the renderbuffer */
+    window_ = glfwCreateWindow(1, 1, "OpenGL renderbuffer test", nullptr, nullptr);
+    glfwMakeContextCurrent(window_);
+
+    /* Enquire GPU for maximum size (both width and height) of the framebuffer */
+    GLsizei rb_size;
+    glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &rb_size);
+    std::cout << log_ID_ << "Max renderbuffer size is "+std::to_string(rb_size)+"x"+std::to_string(rb_size)+" size." << std::endl;
+
+    /* Close the test window */
+    glfwSetWindowShouldClose(window_, GL_TRUE);
+
+    /* Compute the maximum number of images that can be rendered conditioned on the maximum framebuffer size */
+    factorize_int(num_images, std::floor(rb_size / width), std::floor(rb_size / width), tiles_cols_, tiles_rows_);
+    tiles_num_ = tiles_rows_ * tiles_cols_;
+    std::cout << log_ID_ << "Required to render "+std::to_string(num_images)+" image(s)." << std::endl;
+    std::cout << log_ID_ << "Allowed number or rendered images is "+std::to_string(tiles_num_)+" ("+std::to_string(tiles_rows_)+"x"+std::to_string(tiles_cols_)+" grid)." << std::endl;
+
     /* Create a window. */
-    viewports_ = viewports;
-    window_ = glfwCreateWindow(width * viewports_, height, "OpenGL Window", nullptr, nullptr);
+    window_ = glfwCreateWindow(width * tiles_cols_, height * tiles_rows_, "OpenGL Window", nullptr, nullptr);
     if (window_ == nullptr)
     {
-        std::cerr << log_ID << "Failed to create GLFW window.";
+        std::cerr << log_ID_ << "Failed to create GLFW window.";
         glfwTerminate();
         return false;
     }
     glfwGetWindowSize(window_, &window_width_, &window_height_);
-    std::cout << log_ID << "Window created with "+std::to_string(window_width_)+"x"+std::to_string(window_height_)+" size." << std::endl;
+    std::cout << log_ID_ << "Window created with size "+std::to_string(window_width_)+"x"+std::to_string(window_height_)+"." << std::endl;
 
     /* Make the OpenGL context of window the current one handled by this thread. */
     glfwMakeContextCurrent(window_);
@@ -192,7 +208,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint viewp
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
     {
-        std::cerr << log_ID << "Failed to initialize GLEW.";
+        std::cerr << log_ID_ << "Failed to initialize GLEW.";
         return false;
     }
 
@@ -200,15 +216,19 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint viewp
     /* Note that framebuffer_width_ and framebuffer_height_ may differ w.r.t. width and height in hdpi monitors. */
     glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
     glViewport(0, 0, framebuffer_width_, framebuffer_height_);
-    std::cout << log_ID << "The window framebuffer is "+std::to_string(framebuffer_width_)+"x"+std::to_string(framebuffer_height_)+"." << std::endl;
+    std::cout << log_ID_ << "The window framebuffer size is "+std::to_string(framebuffer_width_)+"x"+std::to_string(framebuffer_height_)+"." << std::endl;
+
+    /* Set rendered image size. May vary in HDPI monitors. */
+    image_width_  = framebuffer_width_  / tiles_cols_;
+    image_height_ = framebuffer_height_ / tiles_rows_;
+    std::cout << log_ID_ << "The image size is "+std::to_string(image_width_)+"x"+std::to_string(image_height_)+"." << std::endl;
 
     /* Set GL property. */
     glEnable(GL_DEPTH_TEST);
 
     glfwPollEvents();
 
-    can_init = true;
-    std::cout << log_ID << "Succesfully set up!" << std::endl;
+    std::cout << log_ID_ << "Succesfully set up!" << std::endl;
 
     return true;
 }
@@ -224,8 +244,11 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
 {
     glfwMakeContextCurrent(window_);
 
-    glViewport(0, 0, framebuffer_width_ / viewports_, framebuffer_height_);
-    glScissor (0, 0, framebuffer_width_ / viewports_, framebuffer_height_);
+    /* Render in the upper-left-most tile of the render grid */
+    glViewport(0,            framebuffer_height_ - image_height_,
+               image_width_, image_height_                       );
+    glScissor (0,            framebuffer_height_ - image_height_,
+               image_width_, image_height_                       );
 
     /* Clear the colorbuffer. */
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -237,17 +260,16 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
     /* View mesh filled or as wireframe. */
     set_wireframe(getWireframeOpt());
 
-    /* Use/Activate the shader. */
-    shader_cad_->Use();
-
     /* View transformation matrix. */
-    glm::mat4 root_eye_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
+    glm::mat4 root_eye_t  = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
     glm::mat4 eye_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])));
 
     glm::mat4 view = glm::lookAt(glm::mat3(root_to_ogl_) * glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z),
                                  glm::mat3(root_to_ogl_) * (glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z) + glm::mat3(eye_to_root) * glm::vec3(0.0f, 0.0f, 1.0f)),
                                  glm::mat3(root_to_ogl_) * glm::mat3(eye_to_root) * glm::vec3(0.0f, -1.0f, 0.0f));
 
+    /* Install/Use the program specified by the shader. */
+    shader_cad_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
     /* Model transformation matrix. */
@@ -266,17 +288,18 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
 
         model_obj_[map->first]->Draw(*shader_cad_);
     }
+    shader_cad_->uninstall();
 
     /* Read before swap. glReadPixels read the current framebuffer, i.e. the back one. */
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
        and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
-    cv::Mat ogl_pixel(framebuffer_height_, framebuffer_width_ / viewports_, CV_8UC3);
+    cv::Mat ogl_pixel(framebuffer_height_ / tiles_rows_, framebuffer_width_ / tiles_cols_, CV_8UC3);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
-    glReadPixels(0, 0, framebuffer_width_ / viewports_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
+    glReadPixels(0, framebuffer_height_ - image_height_, image_width_, image_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
 
     cv::flip(ogl_pixel, ogl_pixel, 0);
-    cv::resize(ogl_pixel, img, cv::Size(window_width_ / viewports_, window_height_), 0, 0, cv::INTER_LINEAR);
+    cv::resize(ogl_pixel, img, cv::Size(window_width_ / tiles_cols_, window_height_ / tiles_rows_), 0, 0, cv::INTER_LINEAR);
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
@@ -287,62 +310,69 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
 
 bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
+    /* Model transformation matrix. */
+    const int objpos_num = objpos_multimap.size();
+    if (objpos_num != tiles_num_) return false;
+
     glfwMakeContextCurrent(window_);
 
-    shader_cad_->Use();
-
     /* View transformation matrix. */
-    glm::mat4 root_eye_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
+    glm::mat4 root_eye_t  = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
     glm::mat4 eye_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])));
 
     glm::mat4 view = glm::lookAt(glm::mat3(root_to_ogl_) * glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z),
                                  glm::mat3(root_to_ogl_) * (glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z) + glm::mat3(eye_to_root) * glm::vec3(0.0f, 0.0f, 1.0f)),
                                  glm::mat3(root_to_ogl_) * glm::mat3(eye_to_root) * glm::vec3(0.0f, -1.0f, 0.0f));
 
+    /* Install/Use the program specified by the shader. */
+    shader_cad_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_cad_->uninstall();
 
-    /* Model transformation matrix. */
-    const int num_img = objpos_multimap.size();
-    for (unsigned int i = 0; i < num_img; ++i)
+    for (unsigned int i = 0; i < tiles_rows_; ++i)
     {
-        glViewport((framebuffer_width_ / num_img) * i, 0,
-                   (framebuffer_width_ / num_img)    , framebuffer_height_);
-        glScissor ((framebuffer_width_ / num_img) * i, 0,
-                   (framebuffer_width_ / num_img)    , framebuffer_height_);
-
-        /* Clear the colorbuffer. */
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        /* Draw the background picture. */
-        if (getBackgroundOpt()) set_background(img, i);
-
-        /* View mesh filled or as wireframe. */
-        set_wireframe(getWireframeOpt());
-
-        /* Use/Activate the shader. */
-        shader_cad_->Use();
-
-        for (auto map = objpos_multimap[i].cbegin(); map != objpos_multimap[i].cend(); ++map)
+        for (unsigned int j = 0; j < tiles_cols_; ++j)
         {
-            const double * pose = map->second.data();
+            /* Render starting by the upper-left-most tile of the render grid, proceding by columns and rows. */
+            glViewport(image_width_ * j, framebuffer_height_ - (image_height_ * (i + 1)),
+                       image_width_    , image_height_                                   );
+            glScissor (image_width_ * j, framebuffer_height_ - (image_height_ * (i + 1)),
+                       image_width_    , image_height_                                   );
 
-            glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
-            obj_to_root[3][0] = pose[0];
-            obj_to_root[3][1] = pose[1];
-            obj_to_root[3][2] = pose[2];
+            /* Clear the colorbuffer. */
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            glm::mat4 model = root_to_ogl_ * obj_to_root;
+            /* Draw the background picture. */
+            if (getBackgroundOpt()) set_background(img);
 
-            glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            /* View mesh filled or as wireframe. */
+            set_wireframe(getWireframeOpt());
 
-            model_obj_[map->first]->Draw(*shader_cad_);
+            /* Install/Use the program specified by the shader. */
+            shader_cad_->install();
+            for (auto map = objpos_multimap[i].cbegin(); map != objpos_multimap[i].cend(); ++map)
+            {
+                const double * pose = map->second.data();
+
+                glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
+                obj_to_root[3][0] = pose[0];
+                obj_to_root[3][1] = pose[1];
+                obj_to_root[3][2] = pose[2];
+
+                glm::mat4 model = root_to_ogl_ * obj_to_root;
+
+                glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                model_obj_[map->first]->Draw(*shader_cad_);
+            }
+            shader_cad_->uninstall();
         }
     }
 
     /* Read before swap. glReadPixels read the current framebuffer, i.e. the back one. */
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
-     and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
+       and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
     cv::Mat ogl_pixel(framebuffer_height_, framebuffer_width_, CV_8UC3);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
@@ -358,163 +388,45 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
 }
 
 
-bool SICAD::superimpose(const ObjPoseMap& objpos_map,
-                        const double* cam_x, const double* cam_o,
-                        const int cam_width, const int cam_height, const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy,
-                        cv::Mat& img)
+bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
+                        const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy)
 {
-    glfwMakeContextCurrent(window_);
+    setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 
-    glViewport(0, 0, framebuffer_width_ / viewports_, framebuffer_height_);
-    glScissor (0, 0, framebuffer_width_ / viewports_, framebuffer_height_);
-
-    /* Clear the colorbuffer. */
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    /* Draw the background picture. */
-    if (getBackgroundOpt()) set_background(img);
-
-    /* View mesh filled or as wireframe. */
-    set_wireframe(getWireframeOpt());
-
-    /* Use/Activate the shader. */
-    shader_cad_->Use();
-
-    /* View transformation matrix. */
-    glm::mat4 root_eye_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
-    glm::mat4 eye_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])));
-
-    glm::mat4 view = glm::lookAt(glm::mat3(root_to_ogl_) * glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z),
-                                 glm::mat3(root_to_ogl_) * (glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z) + glm::mat3(eye_to_root) * glm::vec3(0.0f, 0.0f, 1.0f)),
-                                 glm::mat3(root_to_ogl_) * glm::mat3(eye_to_root) * glm::vec3(0.0f, -1.0f, 0.0f));
-
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-
-    /* Projection transformation matrix. */
-    projection_ = glm::mat4(2.0f*(eye_fx/cam_width),    0,                              0,                                  0,
-                            0,                          2.0f*(eye_fy/cam_height),       0,                                  0,
-                            1-2.0f*(eye_cx/cam_width),  1-2.0f*(eye_cy/cam_height),    -(far_+near_)/(far_-near_),         -1,
-                            0,                          0,                             -2.0f*(far_*near_)/(far_-near_),     0);
-
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
-
-    /* Model transformation matrix. */
-    for (auto map = objpos_map.cbegin(); map != objpos_map.cend(); ++map)
-    {
-        const double * pose = map->second.data();
-
-        glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
-        obj_to_root[3][0] = pose[0];
-        obj_to_root[3][1] = pose[1];
-        obj_to_root[3][2] = pose[2];
-
-        glm::mat4 model = root_to_ogl_ * obj_to_root;
-
-        glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-        model_obj_[map->first]->Draw(*shader_cad_);
-    }
-
-    /* Read before swap. glReadPixels read the current framebuffer, i.e. the back one. */
-    /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
-     and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
-    cv::Mat ogl_pixel(framebuffer_height_, framebuffer_width_ / viewports_, CV_8UC3);
-    glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
-    glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
-    glReadPixels(0, 0, framebuffer_width_ / viewports_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
-
-    cv::flip(ogl_pixel, ogl_pixel, 0);
-    cv::resize(ogl_pixel, img, cv::Size(window_width_ / viewports_, window_height_), 0, 0, cv::INTER_LINEAR);
-
-    /* Swap the buffers. */
-    glfwSwapBuffers(window_);
+    superimpose(objpos_map, cam_x, cam_o, img);
     
     return true;
 }
 
 
-bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap,
-                        const double* cam_x, const double* cam_o,
-                        const int cam_width, const int cam_height, const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy,
-                        cv::Mat& img)
+bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
+                        const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy)
 {
-    glfwMakeContextCurrent(window_);
+    setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 
-    shader_cad_->Use();
+    superimpose(objpos_multimap, cam_x, cam_o, img);
 
-    /* View transformation matrix. */
-    glm::mat4 root_eye_t = glm::translate(glm::mat4(1.0f), glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
-    glm::mat4 eye_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])));
+    return true;
+}
 
-    glm::mat4 view = glm::lookAt(glm::mat3(root_to_ogl_) * glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z),
-                                 glm::mat3(root_to_ogl_) * (glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z) + glm::mat3(eye_to_root) * glm::vec3(0.0f, 0.0f, 1.0f)),
-                                 glm::mat3(root_to_ogl_) * glm::mat3(eye_to_root) * glm::vec3(0.0f, -1.0f, 0.0f));
 
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-
-    /* Projection transformation matrix. */
-    projection_ = glm::mat4(2.0f*(eye_fx/cam_width),    0,                              0,                                  0,
-                            0,                          2.0f*(eye_fy/cam_height),       0,                                  0,
-                            1-2.0f*(eye_cx/cam_width),  1-2.0f*(eye_cy/cam_height),    -(far_+near_)/(far_-near_),         -1,
+bool SICAD::setProjectionMatrix(const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy)
+{
+    /* Projection matrix. */
+    /* See: https://strawlab.org/2011/11/05/augmented-reality-with-OpenGL */
+    /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
+                                   0.0      232.43    125.738    0.0
+                                   0.0        0.0       1.0      0.0) */
+    projection_ = glm::mat4(2.0f*(cam_fx/cam_width),    0,                              0,                                  0,
+                            0,                          2.0f*(cam_fy/cam_height),       0,                                  0,
+                            1-2.0f*(cam_cx/cam_width),  1-2.0f*(cam_cy/cam_height),    -(far_+near_)/(far_-near_),         -1,
                             0,                          0,                             -2.0f*(far_*near_)/(far_-near_),     0);
 
+    /* Install/Use the program specified by the shader. */
+    shader_cad_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
+    shader_cad_->uninstall();
 
-
-    /* Model transformation matrix. */
-    const int num_img = objpos_multimap.size();
-    for (unsigned int i = 0; i < num_img; ++i)
-    {
-        glViewport((framebuffer_width_ / num_img) * i, 0,
-                   (framebuffer_width_ / num_img)    , framebuffer_height_);
-        glScissor ((framebuffer_width_ / num_img) * i, 0,
-                   (framebuffer_width_ / num_img)    , framebuffer_height_);
-
-        /* Clear the colorbuffer. */
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        /* Draw the background picture. */
-        if (getBackgroundOpt()) set_background(img, i);
-
-        /* View mesh filled or as wireframe. */
-        set_wireframe(getWireframeOpt());
-
-        /* Use/Activate the shader. */
-        shader_cad_->Use();
-
-        for (auto map = objpos_multimap[i].cbegin(); map != objpos_multimap[i].cend(); ++map)
-        {
-            const double * pose = map->second.data();
-
-            glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
-            obj_to_root[3][0] = pose[0];
-            obj_to_root[3][1] = pose[1];
-            obj_to_root[3][2] = pose[2];
-
-            glm::mat4 model = root_to_ogl_ * obj_to_root;
-
-            glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-            model_obj_[map->first]->Draw(*shader_cad_);
-        }
-    }
-
-    /* Read before swap. glReadPixels read the current framebuffer, i.e. the back one. */
-    /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
-     and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
-    cv::Mat ogl_pixel(framebuffer_height_, framebuffer_width_, CV_8UC3);
-    glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
-    glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
-    glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
-
-    cv::flip(ogl_pixel, ogl_pixel, 0);
-    cv::resize(ogl_pixel, img, cv::Size(window_width_, window_height_), 0, 0, cv::INTER_LINEAR);
-    
-    /* Swap the buffers. */
-    glfwSwapBuffers(window_);
-    
     return true;
 }
 
@@ -544,13 +456,13 @@ GLenum SICAD::getWireframeOpt() const
 }
 
 
-SICAD::MipMaps SICAD::getMipmapsOpt() const
+SICAD::MIPMaps SICAD::getMipmapsOpt() const
 {
     return mesh_mmaps_;
 }
 
 
-void SICAD::set_background(cv::Mat& img, const unsigned int unit)
+void SICAD::set_background(cv::Mat& img)
 {
     /* Load and generate the texture. */
     glBindTexture(GL_TEXTURE_2D, texture_);
@@ -571,12 +483,16 @@ void SICAD::set_background(cv::Mat& img, const unsigned int unit)
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    shader_background_->Use();
+
+    /* Install/Use the program specified by the shader. */
+    shader_background_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_background_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(back_proj_));
     glBindVertexArray(vao_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+    shader_background_->uninstall();
 }
 
 
@@ -593,10 +509,9 @@ void SICAD::key_callback(GLFWwindow* window, int key, int scancode, int action, 
 }
 
 
-bool        SICAD::can_init            = false;
-GLFWwindow* SICAD::window_             = nullptr;
-GLint       SICAD::viewports_          = 1;
-GLsizei     SICAD::window_width_       = 0;
-GLsizei     SICAD::window_height_      = 0;
-GLsizei     SICAD::framebuffer_width_  = 0;
-GLsizei     SICAD::framebuffer_height_ = 0;
+void SICAD::factorize_int(const int area, const int width_limit, const int height_limit, int &width, int &height)
+{
+    double sqrt_area = std::sqrt(static_cast<double>(area));
+    height = std::min(static_cast<int>(std::ceil(sqrt_area)),     height_limit);
+    width  = std::min(static_cast<int>(std::ceil(area / height)), width_limit);
+}
