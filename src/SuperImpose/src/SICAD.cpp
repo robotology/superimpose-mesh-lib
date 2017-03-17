@@ -465,6 +465,18 @@ SICAD::MIPMaps SICAD::getMipmapsOpt() const
 }
 
 
+int SICAD::getTilesRows() const
+{
+    return tiles_rows_;
+}
+
+
+int SICAD::getTilesCols() const
+{
+    return tiles_cols_;
+}
+
+
 void SICAD::set_background(cv::Mat& img)
 {
     /* Load and generate the texture. */

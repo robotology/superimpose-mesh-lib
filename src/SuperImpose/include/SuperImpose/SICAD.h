@@ -58,6 +58,9 @@ public:
 
     MIPMaps     getMipmapsOpt()    const;
 
+    int         getTilesRows()     const;
+    int         getTilesCols()     const;
+
 private:
     const std::string  log_ID_              = "[SICAD]";
 
