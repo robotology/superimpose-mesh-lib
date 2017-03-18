@@ -336,6 +336,9 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
     {
         for (unsigned int j = 0; j < tiles_cols_; ++j)
         {
+            /* Multimap index */
+            int idx = i * tiles_cols_ + j;
+
             /* Render starting by the upper-left-most tile of the render grid, proceding by columns and rows. */
             glViewport(image_width_ * j, framebuffer_height_ - (image_height_ * (i + 1)),
                        image_width_    , image_height_                                   );
@@ -354,7 +357,7 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
 
             /* Install/Use the program specified by the shader. */
             shader_cad_->install();
-            for (auto map = objpos_multimap[i].cbegin(); map != objpos_multimap[i].cend(); ++map)
+            for (auto map = objpos_multimap[idx].cbegin(); map != objpos_multimap[idx].cend(); ++map)
             {
                 const double * pose = map->second.data();
 
