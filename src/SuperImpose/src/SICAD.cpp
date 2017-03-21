@@ -470,6 +470,12 @@ SICAD::MIPMaps SICAD::getMipmapsOpt() const
 }
 
 
+int SICAD::getTilesNumber() const
+{
+    return tiles_rows_ * tiles_cols_;
+}
+
+
 int SICAD::getTilesRows() const
 {
     return tiles_rows_;

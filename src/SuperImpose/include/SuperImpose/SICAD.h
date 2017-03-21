@@ -58,6 +58,7 @@ public:
 
     MIPMaps     getMipmapsOpt()    const;
 
+    int         getTilesNumber()   const;
     int         getTilesRows()     const;
     int         getTilesCols()     const;
 
