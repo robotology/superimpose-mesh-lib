@@ -69,12 +69,14 @@ private:
     GLint              tiles_num_           = 0;
     GLsizei            tiles_cols_          = 0;
     GLsizei            tiles_rows_          = 0;
+    GLsizei            image_width_         = 0;
+    GLsizei            image_height_        = 0;
     GLsizei            window_width_        = 0;
     GLsizei            window_height_       = 0;
     GLsizei            framebuffer_width_   = 0;
     GLsizei            framebuffer_height_  = 0;
-    GLsizei            image_width_         = 0;
-    GLsizei            image_height_        = 0;
+    GLsizei            render_img_width_    = 0;
+    GLsizei            render_img_height_   = 0;
     const GLfloat      near_                = 0.001f;
     const GLfloat      far_                 = 1000.0f;
 

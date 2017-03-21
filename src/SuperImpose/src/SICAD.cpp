@@ -183,14 +183,17 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     /* Close the test window */
     glfwDestroyWindow(window_);
 
+    image_width_  = width;
+    image_height_ = height;
+
     /* Compute the maximum number of images that can be rendered conditioned on the maximum framebuffer size */
-    factorize_int(num_images, std::floor(rb_size / width), std::floor(rb_size / width), tiles_cols_, tiles_rows_);
+    factorize_int(num_images, std::floor(rb_size / image_width_), std::floor(rb_size / image_height_), tiles_cols_, tiles_rows_);
     tiles_num_ = tiles_rows_ * tiles_cols_;
     std::cout << log_ID_ << "Required to render "+std::to_string(num_images)+" image(s)." << std::endl;
     std::cout << log_ID_ << "Allowed number or rendered images is "+std::to_string(tiles_num_)+" ("+std::to_string(tiles_rows_)+"x"+std::to_string(tiles_cols_)+" grid)." << std::endl;
 
     /* Create a window. */
-    window_ = glfwCreateWindow(width * tiles_cols_, height * tiles_rows_, "OpenGL Window", nullptr, nullptr);
+    window_ = glfwCreateWindow(image_width_ * tiles_cols_, image_height_ * tiles_rows_, "OpenGL Window", nullptr, nullptr);
     if (window_ == nullptr)
     {
         std::cerr << log_ID_ << "Failed to create GLFW window.";
@@ -222,9 +225,9 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     std::cout << log_ID_ << "The window framebuffer size is "+std::to_string(framebuffer_width_)+"x"+std::to_string(framebuffer_height_)+"." << std::endl;
 
     /* Set rendered image size. May vary in HDPI monitors. */
-    image_width_  = framebuffer_width_  / tiles_cols_;
-    image_height_ = framebuffer_height_ / tiles_rows_;
-    std::cout << log_ID_ << "The image size is "+std::to_string(image_width_)+"x"+std::to_string(image_height_)+"." << std::endl;
+    render_img_width_  = framebuffer_width_  / tiles_cols_;
+    render_img_height_ = framebuffer_height_ / tiles_rows_;
+    std::cout << log_ID_ << "The image size is "+std::to_string(render_img_width_)+"x"+std::to_string(render_img_height_)+"." << std::endl;
 
     /* Set GL property. */
     glEnable(GL_DEPTH_TEST);
@@ -248,10 +251,10 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
     glfwMakeContextCurrent(window_);
 
     /* Render in the upper-left-most tile of the render grid */
-    glViewport(0,            framebuffer_height_ - image_height_,
-               image_width_, image_height_                       );
-    glScissor (0,            framebuffer_height_ - image_height_,
-               image_width_, image_height_                       );
+    glViewport(0,                 framebuffer_height_ - render_img_height_,
+               render_img_width_, render_img_height_                       );
+    glScissor (0,                 framebuffer_height_ - render_img_height_,
+               render_img_width_, render_img_height_                       );
 
     /* Clear the colorbuffer. */
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -299,10 +302,10 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
     cv::Mat ogl_pixel(framebuffer_height_ / tiles_rows_, framebuffer_width_ / tiles_cols_, CV_8UC3);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
-    glReadPixels(0, framebuffer_height_ - image_height_, image_width_, image_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
+    glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
 
     cv::flip(ogl_pixel, ogl_pixel, 0);
-    cv::resize(ogl_pixel, img, cv::Size(window_width_ / tiles_cols_, window_height_ / tiles_rows_), 0, 0, cv::INTER_LINEAR);
+    cv::resize(ogl_pixel, img, cv::Size(image_width_, image_height_), 0, 0, cv::INTER_LINEAR);
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
@@ -340,10 +343,10 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
             int idx = i * tiles_cols_ + j;
 
             /* Render starting by the upper-left-most tile of the render grid, proceding by columns and rows. */
-            glViewport(image_width_ * j, framebuffer_height_ - (image_height_ * (i + 1)),
-                       image_width_    , image_height_                                   );
-            glScissor (image_width_ * j, framebuffer_height_ - (image_height_ * (i + 1)),
-                       image_width_    , image_height_                                   );
+            glViewport(render_img_width_ * j, framebuffer_height_ - (render_img_height_ * (i + 1)),
+                       render_img_width_    , render_img_height_                                   );
+            glScissor (render_img_width_ * j, framebuffer_height_ - (render_img_height_ * (i + 1)),
+                       render_img_width_    , render_img_height_                                   );
 
             /* Clear the colorbuffer. */
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
