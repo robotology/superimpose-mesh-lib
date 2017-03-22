@@ -90,7 +90,7 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
 
     try
     {
-        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_model.vert").c_str(), (shader_folder + "shader_model_simple.frag").c_str());
+        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_model.vert").c_str(), (shader_folder + "shader_model.frag").c_str());
     }
     catch (const std::runtime_error& e)
     {
