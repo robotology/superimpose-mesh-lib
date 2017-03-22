@@ -109,6 +109,10 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
 }
 
 
+SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height) :
+    SICAD(objfile_map, cam_width, cam_height, 1) { }
+
+
 SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images,
              const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy) :
     SICAD(objfile_map, cam_width, cam_height, num_images)

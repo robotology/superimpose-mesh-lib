@@ -26,6 +26,8 @@ protected:
     };
 
 public:
+    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height);
+
     SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num);
 
     SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num,
