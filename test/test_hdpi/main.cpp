@@ -13,14 +13,14 @@ int main()
 
     try
     {
-        SICAD si_cad(SuperImpose::ObjFileMap(), 320, 240, 1);
+        SICAD si_cad(SuperImpose::ObjFileMap(), 320, 240, "");
     }
     catch (const std::runtime_error& e)
     {
         std::cerr << log_ID << "Caught error:" << std::endl << e.what();
     }
 
-    std::cout << log_ID << "If image size (i.e. framebuffer size) is greater than the window size, then you have an HDPI monitor!" << std::endl;
+    std::cout << log_ID << "If the rendered image size is greater than the given image size, then you have an HDPI monitor!" << std::endl;
     std::cout << log_ID << "ENABLE/DISABLE HDPI option in CMake and run the test again!" << std::endl;
 
     return EXIT_SUCCESS;

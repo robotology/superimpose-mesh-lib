@@ -26,11 +26,11 @@ protected:
     };
 
 public:
-    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height);
+    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, std::string shader_folder);
 
-    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num);
+    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num, std::string shader_folder);
 
-    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num,
+    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num, std::string shader_folder,
           const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     virtual ~SICAD();

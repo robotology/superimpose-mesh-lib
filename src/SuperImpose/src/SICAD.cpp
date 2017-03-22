@@ -13,21 +13,25 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 
-SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images)
+SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images, std::string shader_folder)
 {
     if (!initOGL(cam_width, cam_height, num_images))
         throw std::runtime_error("ERROR::SICAD::CTOR::OPENGL\nERROR: Could not initialize OpenGL.");
 
     std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
 
+
     /* Make the OpenGL context of window the current one handled by this thread. */
     glfwMakeContextCurrent(window_);
+
 
     /* Enable scissor test. */
     glEnable(GL_SCISSOR_TEST);
 
+
     /* Create a background texture. */
     glGenTextures(1, &texture_);
+
 
     /* Crate the squared support for the backround texture. */
     glGenVertexArrays(1, &vao_);
@@ -40,6 +44,7 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
 
     GLuint indices[] = { 0, 1, 3,   // First Triangle
                          1, 2, 3 }; // Second Triangle
+
 
     /* Create and bind an element buffer object. */
     glGenBuffers(1, &ebo_);
@@ -62,12 +67,13 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
 
     glBindVertexArray(0);
 
-    /* Crate shader program. */
+
+    /* Crate background shader program. */
     std::cout << log_ID_ << "Setting up background shader." << std::endl;
 
     try
     {
-        shader_background_ = new (std::nothrow) Shader("shader_background.vert", "shader_background.frag");
+        shader_background_ = new (std::nothrow) Shader((shader_folder + "/shader_background.vert").c_str(), (shader_folder + "/shader_background.frag").c_str());
     }
     catch (const std::runtime_error& e)
     {
@@ -78,13 +84,23 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
 
     std::cout << log_ID_ << "Background shader succesfully set up!" << std::endl;
 
-    std::cout << log_ID_ << "Setting up CAD shader." << std::endl;
 
-    shader_cad_ = new (std::nothrow) Shader("shader_model.vert", "shader_model_simple.frag");
+    /* Crate model shader program. */
+    std::cout << log_ID_ << "Setting up model shader." << std::endl;
+
+    try
+    {
+        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_model.vert").c_str(), (shader_folder + "shader_model_simple.frag").c_str());
+    }
+    catch (const std::runtime_error& e)
+    {
+        throw std::runtime_error(e.what());
+    }
     if (shader_cad_ == nullptr)
         throw std::runtime_error("ERROR::SICAD::CTOR::SHADER\nERROR: 3D model shader source file not found!");
 
-    std::cout << log_ID_ << "CAD shader succesfully set up!" << std::endl;
+    std::cout << log_ID_ << "Model shader succesfully set up!" << std::endl;
+
 
     /* Load models. */
     for (auto map = objfile_map.cbegin(); map != objfile_map.cend(); ++map)
@@ -95,7 +111,8 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
             throw std::runtime_error("ERROR::SICAD::CTOR::OBJ\nERROR: File " + map->second + " not found!");
     }
 
-    /* Predefined rotation matrices. */
+
+    /* Fixed rotation matrices from root to OpenGL frame. */
     root_to_ogl_ = glm::mat4(0.0f, 0.0f, 1.0f, 0.0f,
                              1.0f, 0.0f, 0.0f, 0.0f,
                              0.0f, 1.0f, 0.0f, 0.0f,
@@ -109,13 +126,13 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
 }
 
 
-SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height) :
-    SICAD(objfile_map, cam_width, cam_height, 1) { }
+SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, std::string shader_folder) :
+    SICAD(objfile_map, cam_width, cam_height, 1, shader_folder) { }
 
 
-SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images,
+SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images, std::string shader_folder,
              const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy) :
-    SICAD(objfile_map, cam_width, cam_height, num_images)
+    SICAD(objfile_map, cam_width, cam_height, num_images, shader_folder)
 {
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
 
@@ -189,6 +206,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 
     image_width_  = width;
     image_height_ = height;
+    std::cout << log_ID_ << "Given image size "+std::to_string(image_width_)+"x"+std::to_string(image_height_)+"." << std::endl;
 
     /* Compute the maximum number of images that can be rendered conditioned on the maximum framebuffer size */
     factorize_int(num_images, std::floor(rb_size / image_width_), std::floor(rb_size / image_height_), tiles_cols_, tiles_rows_);
@@ -231,7 +249,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     /* Set rendered image size. May vary in HDPI monitors. */
     render_img_width_  = framebuffer_width_  / tiles_cols_;
     render_img_height_ = framebuffer_height_ / tiles_rows_;
-    std::cout << log_ID_ << "The image size is "+std::to_string(render_img_width_)+"x"+std::to_string(render_img_height_)+"." << std::endl;
+    std::cout << log_ID_ << "The rendered image size is "+std::to_string(render_img_width_)+"x"+std::to_string(render_img_height_)+"." << std::endl;
 
     /* Set GL property. */
     glEnable(GL_DEPTH_TEST);
