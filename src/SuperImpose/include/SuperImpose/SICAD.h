@@ -65,28 +65,28 @@ public:
     int         getTilesCols()     const;
 
 private:
-    const std::string  log_ID_              = "[SI-CAD]";
+    const std::string  log_ID_             = "[SI-CAD]";
 
-    GLFWwindow       * window_              = nullptr;
-    GLint              tiles_num_           = 0;
-    GLsizei            tiles_cols_          = 0;
-    GLsizei            tiles_rows_          = 0;
-    GLsizei            image_width_         = 0;
-    GLsizei            image_height_        = 0;
-    GLsizei            window_width_        = 0;
-    GLsizei            window_height_       = 0;
-    GLsizei            framebuffer_width_   = 0;
-    GLsizei            framebuffer_height_  = 0;
-    GLsizei            render_img_width_    = 0;
-    GLsizei            render_img_height_   = 0;
-    const GLfloat      near_                = 0.001f;
-    const GLfloat      far_                 = 1000.0f;
+    GLFWwindow       * window_             = nullptr;
+    GLint              tiles_num_          = 0;
+    GLsizei            tiles_cols_         = 0;
+    GLsizei            tiles_rows_         = 0;
+    GLsizei            image_width_        = 0;
+    GLsizei            image_height_       = 0;
+    GLsizei            window_width_       = 0;
+    GLsizei            window_height_      = 0;
+    GLsizei            framebuffer_width_  = 0;
+    GLsizei            framebuffer_height_ = 0;
+    GLsizei            render_img_width_   = 0;
+    GLsizei            render_img_height_  = 0;
+    const GLfloat      near_               = 0.001f;
+    const GLfloat      far_                = 1000.0f;
 
-    bool               show_background_     = false;
-    GLenum             show_mesh_mode_      = GL_FILL;
-    MIPMaps            mesh_mmaps_          = NEAREST;
-    Shader           * shader_background_   = nullptr;
-    Shader           * shader_cad_          = nullptr;
+    bool               show_background_    = false;
+    GLenum             show_mesh_mode_     = GL_FILL;
+    MIPMaps            mesh_mmaps_         = NEAREST;
+    Shader           * shader_background_  = nullptr;
+    Shader           * shader_cad_         = nullptr;
     ObjModel           model_obj_;
     GLuint             texture_;
     GLuint             vao_;
