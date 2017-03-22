@@ -4,13 +4,9 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
-
-#define FRAME_WIDTH  320
-#define FRAME_HEIGHT 240
 
 
 SISkeleton::SISkeleton(const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy) :
