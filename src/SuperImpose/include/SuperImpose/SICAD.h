@@ -26,10 +26,10 @@ protected:
     };
 
 public:
-    SICAD(const ObjFileMap& objfile_map, const GLsizei width, const GLsizei height, const GLint image_num);
+    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num);
 
-    SICAD(const ObjFileMap& objfile_map, const GLsizei width, const GLsizei height, const GLint image_num,
-          const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
+    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num,
+          const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     virtual ~SICAD();
 
@@ -48,7 +48,7 @@ public:
     bool        superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
                             const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
 
-    bool        setProjectionMatrix(const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
+    bool        setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     bool        getBackgroundOpt() const;
     void        setBackgroundOpt(bool show_background);

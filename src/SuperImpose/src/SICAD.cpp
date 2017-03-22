@@ -13,9 +13,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 
-SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei width, const GLsizei height, const GLint num_images)
+SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images)
 {
-    if (!initOGL(width, height, num_images))
+    if (!initOGL(cam_width, cam_height, num_images))
         throw std::runtime_error("ERROR::SICAD::CTOR::OPENGL\nERROR: Could not initialize OpenGL.");
 
     std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
@@ -109,9 +109,9 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei width, const GLsizei h
 }
 
 
-SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei width, const GLsizei height, const GLint num_images,
-             const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy) :
-    SICAD(objfile_map, width, height, num_images)
+SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images,
+             const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy) :
+    SICAD(objfile_map, cam_width, cam_height, num_images)
 {
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
 
@@ -419,7 +419,7 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
 }
 
 
-bool SICAD::setProjectionMatrix(const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy)
+bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
 {
     glfwMakeContextCurrent(window_);
 
