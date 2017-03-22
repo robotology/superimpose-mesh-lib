@@ -65,7 +65,7 @@ public:
     int         getTilesCols()     const;
 
 private:
-    const std::string  log_ID_              = "[SICAD]";
+    const std::string  log_ID_              = "[SI-CAD]";
 
     GLFWwindow       * window_              = nullptr;
     GLint              tiles_num_           = 0;
