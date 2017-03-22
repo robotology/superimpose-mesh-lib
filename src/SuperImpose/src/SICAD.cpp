@@ -398,7 +398,7 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
 
 
 bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
-                        const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy)
+                        const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
 {
     setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 
@@ -409,7 +409,7 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
 
 
 bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
-                        const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy)
+                        const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
 {
     setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 
@@ -538,7 +538,7 @@ void SICAD::key_callback(GLFWwindow* window, int key, int scancode, int action, 
 }
 
 
-void SICAD::factorize_int(const int area, const int width_limit, const int height_limit, int &width, int &height)
+void SICAD::factorize_int(const GLsizei area, const GLsizei width_limit, const GLsizei height_limit, GLsizei& width, GLsizei& height)
 {
     double sqrt_area = std::sqrt(static_cast<double>(area));
     height = std::min(static_cast<int>(std::ceil(sqrt_area)),     height_limit);

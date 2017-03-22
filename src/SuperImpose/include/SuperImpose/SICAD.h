@@ -43,10 +43,10 @@ public:
     bool        superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
 
     bool        superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
-                            const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
+                            const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     bool        superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
-                            const int cam_width, const int cam_height, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
+                            const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     bool        setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
@@ -98,7 +98,7 @@ private:
     void               set_wireframe(GLenum mode);
     static void        key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
-    void               factorize_int(const int area, const int width_limit, const int height_limit, int &width, int &height);
+    void               factorize_int(const GLsizei area, const GLsizei width_limit, const GLsizei height_limit, GLsizei& width, GLsizei& height);
 };
 
 #endif /* SUPERIMPOSECAD_H */
