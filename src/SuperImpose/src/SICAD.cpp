@@ -90,7 +90,7 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
 
     try
     {
-        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_model.vert").c_str(), (shader_folder + "shader_model.frag").c_str());
+        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_model.vert").c_str(), (shader_folder + "/shader_model.frag").c_str());
     }
     catch (const std::runtime_error& e)
     {
@@ -175,12 +175,14 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 {
     std::cout << log_ID_ << "Start setting up..." << std::endl;
 
+
     /* Initialize GLFW. */
     if (glfwInit() == GL_FALSE)
     {
         std::cerr << log_ID_ << "Failed to initialize GLFW.";
         return false;
     }
+
 
     /* Set context properties by "hinting" specific (property, value) pairs. */
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -192,27 +194,34 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
+
     /* Create test window to enquire for OpenGL for the maximum size of the renderbuffer */
     window_ = glfwCreateWindow(1, 1, "OpenGL renderbuffer test", nullptr, nullptr);
     glfwMakeContextCurrent(window_);
+
 
     /* Enquire GPU for maximum size (both width and height) of the framebuffer */
     GLsizei rb_size;
     glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &rb_size);
     std::cout << log_ID_ << "Max renderbuffer size is "+std::to_string(rb_size)+"x"+std::to_string(rb_size)+" size." << std::endl;
 
+
     /* Close the test window */
     glfwDestroyWindow(window_);
 
+
+    /* Given image size */
     image_width_  = width;
     image_height_ = height;
     std::cout << log_ID_ << "Given image size "+std::to_string(image_width_)+"x"+std::to_string(image_height_)+"." << std::endl;
+
 
     /* Compute the maximum number of images that can be rendered conditioned on the maximum framebuffer size */
     factorize_int(num_images, std::floor(rb_size / image_width_), std::floor(rb_size / image_height_), tiles_cols_, tiles_rows_);
     tiles_num_ = tiles_rows_ * tiles_cols_;
     std::cout << log_ID_ << "Required to render "+std::to_string(num_images)+" image(s)." << std::endl;
     std::cout << log_ID_ << "Allowed number or rendered images is "+std::to_string(tiles_num_)+" ("+std::to_string(tiles_rows_)+"x"+std::to_string(tiles_cols_)+" grid)." << std::endl;
+
 
     /* Create a window. */
     window_ = glfwCreateWindow(image_width_ * tiles_cols_, image_height_ * tiles_rows_, "OpenGL Window", nullptr, nullptr);
@@ -225,11 +234,14 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     glfwGetWindowSize(window_, &window_width_, &window_height_);
     std::cout << log_ID_ << "Window created with size "+std::to_string(window_width_)+"x"+std::to_string(window_height_)+"." << std::endl;
 
+
     /* Make the OpenGL context of window the current one handled by this thread. */
     glfwMakeContextCurrent(window_);
 
+
     /* Set window callback functions. */
     glfwSetKeyCallback(window_, key_callback);
+
 
     /* Initialize GLEW to use the OpenGL implementation provided by the videocard manufacturer. */
     /* Note: remember that the OpenGL are only specifications, the implementation is provided by the manufacturers. */
@@ -240,16 +252,19 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
         return false;
     }
 
+
     /* Set default OpenGL viewport for the current window. */
     /* Note that framebuffer_width_ and framebuffer_height_ may differ w.r.t. width and height in hdpi monitors. */
     glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
     glViewport(0, 0, framebuffer_width_, framebuffer_height_);
     std::cout << log_ID_ << "The window framebuffer size is "+std::to_string(framebuffer_width_)+"x"+std::to_string(framebuffer_height_)+"." << std::endl;
 
+
     /* Set rendered image size. May vary in HDPI monitors. */
     render_img_width_  = framebuffer_width_  / tiles_cols_;
     render_img_height_ = framebuffer_height_ / tiles_rows_;
     std::cout << log_ID_ << "The rendered image size is "+std::to_string(render_img_width_)+"x"+std::to_string(render_img_height_)+"." << std::endl;
+
 
     /* Set GL property. */
     glEnable(GL_DEPTH_TEST);
