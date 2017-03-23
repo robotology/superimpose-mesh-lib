@@ -342,8 +342,7 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
     glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
 
-    cv::flip(ogl_pixel, ogl_pixel, 0);
-    cv::resize(ogl_pixel, img, cv::Size(image_width_, image_height_), 0, 0, cv::INTER_LINEAR);
+    cv::flip(ogl_pixel, img, 0);
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
@@ -425,8 +424,7 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
     glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
 
-    cv::flip(ogl_pixel, ogl_pixel, 0);
-    cv::resize(ogl_pixel, img, cv::Size(window_width_, window_height_), 0, 0, cv::INTER_LINEAR);
+    cv::flip(ogl_pixel, img, 0);
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
