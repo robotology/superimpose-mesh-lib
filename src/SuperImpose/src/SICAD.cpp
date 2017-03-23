@@ -185,13 +185,14 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 
 
     /* Set context properties by "hinting" specific (property, value) pairs. */
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE,        GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE,             GL_FALSE);
-    glfwWindowHint(GLFW_VISIBLE,               GL_FALSE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,    3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,    2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE,           GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE,                GL_FALSE);
+    glfwWindowHint(GLFW_VISIBLE,                  GL_FALSE);
 #ifdef GLFW_MAC
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT,    GL_TRUE);
 #endif
 
 
