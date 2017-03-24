@@ -38,7 +38,8 @@ public:
 
     bool        initOGL(const GLsizei width, const GLsizei height, const GLint num_viewports = 1);
 
-    bool        oglWindowShouldClose();
+    bool        getOglWindowShouldClose();
+    void        setOglWindowShouldClose(bool should_close);
 
     bool        superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img);
 
