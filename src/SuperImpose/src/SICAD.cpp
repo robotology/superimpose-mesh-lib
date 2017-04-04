@@ -583,7 +583,7 @@ void SICAD::key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 void SICAD::factorize_int(const GLsizei area, const GLsizei width_limit, const GLsizei height_limit, GLsizei& width, GLsizei& height)
 {
-    double sqrt_area = std::sqrt(static_cast<double>(area));
-    height = std::min(static_cast<int>(std::ceil(sqrt_area)),     height_limit);
-    width  = std::min(static_cast<int>(std::ceil(area / height)), width_limit);
+    double sqrt_area = std::floor(std::sqrt(static_cast<double>(area)));
+    height = std::min(static_cast<int>(sqrt_area), height_limit);
+    width  = std::min(area / height,               width_limit);
 }
