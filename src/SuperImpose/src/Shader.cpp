@@ -9,8 +9,8 @@
 Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 {
     /* Retrieve the vertex/fragment source code from filePath. */
-    std::string vertexCode;
-    std::string fragmentCode;
+    std::string   vertexCode;
+    std::string   fragmentCode;
     std::ifstream vShaderFile;
     std::ifstream fShaderFile;
     
@@ -35,9 +35,10 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
         vertexCode = vShaderStream.str();
         fragmentCode = fShaderStream.str();
     }
-    catch(std::ifstream::failure e)
+    catch (const std::ifstream::failure& e)
     {
-        std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        throw std::runtime_error("ERROR::IFSTREAM::FAILURE\n" + std::string(e.what()) +
+                                 "\nERROR::SHADER::FILE_NOT_SUCCESFULLY_READ");
     }
     const GLchar* vShaderCode = vertexCode.c_str();
     const GLchar* fShaderCode = fragmentCode.c_str();
@@ -58,7 +59,7 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
     if (!success)
     {
         glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        throw std::runtime_error("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" + std::string(infoLog));
     };
     
     /* Fragment Shader. */
@@ -71,7 +72,7 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
     if (!success)
     {
         glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+        throw std::runtime_error("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" + std::string(infoLog));
     };
     
     /* Shader Program. */
@@ -85,7 +86,7 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
     if (!success)
     {
         glGetProgramInfoLog(this->Program, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+        throw std::runtime_error("ERROR::SHADER::PROGRAM::LINKING_FAILED\n" + std::string(infoLog));
     }
     
     /* Delete the shaders as they're linked into our program now and no longer necessery. */
@@ -94,7 +95,13 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 }
 
 
-void Shader::Use()
+void Shader::install()
 {
     glUseProgram(this->Program);
+}
+
+
+void Shader::uninstall()
+{
+    glUseProgram(0);
 }

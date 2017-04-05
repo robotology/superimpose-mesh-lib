@@ -1,6 +1,8 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include <exception>
+
 #include <GL/glew.h>
 
 
@@ -10,8 +12,11 @@ public:
 	/* Constructor reads and builds the shader. */
 	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
   	
-    /* Use the program. */
-  	void Use();
+    /* Install (i.e. use) the program object. */
+    void install();
+
+    /* Uninstall (i.e. use) the program object. */
+    void uninstall();
 
     /* The program ID. */
     GLuint Program;
