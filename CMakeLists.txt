@@ -15,7 +15,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 ### Options
-# Is Apple Retina monitor?
+# Is macOS?
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-D GLFW_MAC)
 endif()

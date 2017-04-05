@@ -4,41 +4,27 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
-#define FRAME_WIDTH  320
-#define FRAME_HEIGHT 240
-
-
-SISkeleton::SISkeleton(const float eye_fx, const float eye_fy, const float eye_cx, const float eye_cy) :
-    log_ID_("[SI-Skeleton]"), hand_part_({ "palm", "thumb", "index", "medium" })
+SISkeleton::SISkeleton() :
+    hand_part_({ "palm", "thumb", "index", "medium" })
 {
-    std::cout << log_ID_ << "Setting up OpenCV porjection matrices." << std::endl;
-
-    /* Projection matrix. */
-    /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
-                                   0.0      232.43    125.738    0.0
-                                   0.0        0.0       1.0      0.0)
-       Remember that GLM is column-major.                             */
-    projection_ = glm::mat3(eye_fx,     0.0f,       0.0f,
-                            0.0f,       eye_fy,     0.0f,
-                            eye_cx,     eye_cy,     1.0f);
-
-    std::cout << log_ID_ << "OpenCV projection matrices succesfully set up!" << std::endl;
-
     std::cout << log_ID_ << "Initialization completed!" << std::endl;
+}
+
+SISkeleton::SISkeleton(const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy) :
+    SISkeleton()
+{
+    std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
+
+    setProjectionMatrix(cam_fx, cam_fy, cam_cx, cam_cy);
 }
 
 
 SISkeleton::~SISkeleton()
-{
-    std::cout << log_ID_ << "Deallocating OpenCV resources..." << std::endl;
-
-    std::cout << log_ID_ << "OpenCV resource deallocation completed!" << std::endl;
-}
+{ }
 
 
 bool SISkeleton::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
@@ -71,9 +57,26 @@ bool SISkeleton::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, 
 }
 
 
+bool SISkeleton::setProjectionMatrix(const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy)
+{
+
+    /* Projection matrix. */
+    /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
+                                   0.0      232.43    125.738    0.0
+                                   0.0        0.0       1.0      0.0)
+       Remember that GLM is column-major.                             */
+    projection_ = glm::mat3(cam_fx,     0.0f,       0.0f,
+                            0.0f,       cam_fy,     0.0f,
+                            cam_cx,     cam_cy,     1.0f);
+
+    return true;
+}
+
+
 glm::vec2 SISkeleton::getWorldToPixel(const double* world_point)
 {
     glm::vec3 pos = glm::make_vec3(world_point);
     glm::vec3 px_h = projection_ * (root_to_eye_ * (pos - cam_pos_));
+
     return glm::vec2(px_h) / px_h.z;
 }
