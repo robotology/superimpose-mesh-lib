@@ -280,13 +280,13 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 
 bool SICAD::getOglWindowShouldClose()
 {
-    return (glfwWindowShouldClose(window_) == GLFW_TRUE ? true : false);
+    return (glfwWindowShouldClose(window_) == GL_TRUE ? true : false);
 }
 
 
 void SICAD::setOglWindowShouldClose(bool should_close)
 {
-    glfwSetWindowShouldClose(window_, GLFW_TRUE);
+    glfwSetWindowShouldClose(window_, GL_TRUE);
     glfwPostEmptyEvent();
 }
 
