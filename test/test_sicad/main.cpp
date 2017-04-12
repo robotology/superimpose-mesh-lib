@@ -45,14 +45,13 @@ int main()
     obj_pose[4] = 0;
     obj_pose[5] = 0;
     obj_pose[6] = 0;
-    objpose_map.insert({"palm", obj_pose});
+    objpose_map.emplace("palm", obj_pose);
 
     double cam_x[] = {0.1, 0, 0.15};
     double cam_o[] = {-0.57735, -0.57735, 0.57735, 2.0944};
-    cv::Mat img(240, 320, CV_8UC3);
 
+    cv::Mat img;
     si_cad->superimpose(objpose_map, cam_x, cam_o, img);
-
     cv::imwrite("./Space_Invader.jpg", img);
 
     delete si_cad;
