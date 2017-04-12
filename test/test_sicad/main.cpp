@@ -14,9 +14,11 @@
 int main()
 {
     std::string log_ID = "[TEST-SICAD]";
+    std::cout << log_ID << "This test checks whether the present machine can render properly using OpenGL." << std::endl;
+    std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
 
     SuperImpose::ObjFileMap obj;
-    obj.insert({"palm", "./Space_Invader.obj"});
+    obj.emplace("palm", "./Space_Invader.obj");
 
     const unsigned int cam_width_  = 320;
     const unsigned int cam_height_ = 240;
@@ -34,6 +36,7 @@ int main()
     catch (const std::runtime_error& e)
     {
         std::cerr << log_ID << "Caught error:" << std::endl << e.what();
+        return EXIT_FAILURE;
     }
 
     SuperImpose::ObjPoseMap objpose_map;
