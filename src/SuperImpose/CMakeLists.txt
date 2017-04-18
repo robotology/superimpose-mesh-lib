@@ -28,11 +28,11 @@ find_package(OpenGL     REQUIRED)
 # Library main
 add_library(${LIBRARY_TARGET_NAME} ${${LIBRARY_TARGET_NAME}_SRC} ${${LIBRARY_TARGET_NAME}_HDR})
 
-target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}>"
                                                           ${GLEW_INCLUDE_DIRS}
-                                                          ${OPENGL_INCLUDE_DIR}
-                                                          ${ASSIMP_INCLUDE_DIRS})
+                                                          ${GLM_INCLUDE_DIRS}
+                                                  PRIVATE ${ASSIMP_INCLUDE_DIRS})
 
 target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${OpenCV_LIBS}
                                                     ${OPENGL_LIBRARIES}
