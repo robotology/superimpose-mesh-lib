@@ -271,6 +271,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     glEnable(GL_DEPTH_TEST);
 
     glfwPollEvents();
+    main_thread_id_ = std::this_thread::get_id();
 
     std::cout << log_ID_ << "Succesfully set up!" << std::endl;
 
@@ -287,7 +288,8 @@ bool SICAD::getOglWindowShouldClose()
 void SICAD::setOglWindowShouldClose(bool should_close)
 {
     glfwSetWindowShouldClose(window_, GL_TRUE);
-    glfwPostEmptyEvent();
+
+    pollOrPostEvent();
 }
 
 
@@ -353,6 +355,8 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
+
+    pollOrPostEvent();
 
     return true;
 }
@@ -435,6 +439,8 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
+
+    pollOrPostEvent();
 
     return true;
 }
@@ -531,6 +537,15 @@ int SICAD::getTilesRows() const
 int SICAD::getTilesCols() const
 {
     return tiles_cols_;
+}
+
+
+void SICAD::pollOrPostEvent()
+{
+    if(main_thread_id_ == std::this_thread::get_id())
+        glfwPollEvents();
+    else
+        glfwPostEmptyEvent();
 }
 
 
