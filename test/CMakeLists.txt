@@ -1,2 +1,4 @@
 add_subdirectory(test_hdpi)
+add_subdirectory(test_scissors)
+add_subdirectory(test_scissors_background)
 add_subdirectory(test_sicad)

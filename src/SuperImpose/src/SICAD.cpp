@@ -204,7 +204,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     /* Enquire GPU for maximum size (both width and height) of the framebuffer */
     GLsizei rb_size;
     glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &rb_size);
-    std::cout << log_ID_ << "Max renderbuffer size is "+std::to_string(rb_size)+"x"+std::to_string(rb_size)+" size." << std::endl;
+    std::cout << log_ID_ << "Max renderbuffer size is " + std::to_string(rb_size) + "x"+std::to_string(rb_size) + " size." << std::endl;
 
 
     /* Close the test window */
@@ -214,14 +214,14 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     /* Given image size */
     image_width_  = width;
     image_height_ = height;
-    std::cout << log_ID_ << "Given image size "+std::to_string(image_width_)+"x"+std::to_string(image_height_)+"." << std::endl;
+    std::cout << log_ID_ << "Given image size " + std::to_string(image_width_) + "x" + std::to_string(image_height_) + "." << std::endl;
 
 
     /* Compute the maximum number of images that can be rendered conditioned on the maximum framebuffer size */
     factorize_int(num_images, std::floor(rb_size / image_width_), std::floor(rb_size / image_height_), tiles_cols_, tiles_rows_);
     tiles_num_ = tiles_rows_ * tiles_cols_;
-    std::cout << log_ID_ << "Required to render "+std::to_string(num_images)+" image(s)." << std::endl;
-    std::cout << log_ID_ << "Allowed number or rendered images is "+std::to_string(tiles_num_)+" ("+std::to_string(tiles_rows_)+"x"+std::to_string(tiles_cols_)+" grid)." << std::endl;
+    std::cout << log_ID_ << "Required to render " + std::to_string(num_images) + " image(s)." << std::endl;
+    std::cout << log_ID_ << "Allowed number or rendered images is " + std::to_string(tiles_num_) + " (" + std::to_string(tiles_rows_) + "x" + std::to_string(tiles_cols_) + " grid)." << std::endl;
 
 
     /* Create a window. */
@@ -233,7 +233,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
         return false;
     }
     glfwGetWindowSize(window_, &window_width_, &window_height_);
-    std::cout << log_ID_ << "Window created with size "+std::to_string(window_width_)+"x"+std::to_string(window_height_)+"." << std::endl;
+    std::cout << log_ID_ << "Window created with size " + std::to_string(window_width_) + "x" + std::to_string(window_height_) + "." << std::endl;
 
 
     /* Make the OpenGL context of window the current one handled by this thread. */
@@ -258,19 +258,20 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     /* Note that framebuffer_width_ and framebuffer_height_ may differ w.r.t. width and height in hdpi monitors. */
     glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
     glViewport(0, 0, framebuffer_width_, framebuffer_height_);
-    std::cout << log_ID_ << "The window framebuffer size is "+std::to_string(framebuffer_width_)+"x"+std::to_string(framebuffer_height_)+"." << std::endl;
+    std::cout << log_ID_ << "The window framebuffer size is " + std::to_string(framebuffer_width_) + "x" + std::to_string(framebuffer_height_) + "." << std::endl;
 
 
     /* Set rendered image size. May vary in HDPI monitors. */
     render_img_width_  = framebuffer_width_  / tiles_cols_;
     render_img_height_ = framebuffer_height_ / tiles_rows_;
-    std::cout << log_ID_ << "The rendered image size is "+std::to_string(render_img_width_)+"x"+std::to_string(render_img_height_)+"." << std::endl;
+    std::cout << log_ID_ << "The rendered image size is " + std::to_string(render_img_width_) + "x" + std::to_string(render_img_height_) + "." << std::endl;
 
 
     /* Set GL property. */
     glEnable(GL_DEPTH_TEST);
 
     glfwPollEvents();
+    main_thread_id_ = std::this_thread::get_id();
 
     std::cout << log_ID_ << "Succesfully set up!" << std::endl;
 
@@ -287,7 +288,8 @@ bool SICAD::getOglWindowShouldClose()
 void SICAD::setOglWindowShouldClose(bool should_close)
 {
     glfwSetWindowShouldClose(window_, GL_TRUE);
-    glfwPostEmptyEvent();
+
+    pollOrPostEvent();
 }
 
 
@@ -326,7 +328,7 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
     /* Model transformation matrix. */
     for (auto map = objpos_map.cbegin(); map != objpos_map.cend(); ++map)
     {
-        const double * pose = map->second.data();
+        const double* pose = map->second.data();
 
         glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
         obj_to_root[3][0] = pose[0];
@@ -353,6 +355,8 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
+
+    pollOrPostEvent();
 
     return true;
 }
@@ -406,12 +410,12 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
             shader_cad_->install();
             for (auto map = objpos_multimap[idx].cbegin(); map != objpos_multimap[idx].cend(); ++map)
             {
-                const double * pose = map->second.data();
+                const double* pose = map->second.data();
 
                 glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
-                obj_to_root[3][0] = pose[0];
-                obj_to_root[3][1] = pose[1];
-                obj_to_root[3][2] = pose[2];
+                obj_to_root[3][0] = static_cast<float>(pose[0]);
+                obj_to_root[3][1] = static_cast<float>(pose[1]);
+                obj_to_root[3][2] = static_cast<float>(pose[2]);
 
                 glm::mat4 model = root_to_ogl_ * obj_to_root;
 
@@ -435,6 +439,8 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
+
+    pollOrPostEvent();
 
     return true;
 }
@@ -531,6 +537,15 @@ int SICAD::getTilesRows() const
 int SICAD::getTilesCols() const
 {
     return tiles_cols_;
+}
+
+
+void SICAD::pollOrPostEvent()
+{
+    if(main_thread_id_ == std::this_thread::get_id())
+        glfwPollEvents();
+    else
+        glfwPostEmptyEvent();
 }
 
 

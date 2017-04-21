@@ -4,6 +4,7 @@
 #include "SuperImpose.h"
 
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <GL/glew.h>
@@ -83,6 +84,8 @@ private:
     const GLfloat      near_               = 0.001f;
     const GLfloat      far_                = 1000.0f;
 
+    std::thread::id    main_thread_id_;
+
     bool               show_background_    = false;
     GLenum             show_mesh_mode_     = GL_FILL;
     MIPMaps            mesh_mmaps_         = NEAREST;
@@ -96,6 +99,8 @@ private:
     glm::mat4          root_to_ogl_;
     glm::mat4          back_proj_;
     glm::mat4          projection_;
+
+    void               pollOrPostEvent();
 
     void               set_background(cv::Mat& img);
     void               set_wireframe(GLenum mode);

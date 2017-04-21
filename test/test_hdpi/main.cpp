@@ -7,9 +7,9 @@
 int main()
 {
     std::string log_ID = "[TEST-HDPI]";
-    std::cout << log_ID << "This is a FAKE TEST to check whether the present machine sports HDPI monitor or not." << std::endl;
+    std::cout << log_ID << "This is a FAKE TEST to check whether the present machine sports HiDPI monitor or not." << std::endl;
     std::cout << log_ID << "A runtime error will be caught, but the test will always pass." << std::endl;
-    std::cout << log_ID << "Read the last comment and ENABLE/DISABLE HDPI option in CMake config for better performance." << std::endl  << std::endl;
+    std::cout << log_ID << "HiDPI should be handled automatically by the library." << std::endl  << std::endl;
 
     try
     {
@@ -20,8 +20,8 @@ int main()
         std::cerr << log_ID << "Caught error:" << std::endl << e.what();
     }
 
-    std::cout << log_ID << "If the rendered image size is greater than the given image size, then you have an HDPI monitor!" << std::endl;
-    std::cout << log_ID << "ENABLE/DISABLE HDPI option in CMake and run the test again!" << std::endl;
+    std::cout << log_ID << "If the rendered image size is greater than the given image size, then the library is not able to handle it properly!" << std::endl;
+    std::cout << log_ID << "Should this error occur, please open an issue on the GitHub library repository!" << std::endl;
 
     return EXIT_SUCCESS;
 }

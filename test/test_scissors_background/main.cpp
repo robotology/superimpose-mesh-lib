@@ -2,6 +2,7 @@
 #include <exception>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -13,9 +14,9 @@
 
 int main()
 {
-    std::string log_ID = "[TEST-SICAD]";
-    std::cout << log_ID << "This test checks whether the present machine can render properly using OpenGL." << std::endl;
-    std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
+    std::string log_ID = "[TEST-SCISSORS]";
+    std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
+    std::cout << log_ID << "The same mesh will be rendered on 2 differente viewport." << std::endl;
 
     SuperImpose::ObjFileMap obj;
     obj.emplace("palm", "./Space_Invader.obj");
@@ -30,7 +31,7 @@ int main()
     SICAD* si_cad;
     try
     {
-        si_cad = new SICAD(obj, cam_width_, cam_height_, 1, ".",
+        si_cad = new SICAD(obj, cam_width_, cam_height_, 2, ".",
                            cam_fx_, cam_fy_, cam_cx_, cam_cy_);
     }
     catch (const std::runtime_error& e)
@@ -39,8 +40,9 @@ int main()
         return EXIT_FAILURE;
     }
 
-    SuperImpose::ObjPoseMap objpose_map;
-    SuperImpose::ObjPose    obj_pose(7);
+    std::vector<SuperImpose::ObjPoseMap> objposes;
+    SuperImpose::ObjPoseMap              objpose_map;
+    SuperImpose::ObjPose                 obj_pose(7);
     obj_pose[0] = 0;
     obj_pose[1] = 0;
     obj_pose[2] = 0;
@@ -49,12 +51,16 @@ int main()
     obj_pose[5] = 0;
     obj_pose[6] = 0;
     objpose_map.emplace("palm", obj_pose);
+    objposes.push_back(objpose_map);
+    objposes.push_back(objpose_map);
 
     double cam_x[] = {0.1, 0, 0.15};
     double cam_o[] = {-0.57735, -0.57735, 0.57735, 2.0944};
 
-    cv::Mat img;
-    si_cad->superimpose(objpose_map, cam_x, cam_o, img);
+    cv::Mat img = cv::imread("./space.png");
+
+    si_cad->setBackgroundOpt(true);
+    si_cad->superimpose(objposes, cam_x, cam_o, img);
     cv::imwrite("./Space_Invader.jpg", img);
 
     delete si_cad;
