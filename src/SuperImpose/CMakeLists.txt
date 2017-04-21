@@ -30,14 +30,14 @@ add_library(${LIBRARY_TARGET_NAME} ${${LIBRARY_TARGET_NAME}_SRC} ${${LIBRARY_TAR
 
 target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
                                                           "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}>"
-                                                          ${GLM_INCLUDE_DIRS}
-                                                          ${ASSIMP_INCLUDE_DIRS})
+                                                          ${ASSIMP_INCLUDE_DIRS}
+                                                          ${GLM_INCLUDE_DIRS})
 
 target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES}
-                                                    GLEW::glew
+                                                    GLEW::GLEW
                                                     glfw
-                                                    ${OpenGL_LIBRARY}
-                                                    ${OpenCV_LIBS})
+                                                    ${OpenCV_LIBS}
+                                                    ${OPENGL_gl_LIBRARY})
 
 target_compile_features(${LIBRARY_TARGET_NAME} PUBLIC cxx_nullptr cxx_constexpr)
 
