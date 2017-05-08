@@ -167,6 +167,9 @@ SICAD::~SICAD()
     std::cout << log_ID_ << "Closing OpenGL window." << std::endl;
     glfwSetWindowShouldClose(window_, GL_TRUE);
 
+    std::cout << log_ID_ << "Terminating GLFW." << std::endl;
+    glfwTerminate();
+
     std::cout << log_ID_ << "OpenGL resource deallocation completed!" << std::endl;
 }
 
