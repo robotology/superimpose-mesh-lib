@@ -13,6 +13,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 
+int SICAD::class_counter = 0;
+
+
 SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images, std::string shader_folder)
 {
     if (!initOGL(cam_width, cam_height, num_images))
@@ -122,6 +125,7 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
 
     std::cout << log_ID_ << "OpenGL renderers succesfully set up!" << std::endl;
 
+    class_counter++;
     std::cout << log_ID_ << "Initialization completed!" << std::endl;
 }
 
@@ -167,8 +171,12 @@ SICAD::~SICAD()
     std::cout << log_ID_ << "Closing OpenGL window." << std::endl;
     glfwSetWindowShouldClose(window_, GL_TRUE);
 
-    std::cout << log_ID_ << "Terminating GLFW." << std::endl;
-    glfwTerminate();
+    class_counter--;
+    if (class_counter == 0)
+    {
+        std::cout << log_ID_ << "Terminating GLFW." << std::endl;
+        glfwTerminate();
+    }
 
     std::cout << log_ID_ << "OpenGL resource deallocation completed!" << std::endl;
 }

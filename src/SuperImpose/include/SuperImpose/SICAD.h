@@ -67,6 +67,8 @@ public:
     int         getTilesCols()     const;
 
 private:
+    static int         class_counter;
+
     const std::string  log_ID_             = "[SI-CAD]";
 
     GLFWwindow       * window_             = nullptr;
