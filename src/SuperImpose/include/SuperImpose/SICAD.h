@@ -3,6 +3,9 @@
 
 #include "SuperImpose.h"
 
+#include "Model.h"
+#include "Shader.h"
+
 #include <string>
 #include <thread>
 #include <vector>
@@ -10,9 +13,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-
-#include "Model.h"
-#include "Shader.h"
 
 
 class SICAD : public SuperImpose
