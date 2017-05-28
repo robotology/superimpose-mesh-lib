@@ -1,7 +1,10 @@
 #ifndef SUPERIMPOSECAD_H
 #define SUPERIMPOSECAD_H
 
-#include "SuperImpose.h"
+#include "Superimpose.h"
+
+#include "Model.h"
+#include "Shader.h"
 
 #include <string>
 #include <thread>
@@ -11,11 +14,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "Model.h"
-#include "Shader.h"
 
-
-class SICAD : public SuperImpose
+class SICAD : public Superimpose
 {
 protected:
     typedef typename std::unordered_map<std::string, Model*> ObjModel;
@@ -67,6 +67,9 @@ public:
     int         getTilesCols()     const;
 
 private:
+    static int         class_counter_;
+    static GLsizei     renderbuffer_size_;
+
     const std::string  log_ID_             = "[SI-CAD]";
 
     GLFWwindow       * window_             = nullptr;

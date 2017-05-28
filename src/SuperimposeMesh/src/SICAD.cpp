@@ -1,4 +1,4 @@
-#include "SuperImpose/SICAD.h"
+#include "SuperimposeMesh/SICAD.h"
 
 #include <iostream>
 #include <exception>
@@ -11,6 +11,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <opencv2/imgproc/imgproc.hpp>
+
+
+int     SICAD::class_counter_     = 0;
+GLsizei SICAD::renderbuffer_size_ = 0;
 
 
 SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images, std::string shader_folder)
@@ -122,6 +126,7 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
 
     std::cout << log_ID_ << "OpenGL renderers succesfully set up!" << std::endl;
 
+    class_counter_++;
     std::cout << log_ID_ << "Initialization completed!" << std::endl;
 }
 
@@ -167,8 +172,12 @@ SICAD::~SICAD()
     std::cout << log_ID_ << "Closing OpenGL window." << std::endl;
     glfwSetWindowShouldClose(window_, GL_TRUE);
 
-    std::cout << log_ID_ << "Terminating GLFW." << std::endl;
-    glfwTerminate();
+    class_counter_--;
+    if (class_counter_ == 0)
+    {
+        std::cout << log_ID_ << "Terminating GLFW." << std::endl;
+        glfwTerminate();
+    }
 
     std::cout << log_ID_ << "OpenGL resource deallocation completed!" << std::endl;
 }
@@ -199,19 +208,19 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 #endif
 
 
-    /* Create test window to enquire for OpenGL for the maximum size of the renderbuffer */
-    window_ = glfwCreateWindow(1, 1, "OpenGL renderbuffer test", nullptr, nullptr);
-    glfwMakeContextCurrent(window_);
+    if (renderbuffer_size_ == 0)
+    {
+        /* Create test window to enquire for OpenGL for the maximum size of the renderbuffer */
+        window_ = glfwCreateWindow(1, 1, "OpenGL renderbuffer test", nullptr, nullptr);
+        glfwMakeContextCurrent(window_);
 
+        /* Enquire GPU for maximum renderbuffer size (both width and height) of the default framebuffer */
+        glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &renderbuffer_size_);
+        std::cout << log_ID_ << "Max renderbuffer size is " + std::to_string(renderbuffer_size_) + "x"+std::to_string(renderbuffer_size_) + " size." << std::endl;
 
-    /* Enquire GPU for maximum size (both width and height) of the framebuffer */
-    GLsizei rb_size;
-    glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &rb_size);
-    std::cout << log_ID_ << "Max renderbuffer size is " + std::to_string(rb_size) + "x"+std::to_string(rb_size) + " size." << std::endl;
-
-
-    /* Close the test window */
-    glfwDestroyWindow(window_);
+        /* Close the test window */
+        glfwDestroyWindow(window_);
+    }
 
 
     /* Given image size */
@@ -220,8 +229,8 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     std::cout << log_ID_ << "Given image size " + std::to_string(image_width_) + "x" + std::to_string(image_height_) + "." << std::endl;
 
 
-    /* Compute the maximum number of images that can be rendered conditioned on the maximum framebuffer size */
-    factorize_int(num_images, std::floor(rb_size / image_width_), std::floor(rb_size / image_height_), tiles_cols_, tiles_rows_);
+    /* Compute the maximum number of images that can be rendered conditioned on the maximum renderbuffer size */
+    factorize_int(num_images, std::floor(renderbuffer_size_ / image_width_), std::floor(renderbuffer_size_ / image_height_), tiles_cols_, tiles_rows_);
     tiles_num_ = tiles_rows_ * tiles_cols_;
     std::cout << log_ID_ << "Required to render " + std::to_string(num_images) + " image(s)." << std::endl;
     std::cout << log_ID_ << "Allowed number or rendered images is " + std::to_string(tiles_num_) + " (" + std::to_string(tiles_rows_) + "x" + std::to_string(tiles_cols_) + " grid)." << std::endl;

@@ -9,7 +9,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <SuperImpose/SICAD.h>
+#include <SuperimposeMesh/SICAD.h>
 
 
 int main()
@@ -18,7 +18,7 @@ int main()
     std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
     std::cout << log_ID << "The same mesh will be rendered on 2 differente viewport." << std::endl;
 
-    SuperImpose::ObjFileMap obj;
+    Superimpose::ObjFileMap obj;
     obj.emplace("palm", "./Space_Invader.obj");
 
     const unsigned int cam_width_  = 320;
@@ -40,9 +40,9 @@ int main()
         return EXIT_FAILURE;
     }
 
-    std::vector<SuperImpose::ObjPoseMap> objposes;
-    SuperImpose::ObjPoseMap              objpose_map;
-    SuperImpose::ObjPose                 obj_pose(7);
+    std::vector<Superimpose::ObjPoseMap> objposes;
+    Superimpose::ObjPoseMap              objpose_map;
+    Superimpose::ObjPose                 obj_pose(7);
     obj_pose[0] = 0;
     obj_pose[1] = 0;
     obj_pose[2] = 0;

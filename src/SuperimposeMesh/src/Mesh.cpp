@@ -1,4 +1,4 @@
-#include "SuperImpose/Mesh.h"
+#include "SuperimposeMesh/Mesh.h"
 
 #include <string>
 

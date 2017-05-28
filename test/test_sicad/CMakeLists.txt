@@ -6,7 +6,7 @@ set(${TEST_TARGET_NAME}_SRC
 
 add_executable(${TEST_TARGET_NAME} ${${TEST_TARGET_NAME}_SRC})
 
-target_link_libraries(${TEST_TARGET_NAME} SuperImpose)
+target_link_libraries(${TEST_TARGET_NAME} SuperimposeMesh)
 
 add_test(NAME ${TEST_TARGET_NAME} COMMAND ${TEST_TARGET_NAME})
 

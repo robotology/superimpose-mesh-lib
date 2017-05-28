@@ -1,7 +1,7 @@
 #ifndef SUPERIMPOSESKELETON_H
 #define SUPERIMPOSESKELETON_H
 
-#include "SuperImpose.h"
+#include "Superimpose.h"
 
 #include <list>
 #include <string>
@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 
 
-class SISkeleton : public SuperImpose
+class SISkeleton : public Superimpose
 {
 public:
     SISkeleton();

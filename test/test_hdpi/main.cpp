@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include <SuperImpose/SICAD.h>
+#include <SuperimposeMesh/SICAD.h>
 
 int main()
 {
@@ -13,7 +13,7 @@ int main()
 
     try
     {
-        SICAD si_cad(SuperImpose::ObjFileMap(), 320, 240, "");
+        SICAD si_cad(Superimpose::ObjFileMap(), 320, 240, "");
     }
     catch (const std::runtime_error& e)
     {

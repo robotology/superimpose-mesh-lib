@@ -1,14 +1,14 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "Shader.h"
+#include "Mesh.h"
+
 #include <vector>
 #include <string>
 
 #include <GL/glew.h>
 #include <assimp/scene.h>
-
-#include "Shader.h"
-#include "Mesh.h"
 
 
 class Model

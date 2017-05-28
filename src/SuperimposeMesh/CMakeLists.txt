@@ -1,4 +1,4 @@
-set(LIBRARY_TARGET_NAME SuperImpose)
+set(LIBRARY_TARGET_NAME SuperimposeMesh)
 
 # List of CPP (source) library files
 set(${LIBRARY_TARGET_NAME}_SRC
@@ -10,12 +10,12 @@ set(${LIBRARY_TARGET_NAME}_SRC
 
 # List of HPP (header) library files
 set(${LIBRARY_TARGET_NAME}_HDR
-        include/SuperImpose/Mesh.h
-        include/SuperImpose/Model.h
-        include/SuperImpose/Shader.h
-        include/SuperImpose/SICAD.h
-        include/SuperImpose/SISkeleton.h
-        include/SuperImpose/SuperImpose.h)
+        include/SuperimposeMesh/Mesh.h
+        include/SuperimposeMesh/Model.h
+        include/SuperimposeMesh/Shader.h
+        include/SuperimposeMesh/SICAD.h
+        include/SuperimposeMesh/SISkeleton.h
+    include/SuperimposeMesh/Superimpose.h)
 
 # Depndencies
 find_package(assimp     REQUIRED)
