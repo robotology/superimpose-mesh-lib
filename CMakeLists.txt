@@ -4,7 +4,7 @@ else()
     cmake_minimum_required(VERSION 3.0)
 endif()
 
-project(SuperImpose
+project(SuperimposeMesh
         LANGUAGES CXX
         VERSION 0.6.1.0)
 

@@ -1,4 +1,4 @@
-#include "SuperImpose/SICAD.h"
+#include "SuperimposeMesh/SICAD.h"
 
 #include <iostream>
 #include <exception>

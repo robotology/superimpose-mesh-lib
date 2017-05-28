@@ -1,12 +1,12 @@
-SuperImpose
+SuperimposeMesh
 ===
 
-The SuperImpose project provides a modern C++ augmented-reality library to superimpose 3D objects on an image plane.
+The SuperimposeMesh project provides a modern C++ augmented-reality library to superimpose 3D objects on an image plane.
 
-SuperImpose works on Linux, macOS and Windows.
+SuperimposeMesh works on Linux, macOS and Windows.
 
 ## Dependencies
-SuperImpose depends on
+SuperimposeMesh library depends on
  - [GLFW](http://www.glfw.org)
      - Debian: apt
      - macOS: brew
@@ -31,8 +31,8 @@ SuperImpose depends on
 ## Build the library and the application
 ### Linux / macOS
 ```shell
-git clone https://github.com/claudiofantacci/SuperImpose
-cd SuperImpose
+git clone https://github.com/robotology/superimpose-mesh-lib
+cd superimpose-mesh-lib
 mkdir build && cd build
 cmake ..
 make
@@ -45,9 +45,9 @@ make
 Once the library is installed, add to your project `CMakeLists.txt`
 ```cmake
 ...
-find_package(SuperImpose REQUIRED)
+find_package(SuperimposeMesh REQUIRED)
 ...
-target_link_libraries(<target> SuperImpose::SuperImpose)
+target_link_libraries(<target> SuperimposeMesh::SuperimposeMesh)
 ...
 ```
 

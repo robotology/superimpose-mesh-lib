@@ -1,7 +1,7 @@
 #ifndef SUPERIMPOSECAD_H
 #define SUPERIMPOSECAD_H
 
-#include "SuperImpose.h"
+#include "Superimpose.h"
 
 #include "Model.h"
 #include "Shader.h"
@@ -15,7 +15,7 @@
 #include <glm/glm.hpp>
 
 
-class SICAD : public SuperImpose
+class SICAD : public Superimpose
 {
 protected:
     typedef typename std::unordered_map<std::string, Model*> ObjModel;

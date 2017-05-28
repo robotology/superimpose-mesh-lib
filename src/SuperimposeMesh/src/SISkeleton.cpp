@@ -1,4 +1,4 @@
-#include "SuperImpose/SISkeleton.h"
+#include "SuperimposeMesh/SISkeleton.h"
 
 #include <iostream>
 
