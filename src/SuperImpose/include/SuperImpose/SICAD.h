@@ -67,7 +67,7 @@ public:
     int         getTilesCols()     const;
 
 private:
-    static int         class_counter;
+    static int         class_counter_;
 
     const std::string  log_ID_             = "[SI-CAD]";
 
