@@ -68,6 +68,7 @@ public:
 
 private:
     static int         class_counter_;
+    static GLsizei     renderbuffer_size_;
 
     const std::string  log_ID_             = "[SI-CAD]";
 
