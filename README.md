@@ -1,12 +1,12 @@
-SuperimposeMesh
+superimpose-mesh-lib
 ===
 
-The SuperimposeMesh project provides a modern C++ augmented-reality library to superimpose 3D objects on an image plane.
+The superimpose-mesh-lib project provides a modern C++ augmented-reality library to superimpose 3D objects on an image plane.
 
-SuperimposeMesh works on Linux, macOS and Windows.
+superimpose-mesh-lib works on Linux, macOS and Windows.
 
 ## Dependencies
-SuperimposeMesh library depends on
+superimpose-mesh-lib library depends on
  - [GLFW](http://www.glfw.org)
      - Debian: apt
      - macOS: brew
