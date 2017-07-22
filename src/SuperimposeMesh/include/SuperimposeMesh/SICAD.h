@@ -103,6 +103,8 @@ private:
     glm::mat4          back_proj_;
     glm::mat4          projection_;
 
+    glm::mat4          getViewTransformationMatrix( const double* cam_x, const double* cam_o);
+
     void               pollOrPostEvent();
 
     void               set_background(cv::Mat& img);
