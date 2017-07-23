@@ -107,12 +107,12 @@ SICAD::SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsiz
 
 
     /* Load models. */
-    for (auto map = objfile_map.cbegin(); map != objfile_map.cend(); ++map)
+    for (const ObjFilePair& pair : objfile_map)
     {
-        std::cout << log_ID_ << "Loading OpenGL " + map->first + " model." << std::endl;
-        model_obj_[map->first] = new (std::nothrow) Model(map->second.c_str());
-        if (model_obj_[map->first] == nullptr)
-            throw std::runtime_error("ERROR::SICAD::CTOR::OBJ\nERROR: File " + map->second + " not found!");
+        std::cout << log_ID_ << "Loading OpenGL " + pair.first + " model." << std::endl;
+        model_obj_[pair.first] = new (std::nothrow) Model(pair.second.c_str());
+        if (model_obj_[pair.first] == nullptr)
+            throw std::runtime_error("ERROR::SICAD::CTOR::OBJ\nERROR: File " + pair.second + " not found!");
     }
 
 
@@ -151,10 +151,10 @@ SICAD::~SICAD()
 
     glfwMakeContextCurrent(window_);
 
-    for (auto map = model_obj_.begin(); map != model_obj_.end(); ++map)
+    for (const ObjModelPair& pair : model_obj_)
     {
-        std::cout << log_ID_ << "Deleting OpenGL "+map->first+" model." << std::endl;
-        delete map->second;
+        std::cout << log_ID_ << "Deleting OpenGL "+ pair.first+" model." << std::endl;
+        delete pair.second;
     }
 
     glDeleteVertexArrays(1, &vao_);
@@ -333,9 +333,9 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
     /* Model transformation matrix. */
-    for (auto map = objpos_map.cbegin(); map != objpos_map.cend(); ++map)
+    for (const ObjPosePair& pair : objpos_map)
     {
-        const double* pose = map->second.data();
+        const double* pose = pair.second.data();
 
         glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
         obj_to_root[3][0] = pose[0];
@@ -346,7 +346,7 @@ bool SICAD::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const
 
         glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-        model_obj_[map->first]->Draw(*shader_cad_);
+        model_obj_[pair.first]->Draw(*shader_cad_);
     }
     shader_cad_->uninstall();
 
@@ -415,9 +415,9 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
 
             /* Install/Use the program specified by the shader. */
             shader_cad_->install();
-            for (auto map = objpos_multimap[idx].cbegin(); map != objpos_multimap[idx].cend(); ++map)
+            for (const ObjPosePair& pair : objpos_multimap[idx])
             {
-                const double* pose = map->second.data();
+                const double* pose = pair.second.data();
 
                 glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
                 obj_to_root[3][0] = static_cast<float>(pose[0]);
@@ -428,7 +428,7 @@ bool SICAD::superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const do
 
                 glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-                model_obj_[map->first]->Draw(*shader_cad_);
+                model_obj_[pair.first]->Draw(*shader_cad_);
             }
             shader_cad_->uninstall();
         }

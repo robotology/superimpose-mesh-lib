@@ -14,8 +14,10 @@ class Superimpose
 {
 public:
     typedef typename std::unordered_map<std::string, std::string> ObjFileMap;
+    typedef typename std::pair<std::string, std::string>          ObjFilePair;
     typedef typename std::vector<double>                          ObjPose;
     typedef typename std::multimap<std::string, ObjPose>          ObjPoseMap;
+    typedef typename std::pair<std::string, ObjPose>              ObjPosePair;
 
     virtual ~Superimpose() { };
 

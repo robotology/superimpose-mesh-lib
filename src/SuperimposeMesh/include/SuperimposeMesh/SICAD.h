@@ -18,7 +18,8 @@
 class SICAD : public Superimpose
 {
 protected:
-    typedef typename std::unordered_map<std::string, Model*> ObjModel;
+    typedef typename std::unordered_map<std::string, Model*> ObjModelMap;
+    typedef typename std::pair<std::string, Model*>          ObjModelPair;
 
     enum MIPMaps
     {
@@ -94,7 +95,7 @@ private:
     MIPMaps            mesh_mmaps_         = NEAREST;
     Shader           * shader_background_  = nullptr;
     Shader           * shader_cad_         = nullptr;
-    ObjModel           model_obj_;
+    ObjModelMap        model_obj_;
     GLuint             texture_;
     GLuint             vao_;
     GLuint             ebo_;
