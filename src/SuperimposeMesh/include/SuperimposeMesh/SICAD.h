@@ -36,10 +36,10 @@ public:
     virtual ~SICAD();
 
 
-    bool        initOGL(const GLsizei width, const GLsizei height, const GLint num_viewports = 1);
+    bool         initOGL(const GLsizei width, const GLsizei height, const GLint num_viewports = 1);
 
-    bool        getOglWindowShouldClose();
-    void        setOglWindowShouldClose(bool should_close);
+    bool         getOglWindowShouldClose();
+    void         setOglWindowShouldClose(bool should_close);
 
     bool         superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img) override;
 
@@ -51,19 +51,19 @@ public:
     virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
                             const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
-    bool        setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
+    bool         setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
-    bool        getBackgroundOpt() const;
-    void        setBackgroundOpt(bool show_background);
+    bool         getBackgroundOpt() const;
+    void         setBackgroundOpt(bool show_background);
 
-    GLenum      getWireframeOpt()  const;
-    void        setWireframeOpt(bool show_mesh_wires);
+    GLenum       getWireframeOpt()  const;
+    void         setWireframeOpt(bool show_mesh_wires);
 
-    MIPMaps     getMipmapsOpt()    const;
+    MIPMaps      getMipmapsOpt()    const;
 
-    int         getTilesNumber()   const;
-    int         getTilesRows()     const;
-    int         getTilesCols()     const;
+    int          getTilesNumber()   const;
+    int          getTilesRows()     const;
+    int          getTilesCols()     const;
 
 private:
     static int         class_counter_;
