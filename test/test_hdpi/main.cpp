@@ -13,7 +13,7 @@ int main()
 
     try
     {
-        SICAD si_cad(Superimpose::ObjFileMap(), 320, 240, "");
+        SICAD si_cad(SICAD::ModelPathContainer(), 320, 240, "");
     }
     catch (const std::runtime_error& e)
     {

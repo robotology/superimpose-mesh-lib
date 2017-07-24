@@ -17,7 +17,7 @@ int main()
     std::cout << log_ID << "This test checks whether the present machine can render properly using OpenGL." << std::endl;
     std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
 
-    Superimpose::ObjFileMap obj;
+    SICAD::ModelPathContainer obj;
     obj.emplace("palm", "./Space_Invader.obj");
 
     const unsigned int cam_width_  = 320;
@@ -39,8 +39,8 @@ int main()
         return EXIT_FAILURE;
     }
 
-    Superimpose::ObjPoseMap objpose_map;
-    Superimpose::ObjPose    obj_pose(7);
+    Superimpose::ModelPoseContainer objpose_map;
+    Superimpose::ModelPose          obj_pose(7);
     obj_pose[0] = 0;
     obj_pose[1] = 0;
     obj_pose[2] = 0;

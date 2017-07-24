@@ -18,7 +18,7 @@ int main()
     std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
     std::cout << log_ID << "The same mesh will be rendered on 2 differente viewport." << std::endl;
 
-    Superimpose::ObjFileMap obj;
+    SICAD::ModelPathContainer obj;
     obj.emplace("palm", "./Space_Invader.obj");
 
     const unsigned int cam_width_  = 320;
@@ -40,9 +40,9 @@ int main()
         return EXIT_FAILURE;
     }
 
-    std::vector<Superimpose::ObjPoseMap> objposes;
-    Superimpose::ObjPoseMap              objpose_map;
-    Superimpose::ObjPose                 obj_pose(7);
+    std::vector<Superimpose::ModelPoseContainer> objposes;
+    Superimpose::ModelPoseContainer              objpose_map;
+    Superimpose::ModelPose                       obj_pose(7);
     obj_pose[0] = 0;
     obj_pose[1] = 0;
     obj_pose[2] = 0;

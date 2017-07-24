@@ -17,22 +17,23 @@
 
 class SICAD : public Superimpose
 {
-protected:
-    typedef typename std::unordered_map<std::string, Model*> ObjModelMap;
-    typedef typename std::pair<std::string, Model*>          ObjModelPair;
+public:
+    typedef typename std::unordered_map<std::string, std::string> ModelPathContainer;
+    typedef typename std::pair<std::string, std::string>          ModelPathElement;
 
     enum MIPMaps
     {
         NEAREST = 0,
         LINEAR  = 1
     };
+    typedef typename std::unordered_map<std::string, Model*>      ModelContainer;
+    typedef typename std::pair<std::string, Model*>               ModelElement;
 
-public:
-    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, std::string shader_folder);
+    SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, std::string shader_folder);
 
-    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num, std::string shader_folder);
+    SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num, std::string shader_folder);
 
-    SICAD(const ObjFileMap& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num, std::string shader_folder,
+    SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num, std::string shader_folder,
           const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     virtual ~SICAD();
@@ -43,14 +44,14 @@ public:
     bool        getOglWindowShouldClose();
     void        setOglWindowShouldClose(bool should_close);
 
-    bool        superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img);
+    bool        superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img);
 
-    bool        superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
+    bool        superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
 
-    bool        superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
+    bool        superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
                             const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
-    bool        superimpose(const std::vector<ObjPoseMap>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
+    bool        superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
                             const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     bool        setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
@@ -69,6 +70,7 @@ public:
 
 private:
     static int         class_counter_;
+    //!!!: perchè è statico? viene utilizzato da qualche altro programma? Forse era temporaneo?
     static GLsizei     renderbuffer_size_;
 
     const std::string  log_ID_             = "[SI-CAD]";
@@ -95,7 +97,7 @@ private:
     MIPMaps            mesh_mmaps_         = NEAREST;
     Shader           * shader_background_  = nullptr;
     Shader           * shader_cad_         = nullptr;
-    ObjModelMap        model_obj_;
+    ModelContainer     model_obj_;
     GLuint             texture_;
     GLuint             vao_;
     GLuint             ebo_;

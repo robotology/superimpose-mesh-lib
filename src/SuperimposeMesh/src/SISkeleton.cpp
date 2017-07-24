@@ -27,7 +27,7 @@ SISkeleton::~SISkeleton()
 { }
 
 
-bool SISkeleton::superimpose(const ObjPoseMap& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
+bool SISkeleton::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
     cam_pos_ = glm::make_vec3(cam_x);
     root_to_eye_ = glm::transpose(glm::mat3(glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])))));
