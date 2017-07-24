@@ -21,13 +21,10 @@ public:
     typedef typename std::unordered_map<std::string, std::string> ModelPathContainer;
     typedef typename std::pair<std::string, std::string>          ModelPathElement;
 
-    enum MIPMaps
-    {
-        NEAREST = 0,
-        LINEAR  = 1
-    };
     typedef typename std::unordered_map<std::string, Model*>      ModelContainer;
     typedef typename std::pair<std::string, Model*>               ModelElement;
+
+    enum class MIPMaps { nearest, linear };
 
     SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, std::string shader_folder);
 
@@ -94,7 +91,7 @@ private:
 
     bool               show_background_    = false;
     GLenum             show_mesh_mode_     = GL_FILL;
-    MIPMaps            mesh_mmaps_         = NEAREST;
+    MIPMaps            mesh_mmaps_         = MIPMaps::nearest;
     Shader           * shader_background_  = nullptr;
     Shader           * shader_cad_         = nullptr;
     ModelContainer     model_obj_;
