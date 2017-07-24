@@ -18,7 +18,7 @@ public:
 
     ~SISkeleton();
 
-    bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img);
+    bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img) override;
 
     bool setProjectionMatrix(const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
 
