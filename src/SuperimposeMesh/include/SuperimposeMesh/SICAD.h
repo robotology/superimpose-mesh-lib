@@ -67,7 +67,6 @@ public:
 
 private:
     static int         class_counter_;
-    //!!!: perchè è statico? viene utilizzato da qualche altro programma? Forse era temporaneo?
     static GLsizei     renderbuffer_size_;
 
     const std::string  log_ID_             = "[SI-CAD]";
