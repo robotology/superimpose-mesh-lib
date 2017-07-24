@@ -26,12 +26,31 @@ public:
 
     enum class MIPMaps { nearest, linear };
 
-    SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, std::string shader_folder);
+    SICAD(const ModelPathContainer& objfile_map,
+          const GLsizei cam_width, const GLsizei cam_height,
+          const std::string& shader_folder);
 
-    SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num, std::string shader_folder);
+    SICAD(const ModelPathContainer& objfile_map,
+          const GLsizei cam_width, const GLsizei cam_height,
+          const GLint num_images,
+          const std::string& shader_folder);
 
-    SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint image_num, std::string shader_folder,
-          const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
+    SICAD(const ModelPathContainer& objfile_map,
+          const GLsizei cam_width, const GLsizei cam_height,
+          const GLint num_images,
+          const std::vector<float>& root_to_ogl,
+          const std::string& shader_folder);
+
+    SICAD(const ModelPathContainer& objfile_map,
+          const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
+          const GLint num_images,
+          const std::string& shader_folder);
+
+    SICAD(const ModelPathContainer& objfile_map,
+          const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
+          const GLint num_images,
+          const std::vector<float>& root_to_ogl,
+          const std::string& shader_folder);
 
     virtual ~SICAD();
 
@@ -46,10 +65,10 @@ public:
     virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
 
     virtual bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
-                            const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
+                             const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
-                            const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
+                             const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     bool         setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 

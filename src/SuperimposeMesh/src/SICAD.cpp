@@ -17,8 +17,42 @@ int     SICAD::class_counter_     = 0;
 GLsizei SICAD::renderbuffer_size_ = 0;
 
 
-SICAD::SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images, std::string shader_folder)
+SICAD::SICAD(const ModelPathContainer& objfile_map,
+             const GLsizei cam_width, const GLsizei cam_height,
+             const std::string& shader_folder) :
+    SICAD(objfile_map,
+          cam_width, cam_height,
+          1,
+          std::vector<float>{1.0f, 0.0f, 0.0f, 0.0f,
+                             0.0f, 1.0f, 0.0f, 0.0f,
+                             0.0f, 0.0f, 1.0f, 0.0f,
+                             0.0f, 0.0f, 0.0f, 1.0f},
+          shader_folder) { }
+
+
+SICAD::SICAD(const ModelPathContainer& objfile_map,
+             const GLsizei cam_width, const GLsizei cam_height,
+             const GLint num_images,
+             const std::string& shader_folder) :
+    SICAD(objfile_map,
+          cam_width, cam_height,
+          num_images,
+          std::vector<float>{1.0f, 0.0f, 0.0f, 0.0f,
+              0.0f, 1.0f, 0.0f, 0.0f,
+              0.0f, 0.0f, 1.0f, 0.0f,
+              0.0f, 0.0f, 0.0f, 1.0f},
+          shader_folder) { }
+
+
+SICAD::SICAD(const ModelPathContainer& objfile_map,
+             const GLsizei cam_width, const GLsizei cam_height,
+             const GLint num_images,
+             const std::vector<float>& root_to_ogl,
+             const std::string& shader_folder)
 {
+    if (root_to_ogl.size() != 16)
+        throw std::runtime_error("ERROR::SICAD::CTOR::ROOT_TO_OGL\nERROR: Wrong size provided. Should be 16, was given " + std::to_string(root_to_ogl.size()) + ".");
+
     if (!initOGL(cam_width, cam_height, num_images))
         throw std::runtime_error("ERROR::SICAD::CTOR::OPENGL\nERROR: Could not initialize OpenGL.");
 
@@ -117,10 +151,12 @@ SICAD::SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, con
 
 
     /* Fixed rotation matrices from root to OpenGL frame. */
-    root_to_ogl_ = glm::mat4(0.0f, 0.0f, 1.0f, 0.0f,
-                             1.0f, 0.0f, 0.0f, 0.0f,
-                             0.0f, 1.0f, 0.0f, 0.0f,
-                             0.0f, 0.0f, 0.0f, 1.0f);
+//    root_to_ogl_ = glm::mat4(0.0f, 0.0f, 1.0f, 0.0f,
+//                             1.0f, 0.0f, 0.0f, 0.0f,
+//                             0.0f, 1.0f, 0.0f, 0.0f,
+//                             0.0f, 0.0f, 0.0f, 1.0f);
+
+    root_to_ogl_ = glm::make_mat4(root_to_ogl.data());
 
     back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, far_*100.f);
 
@@ -131,18 +167,41 @@ SICAD::SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, con
 }
 
 
-SICAD::SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, std::string shader_folder) :
-    SICAD(objfile_map, cam_width, cam_height, 1, shader_folder) { }
-
-
-SICAD::SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLint num_images, std::string shader_folder,
-             const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy) :
-    SICAD(objfile_map, cam_width, cam_height, num_images, shader_folder)
+SICAD::SICAD(const ModelPathContainer& objfile_map,
+             const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
+             const GLint num_images,
+             const std::string& shader_folder) :
+    SICAD(objfile_map,
+          cam_width, cam_height,
+          num_images,
+          std::vector<float>{1.0f, 0.0f, 0.0f, 0.0f,
+                             0.0f, 1.0f, 0.0f, 0.0f,
+                             0.0f, 0.0f, 1.0f, 0.0f,
+                             0.0f, 0.0f, 0.0f, 1.0f},
+          shader_folder)
 {
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
 
     setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 }
+
+
+SICAD::SICAD(const ModelPathContainer& objfile_map,
+             const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
+             const GLint num_images,
+             const std::vector<float>& root_to_ogl,
+             const std::string& shader_folder) :
+    SICAD(objfile_map,
+          cam_width, cam_height,
+          num_images,
+          root_to_ogl,
+          shader_folder)
+{
+    std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
+
+    setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
+}
+
 
 
 SICAD::~SICAD()

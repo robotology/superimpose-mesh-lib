@@ -31,8 +31,10 @@ int main()
     SICAD* si_cad;
     try
     {
-        si_cad = new SICAD(obj, cam_width_, cam_height_, 2, ".",
-                           cam_fx_, cam_fy_, cam_cx_, cam_cy_);
+        si_cad = new SICAD(obj,
+                           cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
+                           2,
+                           ".");
     }
     catch (const std::runtime_error& e)
     {
