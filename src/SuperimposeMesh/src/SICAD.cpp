@@ -38,9 +38,9 @@ SICAD::SICAD(const ModelPathContainer& objfile_map,
           cam_width, cam_height,
           num_images,
           std::vector<float>{1.0f, 0.0f, 0.0f, 0.0f,
-              0.0f, 1.0f, 0.0f, 0.0f,
-              0.0f, 0.0f, 1.0f, 0.0f,
-              0.0f, 0.0f, 0.0f, 1.0f},
+                             0.0f, 1.0f, 0.0f, 0.0f,
+                             0.0f, 0.0f, 1.0f, 0.0f,
+                             0.0f, 0.0f, 0.0f, 1.0f},
           shader_folder) { }
 
 
