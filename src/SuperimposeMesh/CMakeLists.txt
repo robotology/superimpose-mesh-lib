@@ -15,23 +15,23 @@ set(${LIBRARY_TARGET_NAME}_HDR
         include/SuperimposeMesh/Shader.h
         include/SuperimposeMesh/SICAD.h
         include/SuperimposeMesh/SISkeleton.h
-    include/SuperimposeMesh/Superimpose.h)
+        include/SuperimposeMesh/Superimpose.h)
 
 # Depndencies
-find_package(assimp     REQUIRED)
-find_package(glew       REQUIRED)
-find_package(glfw3      REQUIRED)
-find_package(glm        REQUIRED)
-find_package(OpenCV     REQUIRED)
-find_package(OpenGL     REQUIRED)
+find_package(assimp REQUIRED)
+find_package(glew   REQUIRED)
+find_package(glfw3  REQUIRED)
+find_package(glm    REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(OpenGL REQUIRED)
 
 # Library main
 add_library(${LIBRARY_TARGET_NAME} ${${LIBRARY_TARGET_NAME}_SRC} ${${LIBRARY_TARGET_NAME}_HDR})
 
-target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                          "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}>"
-                                                          ${ASSIMP_INCLUDE_DIRS}
-                                                          ${GLM_INCLUDE_DIRS})
+target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                                                         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}>"
+                                                         ${ASSIMP_INCLUDE_DIRS}
+                                                         ${GLM_INCLUDE_DIRS})
 
 target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES}
                                                     GLEW::GLEW
