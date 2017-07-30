@@ -18,15 +18,21 @@ GLsizei SICAD::renderbuffer_size_ = 0;
 
 
 SICAD::SICAD(const ModelPathContainer& objfile_map,
+             const std::string& shader_folder) :
+    SICAD(objfile_map,
+          320, 240,
+          1,
+          {1.0, 0.0, 0.0, 0.0},
+          shader_folder) { }
+
+
+SICAD::SICAD(const ModelPathContainer& objfile_map,
              const GLsizei cam_width, const GLsizei cam_height,
              const std::string& shader_folder) :
     SICAD(objfile_map,
           cam_width, cam_height,
           1,
-          std::vector<float>{1.0f, 0.0f, 0.0f, 0.0f,
-                             0.0f, 1.0f, 0.0f, 0.0f,
-                             0.0f, 0.0f, 1.0f, 0.0f,
-                             0.0f, 0.0f, 0.0f, 1.0f},
+          {1.0, 0.0, 0.0, 0.0},
           shader_folder) { }
 
 
@@ -37,21 +43,18 @@ SICAD::SICAD(const ModelPathContainer& objfile_map,
     SICAD(objfile_map,
           cam_width, cam_height,
           num_images,
-          std::vector<float>{1.0f, 0.0f, 0.0f, 0.0f,
-                             0.0f, 1.0f, 0.0f, 0.0f,
-                             0.0f, 0.0f, 1.0f, 0.0f,
-                             0.0f, 0.0f, 0.0f, 1.0f},
+          {1.0, 0.0, 0.0, 0.0},
           shader_folder) { }
 
 
 SICAD::SICAD(const ModelPathContainer& objfile_map,
              const GLsizei cam_width, const GLsizei cam_height,
              const GLint num_images,
-             const std::vector<float>& root_to_ogl,
+             const std::vector<float>& ogl_to_cam,
              const std::string& shader_folder)
 {
-    if (root_to_ogl.size() != 16)
-        throw std::runtime_error("ERROR::SICAD::CTOR::ROOT_TO_OGL\nERROR: Wrong size provided. Should be 16, was given " + std::to_string(root_to_ogl.size()) + ".");
+    if (ogl_to_cam.size() != 4)
+        throw std::runtime_error("ERROR::SICAD::CTOR::OGL_TO_CAM\nERROR: Wrong size provided. Should be 4, was given " + std::to_string(ogl_to_cam.size()) + ".");
 
     if (!initOGL(cam_width, cam_height, num_images))
         throw std::runtime_error("ERROR::SICAD::CTOR::OPENGL\nERROR: Could not initialize OpenGL.");
@@ -149,15 +152,6 @@ SICAD::SICAD(const ModelPathContainer& objfile_map,
             throw std::runtime_error("ERROR::SICAD::CTOR::OBJ\nERROR: File " + pair.second + " not found!");
     }
 
-
-    /* Fixed rotation matrices from root to OpenGL frame. */
-//    root_to_ogl_ = glm::mat4(0.0f, 0.0f, 1.0f, 0.0f,
-//                             1.0f, 0.0f, 0.0f, 0.0f,
-//                             0.0f, 1.0f, 0.0f, 0.0f,
-//                             0.0f, 0.0f, 0.0f, 1.0f);
-
-    root_to_ogl_ = glm::make_mat4(root_to_ogl.data());
-
     back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, far_*100.f);
 
     std::cout << log_ID_ << "OpenGL renderers succesfully set up!" << std::endl;
@@ -169,15 +163,11 @@ SICAD::SICAD(const ModelPathContainer& objfile_map,
 
 SICAD::SICAD(const ModelPathContainer& objfile_map,
              const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
-             const GLint num_images,
              const std::string& shader_folder) :
     SICAD(objfile_map,
           cam_width, cam_height,
-          num_images,
-          std::vector<float>{1.0f, 0.0f, 0.0f, 0.0f,
-                             0.0f, 1.0f, 0.0f, 0.0f,
-                             0.0f, 0.0f, 1.0f, 0.0f,
-                             0.0f, 0.0f, 0.0f, 1.0f},
+          1,
+          {1.0, 0.0, 0.0, 0.0},
           shader_folder)
 {
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
@@ -189,12 +179,28 @@ SICAD::SICAD(const ModelPathContainer& objfile_map,
 SICAD::SICAD(const ModelPathContainer& objfile_map,
              const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
              const GLint num_images,
-             const std::vector<float>& root_to_ogl,
              const std::string& shader_folder) :
     SICAD(objfile_map,
           cam_width, cam_height,
           num_images,
-          root_to_ogl,
+          {1.0, 0.0, 0.0, 0.0},
+          shader_folder)
+{
+    std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
+
+    setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
+}
+
+
+SICAD::SICAD(const ModelPathContainer& objfile_map,
+             const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
+             const GLint num_images,
+             const std::vector<float>& ogl_to_cam,
+             const std::string& shader_folder) :
+    SICAD(objfile_map,
+          cam_width, cam_height,
+          num_images,
+          ogl_to_cam,
           shader_folder)
 {
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
@@ -396,12 +402,10 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     {
         const double* pose = pair.second.data();
 
-        glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
-        obj_to_root[3][0] = pose[0];
-        obj_to_root[3][1] = pose[1];
-        obj_to_root[3][2] = pose[2];
-
-        glm::mat4 model = root_to_ogl_ * obj_to_root;
+        glm::mat4 model = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
+        model[3][0] = pose[0];
+        model[3][1] = pose[1];
+        model[3][2] = pose[2];
 
         glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
@@ -473,12 +477,10 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
             {
                 const double* pose = pair.second.data();
 
-                glm::mat4 obj_to_root = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
-                obj_to_root[3][0] = static_cast<float>(pose[0]);
-                obj_to_root[3][1] = static_cast<float>(pose[1]);
-                obj_to_root[3][2] = static_cast<float>(pose[2]);
-
-                glm::mat4 model = root_to_ogl_ * obj_to_root;
+                glm::mat4 model = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
+                model[3][0] = static_cast<float>(pose[0]);
+                model[3][1] = static_cast<float>(pose[1]);
+                model[3][2] = static_cast<float>(pose[2]);
 
                 glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
@@ -603,14 +605,14 @@ int SICAD::getTilesCols() const
 
 glm::mat4 SICAD::getViewTransformationMatrix( const double* cam_x, const double* cam_o)
 {
-    glm::mat4 root_eye_t  = glm::translate(glm::mat4(1.0f),
+    glm::mat4 root_cam_t  = glm::translate(glm::mat4(1.0f),
                                            glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
-    glm::mat4 eye_to_root = glm::rotate(glm::mat4(1.0f),
+    glm::mat4 cam_to_root = glm::rotate(glm::mat4(1.0f),
                                         static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])));
 
-    glm::mat4 view = glm::lookAt(glm::mat3(root_to_ogl_) * glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z),
-                                 glm::mat3(root_to_ogl_) * (glm::vec3(root_eye_t[3].x, root_eye_t[3].y, root_eye_t[3].z) + glm::mat3(eye_to_root) * glm::vec3(0.0f, 0.0f, 1.0f)),
-                                 glm::mat3(root_to_ogl_) * glm::mat3(eye_to_root) * glm::vec3(0.0f, -1.0f, 0.0f));
+    glm::mat4 view = glm::lookAt(glm::vec3(root_cam_t[3].x, root_cam_t[3].y, root_cam_t[3].z),
+                                 glm::vec3(root_cam_t[3].x, root_cam_t[3].y, root_cam_t[3].z) + glm::mat3(cam_to_root) * ogl_to_cam_ * glm::vec3(0.0f, 0.0f, -1.0f),
+                                 glm::mat3(cam_to_root) * ogl_to_cam_ * glm::vec3(0.0f, 1.0f, 0.0f));
 
     return view;
 }

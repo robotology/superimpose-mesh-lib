@@ -27,6 +27,9 @@ public:
     enum class MIPMaps { nearest, linear };
 
     SICAD(const ModelPathContainer& objfile_map,
+          const std::string& shader_folder);
+
+    SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height,
           const std::string& shader_folder);
 
@@ -38,7 +41,11 @@ public:
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height,
           const GLint num_images,
-          const std::vector<float>& root_to_ogl,
+          const std::vector<float>& ogl_to_cam,
+          const std::string& shader_folder);
+
+    SICAD(const ModelPathContainer& objfile_map,
+          const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
           const std::string& shader_folder);
 
     SICAD(const ModelPathContainer& objfile_map,
@@ -49,7 +56,7 @@ public:
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
           const GLint num_images,
-          const std::vector<float>& root_to_ogl,
+          const std::vector<float>& ogl_to_cam,
           const std::string& shader_folder);
 
     virtual ~SICAD();
@@ -98,6 +105,7 @@ private:
     GLsizei            image_height_       = 0;
     GLsizei            window_width_       = 0;
     GLsizei            window_height_      = 0;
+    glm::mat3          ogl_to_cam_         = glm::mat3(1.0f);
     GLsizei            framebuffer_width_  = 0;
     GLsizei            framebuffer_height_ = 0;
     GLsizei            render_img_width_   = 0;
@@ -117,7 +125,6 @@ private:
     GLuint             vao_;
     GLuint             ebo_;
     GLuint             vbo_;
-    glm::mat4          root_to_ogl_;
     glm::mat4          back_proj_;
     glm::mat4          projection_;
 
