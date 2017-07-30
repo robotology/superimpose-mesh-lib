@@ -26,6 +26,8 @@ public:
 
     enum class MIPMaps { nearest, linear };
 
+    SICAD(const ModelPathContainer& objfile_map);
+
     SICAD(const ModelPathContainer& objfile_map,
           const std::string& shader_folder);
 

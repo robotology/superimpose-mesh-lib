@@ -17,6 +17,14 @@ int     SICAD::class_counter_     = 0;
 GLsizei SICAD::renderbuffer_size_ = 0;
 
 
+SICAD::SICAD(const ModelPathContainer& objfile_map) :
+    SICAD(objfile_map,
+          320, 240,
+          1,
+          {1.0, 0.0, 0.0, 0.0},
+          ".") { }
+
+
 SICAD::SICAD(const ModelPathContainer& objfile_map,
              const std::string& shader_folder) :
     SICAD(objfile_map,
