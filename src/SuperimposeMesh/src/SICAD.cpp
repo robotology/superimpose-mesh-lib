@@ -62,6 +62,9 @@ SICAD::SICAD(const ModelPathContainer& objfile_map,
     std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
 
 
+    /* Rotation from real camera to OpenGL frame */
+    ogl_to_cam_ = glm::mat3(glm::rotate(glm::mat4(1.0f), ogl_to_cam[3], glm::make_vec3(ogl_to_cam.data())));
+
     /* Make the OpenGL context of window the current one handled by this thread. */
     glfwMakeContextCurrent(window_);
 
