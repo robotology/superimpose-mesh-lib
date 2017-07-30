@@ -39,8 +39,6 @@ target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC -L${ASSIMP_LIBRARY_DIRS} ${A
                                                     ${OpenCV_LIBS}
                                                     ${OPENGL_gl_LIBRARY})
 
-target_compile_features(${LIBRARY_TARGET_NAME} PUBLIC cxx_nullptr cxx_constexpr)
-
 set_target_properties(${LIBRARY_TARGET_NAME} PROPERTIES VERSION       ${${PROJECT_NAME}_VERSION}
                                                         PUBLIC_HEADER "${${LIBRARY_TARGET_NAME}_HDR}")
 
