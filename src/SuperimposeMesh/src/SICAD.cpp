@@ -536,10 +536,27 @@ bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_heigh
     glfwMakeContextCurrent(window_);
 
     /* Projection matrix. */
-    /* See: https://strawlab.org/2011/11/05/augmented-reality-with-OpenGL */
-    /* Intrinsic camera matrix: (232.921      0.0     162.202    0.0
-                                   0.0      232.43    125.738    0.0
-                                   0.0        0.0       1.0      0.0) */
+    /* In both OpenGL window coordinates and HZ image coordinate systems, (0,0) is the lower left corner with X and Y increasing right and up, respectively.
+       In a normal image file, the (0,0) pixel is in the upper left corner. We have code paths to deal with this in one of two ways:
+       first, we can draw our images upside down, so that all the pixel-based coordinate systems are the same. This is the code path used when “window_coords=’y up’”.
+       Second, we can keep the images right side up and modify the projection matrix so that OpenGL will generate window coordinates that compensate for the flipped image coordinates.
+       In this “window_coords=’y down’” path, the generated OpenGL Y window coordinates are (height-y).
+       
+       Enough of the preliminaries. We calculate the OpenGL Projection matrix when window_coords==’y up’ to be:
+       [2*K00/width,  -2*K01/width,   (width - 2*K02 + 2*x0)/width,                            0]
+       [          0, -2*K11/height, (height - 2*K12 + 2*y0)/height,                            0]
+       [          0,             0, (-zfar - znear)/(zfar - znear), -2*zfar*znear/(zfar - znear)]
+       [          0,             0,                             -1,                            0]
+       
+       With window_coords==’y down’, we have:
+       [2*K00/width, -2*K01/width,    (width - 2*K02 + 2*x0)/width,                            0]
+       [          0, 2*K11/height, (-height + 2*K12 + 2*y0)/height,                            0]
+       [          0,            0,  (-zfar - znear)/(zfar - znear), -2*zfar*znear/(zfar - znear)]
+       [          0,            0,                              -1,                            0]
+       
+       Where Knm is the (n,m) entry of the 3x3 HZ instrinsic camera calibration matrix K. (K is upper triangular and scaled such that the lower-right entry is one.)
+       Width and height are the size of the camera image, in pixels, and x0 and y0 are the camera image origin and are normally zero.
+       Znear and zfar are the standard OpenGL near and far clipping planes, respectively. */
     projection_ = glm::mat4(2.0f*(cam_fx/cam_width),    0,                              0,                                  0,
                             0,                          2.0f*(cam_fy/cam_height),       0,                                  0,
                             1-2.0f*(cam_cx/cam_width),  1-2.0f*(cam_cy/cam_height),    -(far_+near_)/(far_-near_),         -1,
