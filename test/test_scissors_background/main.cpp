@@ -19,7 +19,7 @@ int main()
     std::cout << log_ID << "The same mesh will be rendered on 2 differente viewport." << std::endl;
 
     SICAD::ModelPathContainer obj;
-    obj.emplace("palm", "./Space_Invader.obj");
+    obj.emplace("alien", "./Space_Invader.obj");
 
     const unsigned int cam_width_  = 320;
     const unsigned int cam_height_ = 240;
@@ -42,9 +42,7 @@ int main()
         return EXIT_FAILURE;
     }
 
-    std::vector<Superimpose::ModelPoseContainer> objposes;
-    Superimpose::ModelPoseContainer              objpose_map;
-    Superimpose::ModelPose                       obj_pose(7);
+    Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
     obj_pose[1] = 0;
     obj_pose[2] = 0;
@@ -52,15 +50,18 @@ int main()
     obj_pose[4] = 0;
     obj_pose[5] = 0;
     obj_pose[6] = 0;
-    objpose_map.emplace("palm", obj_pose);
+
+    Superimpose::ModelPoseContainer objpose_map;
+    objpose_map.emplace("alien", obj_pose);
+
+    std::vector<Superimpose::ModelPoseContainer> objposes;
     objposes.push_back(objpose_map);
     objposes.push_back(objpose_map);
 
-    double cam_x[] = {0.1, 0, 0.15};
-    double cam_o[] = {-0.57735, -0.57735, 0.57735, 2.0944};
+    double cam_x[] = {0.0, 0.1, 0.1};
+    double cam_o[] = {1.0,   0,   0, 0};
 
     cv::Mat img = cv::imread("./space.png");
-
     si_cad->setBackgroundOpt(true);
     si_cad->superimpose(objposes, cam_x, cam_o, img);
     cv::imwrite("./Space_Invader.jpg", img);
