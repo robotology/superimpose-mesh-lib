@@ -424,7 +424,7 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
     /* Model transformation matrix. */
-    for (const ModelPoseElement& pair : objpos_map)
+    for (const ModelPoseContainerElement& pair : objpos_map)
     {
         const double* pose = pair.second.data();
 
@@ -499,7 +499,7 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 
             /* Install/Use the program specified by the shader. */
             shader_cad_->install();
-            for (const ModelPoseElement& pair : objpos_multimap[idx])
+            for (const ModelPoseContainerElement& pair : objpos_multimap[idx])
             {
                 const double* pose = pair.second.data();
 
