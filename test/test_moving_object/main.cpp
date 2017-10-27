@@ -1,8 +1,9 @@
 #include <cmath>
+#include <chrono>
 #include <exception>
 #include <iostream>
 #include <string>
-#include <vector>
+#include <thread>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,9 +15,9 @@
 
 int main()
 {
-    std::string log_ID = "[Test - Scissors]";
-    std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
-    std::cout << log_ID << "The same mesh will be rendered on 2 differente viewport." << std::endl;
+    std::string log_ID = "[Test - Moving object]";
+    std::cout << log_ID << "This test checks whether the present machine can render a moving object properly using OpenGL." << std::endl;
+    std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
 
     SICAD::ModelPathContainer obj;
     obj.emplace("alien", "./Space_Invader.obj");
@@ -33,7 +34,7 @@ int main()
     {
         si_cad = new SICAD(obj,
                            cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
-                           2,
+                           1,
                            ".",
                            true);
     }
@@ -47,24 +48,29 @@ int main()
     obj_pose[0] = 0;
     obj_pose[1] = 0;
     obj_pose[2] = 0;
-    obj_pose[3] = 1;
-    obj_pose[4] = 0;
+    obj_pose[3] = 0;
+    obj_pose[4] = 1.0;
     obj_pose[5] = 0;
     obj_pose[6] = 0;
 
     Superimpose::ModelPoseContainer objpose_map;
     objpose_map.emplace("alien", obj_pose);
 
-    std::vector<Superimpose::ModelPoseContainer> objposes;
-    objposes.push_back(objpose_map);
-    objposes.push_back(objpose_map);
-
-    double cam_x[] = {0.0, 0.1, 0.1};
+    double cam_x[] = {  0, 0.1, 0.1};
     double cam_o[] = {1.0,   0,   0, 0};
 
-    cv::Mat img;
-    si_cad->superimpose(objposes, cam_x, cam_o, img);
-    cv::imwrite("./Space_Invader.jpg", img);
+    for (double ang = 0; ang <= 2*M_PI; ang += 0.082)
+    {
+        cv::Mat img;
+
+        obj_pose[6] = ang;
+        objpose_map.clear();
+        objpose_map.emplace("alien", obj_pose);
+
+        si_cad->superimpose(objpose_map, cam_x, cam_o, img);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(33));
+    }
 
     delete si_cad;
 

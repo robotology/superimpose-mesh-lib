@@ -26,45 +26,54 @@ public:
 
     enum class MIPMaps { nearest, linear };
 
-    SICAD(const ModelPathContainer& objfile_map);
+    SICAD(const ModelPathContainer& objfile_map,
+          const bool window_visible);
 
     SICAD(const ModelPathContainer& objfile_map,
-          const std::string& shader_folder);
+          const std::string& shader_folder,
+          const bool window_visible);
 
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height,
-          const std::string& shader_folder);
+          const std::string& shader_folder,
+          const bool window_visible);
 
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height,
           const GLint num_images,
-          const std::string& shader_folder);
+          const std::string& shader_folder,
+          const bool window_visible);
 
+    /* Principal constructor */
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height,
           const GLint num_images,
           const std::vector<float>& ogl_to_cam,
-          const std::string& shader_folder);
+          const std::string& shader_folder,
+          const bool window_visible);
 
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
-          const std::string& shader_folder);
+          const std::string& shader_folder,
+          const bool window_visible);
 
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
           const GLint num_images,
-          const std::string& shader_folder);
+          const std::string& shader_folder,
+          const bool window_visible);
 
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
           const GLint num_images,
           const std::vector<float>& ogl_to_cam,
-          const std::string& shader_folder);
+          const std::string& shader_folder,
+          const bool window_visible);
 
     virtual ~SICAD();
 
 
-    bool         initOGL(const GLsizei width, const GLsizei height, const GLint num_viewports = 1);
+    bool         initOGL(const GLsizei width, const GLsizei height, const GLint num_viewports, const bool window_visibile);
 
     bool         getOglWindowShouldClose();
     void         setOglWindowShouldClose(bool should_close);

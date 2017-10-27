@@ -17,54 +17,63 @@ int     SICAD::class_counter_     = 0;
 GLsizei SICAD::renderbuffer_size_ = 0;
 
 
-SICAD::SICAD(const ModelPathContainer& objfile_map) :
+SICAD::SICAD(const ModelPathContainer& objfile_map,
+             const bool window_visible) :
     SICAD(objfile_map,
           320, 240,
           1,
           {1.0, 0.0, 0.0, 0.0},
-          ".") { }
+          ".",
+          window_visible) { }
 
 
 SICAD::SICAD(const ModelPathContainer& objfile_map,
-             const std::string& shader_folder) :
+             const std::string& shader_folder,
+             const bool window_visible) :
     SICAD(objfile_map,
           320, 240,
           1,
           {1.0, 0.0, 0.0, 0.0},
-          shader_folder) { }
+          shader_folder,
+          window_visible) { }
 
 
 SICAD::SICAD(const ModelPathContainer& objfile_map,
              const GLsizei cam_width, const GLsizei cam_height,
-             const std::string& shader_folder) :
+             const std::string& shader_folder,
+             const bool window_visible) :
     SICAD(objfile_map,
           cam_width, cam_height,
           1,
           {1.0, 0.0, 0.0, 0.0},
-          shader_folder) { }
+          shader_folder,
+          window_visible) { }
 
 
 SICAD::SICAD(const ModelPathContainer& objfile_map,
              const GLsizei cam_width, const GLsizei cam_height,
              const GLint num_images,
-             const std::string& shader_folder) :
+             const std::string& shader_folder,
+             const bool window_visible) :
     SICAD(objfile_map,
           cam_width, cam_height,
           num_images,
           {1.0, 0.0, 0.0, 0.0},
-          shader_folder) { }
+          shader_folder,
+          window_visible) { }
 
 
 SICAD::SICAD(const ModelPathContainer& objfile_map,
              const GLsizei cam_width, const GLsizei cam_height,
              const GLint num_images,
              const std::vector<float>& ogl_to_cam,
-             const std::string& shader_folder)
+             const std::string& shader_folder,
+             const bool window_visible)
 {
     if (ogl_to_cam.size() != 4)
         throw std::runtime_error("ERROR::SICAD::CTOR::OGL_TO_CAM\nERROR: Wrong size provided. Should be 4, was given " + std::to_string(ogl_to_cam.size()) + ".");
 
-    if (!initOGL(cam_width, cam_height, num_images))
+    if (!initOGL(cam_width, cam_height, num_images, window_visible))
         throw std::runtime_error("ERROR::SICAD::CTOR::OPENGL\nERROR: Could not initialize OpenGL.");
 
     std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
@@ -174,12 +183,14 @@ SICAD::SICAD(const ModelPathContainer& objfile_map,
 
 SICAD::SICAD(const ModelPathContainer& objfile_map,
              const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
-             const std::string& shader_folder) :
+             const std::string& shader_folder,
+             const bool window_visible) :
     SICAD(objfile_map,
           cam_width, cam_height,
           1,
           {1.0, 0.0, 0.0, 0.0},
-          shader_folder)
+          shader_folder,
+          window_visible)
 {
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
 
@@ -190,12 +201,14 @@ SICAD::SICAD(const ModelPathContainer& objfile_map,
 SICAD::SICAD(const ModelPathContainer& objfile_map,
              const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
              const GLint num_images,
-             const std::string& shader_folder) :
+             const std::string& shader_folder,
+             const bool window_visible) :
     SICAD(objfile_map,
           cam_width, cam_height,
           num_images,
           {1.0, 0.0, 0.0, 0.0},
-          shader_folder)
+          shader_folder,
+          window_visible)
 {
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
 
@@ -207,12 +220,14 @@ SICAD::SICAD(const ModelPathContainer& objfile_map,
              const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
              const GLint num_images,
              const std::vector<float>& ogl_to_cam,
-             const std::string& shader_folder) :
+             const std::string& shader_folder,
+             const bool window_visible) :
     SICAD(objfile_map,
           cam_width, cam_height,
           num_images,
           ogl_to_cam,
-          shader_folder)
+          shader_folder,
+          window_visible)
 {
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
 
@@ -259,7 +274,7 @@ SICAD::~SICAD()
 }
 
 
-bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_images)
+bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_images, const bool window_visibile)
 {
     std::cout << log_ID_ << "Start setting up..." << std::endl;
 
@@ -274,13 +289,13 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 
     /* Set context properties by "hinting" specific (property, value) pairs. */
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,    3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,    2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,    3);
     glfwWindowHint(GLFW_OPENGL_PROFILE,           GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE,                GL_FALSE);
-    glfwWindowHint(GLFW_VISIBLE,                  GL_FALSE);
+    glfwWindowHint(GLFW_VISIBLE,                  window_visibile);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT,    GL_TRUE);
 #ifdef GLFW_MAC
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT,    GL_TRUE);
 #endif
 
 
@@ -409,7 +424,7 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
     /* Model transformation matrix. */
-    for (const ModelPoseElement& pair : objpos_map)
+    for (const ModelPoseContainerElement& pair : objpos_map)
     {
         const double* pose = pair.second.data();
 
@@ -484,7 +499,7 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 
             /* Install/Use the program specified by the shader. */
             shader_cad_->install();
-            for (const ModelPoseElement& pair : objpos_multimap[idx])
+            for (const ModelPoseContainerElement& pair : objpos_multimap[idx])
             {
                 const double* pose = pair.second.data();
 

@@ -13,7 +13,7 @@
 
 int main()
 {
-    std::string log_ID = "[TEST-SICAD]";
+    std::string log_ID = "[Test - SICAD]";
     std::cout << log_ID << "This test checks whether the present machine can render properly using OpenGL." << std::endl;
     std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
 
@@ -32,8 +32,9 @@ int main()
     {
         si_cad = new SICAD(obj,
                            cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
-                           2,
-                           ".");
+                           1,
+                           ".",
+                           true);
     }
     catch (const std::runtime_error& e)
     {
