@@ -26,6 +26,8 @@ public:
 
     enum class MIPMaps { nearest, linear };
 
+    SICAD();
+
     SICAD(const ModelPathContainer& objfile_map,
           const bool window_visible);
 
@@ -70,10 +72,22 @@ public:
           const std::string& shader_folder,
           const bool window_visible);
 
+    bool initSICAD(const ModelPathContainer& objfile_map,
+                   const GLsizei cam_width, const GLsizei cam_height,
+                   const GLint num_images,
+                   const std::vector<float>& ogl_to_cam,
+                   const std::string& shader_folder,
+                   const bool window_visible);
+
+    bool initSICAD(const ModelPathContainer& objfile_map,
+                   const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
+                   const GLint num_images,
+                   const std::vector<float>& ogl_to_cam,
+                   const std::string& shader_folder,
+                   const bool window_visible);
+
     virtual ~SICAD();
 
-
-    bool         initOGL(const GLsizei width, const GLsizei height, const GLint num_viewports, const bool window_visibile);
 
     bool         getOglWindowShouldClose();
     void         setOglWindowShouldClose(bool should_close);
@@ -103,8 +117,14 @@ public:
     int          getTilesCols()     const;
 
 private:
+    bool initOGL(const GLsizei width, const GLsizei height, const GLint num_viewports, const bool window_visibile);
+
+    bool is_initialized_ = false;
+
+
     static int         class_counter_;
     static GLsizei     renderbuffer_size_;
+
 
     const std::string  log_ID_             = "[SI-CAD]";
 
@@ -139,13 +159,16 @@ private:
     glm::mat4          back_proj_;
     glm::mat4          projection_;
 
-    glm::mat4          getViewTransformationMatrix( const double* cam_x, const double* cam_o);
+    glm::mat4          getViewTransformationMatrix(const double* cam_x, const double* cam_o);
+
 
     void               pollOrPostEvent();
+
 
     void               set_background(cv::Mat& img);
     void               set_wireframe(GLenum mode);
     static void        key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+
 
     void               factorize_int(const GLsizei area, const GLsizei width_limit, const GLsizei height_limit, GLsizei& width, GLsizei& height);
 };

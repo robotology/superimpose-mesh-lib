@@ -17,6 +17,9 @@ int     SICAD::class_counter_     = 0;
 GLsizei SICAD::renderbuffer_size_ = 0;
 
 
+SICAD::SICAD() {}
+
+
 SICAD::SICAD(const ModelPathContainer& objfile_map,
              const bool window_visible) :
     SICAD(objfile_map,
@@ -70,114 +73,12 @@ SICAD::SICAD(const ModelPathContainer& objfile_map,
              const std::string& shader_folder,
              const bool window_visible)
 {
-    if (ogl_to_cam.size() != 4)
-        throw std::runtime_error("ERROR::SICAD::CTOR::OGL_TO_CAM\nERROR: Wrong size provided. Should be 4, was given " + std::to_string(ogl_to_cam.size()) + ".");
-
-    if (!initOGL(cam_width, cam_height, num_images, window_visible))
-        throw std::runtime_error("ERROR::SICAD::CTOR::OPENGL\nERROR: Could not initialize OpenGL.");
-
-    std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
-
-
-    /* Rotation from real camera to OpenGL frame */
-    ogl_to_cam_ = glm::mat3(glm::rotate(glm::mat4(1.0f), ogl_to_cam[3], glm::make_vec3(ogl_to_cam.data())));
-
-    /* Make the OpenGL context of window the current one handled by this thread. */
-    glfwMakeContextCurrent(window_);
-
-
-    /* Enable scissor test. */
-    glEnable(GL_SCISSOR_TEST);
-
-
-    /* Create a background texture. */
-    glGenTextures(1, &texture_);
-
-
-    /* Crate the squared support for the backround texture. */
-    glGenVertexArrays(1, &vao_);
-    glBindVertexArray(vao_);
-    GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
-                             1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
-                             1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
-                            -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
-                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
-
-    GLuint indices[] = { 0, 1, 3,   // First Triangle
-                         1, 2, 3 }; // Second Triangle
-
-
-    /* Create and bind an element buffer object. */
-    glGenBuffers(1, &ebo_);
-
-    glGenBuffers(1, &vbo_);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(0));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-
-    glBindVertexArray(0);
-
-
-    /* Crate background shader program. */
-    std::cout << log_ID_ << "Setting up background shader." << std::endl;
-
-    try
-    {
-        shader_background_ = new (std::nothrow) Shader((shader_folder + "/shader_background.vert").c_str(), (shader_folder + "/shader_background.frag").c_str());
-    }
-    catch (const std::runtime_error& e)
-    {
-        throw std::runtime_error(e.what());
-    }
-    if (shader_background_ == nullptr)
-        throw std::runtime_error("ERROR::SICAD::CTOR::SHADER\nERROR: Background shader source file not found!");
-
-    std::cout << log_ID_ << "Background shader succesfully set up!" << std::endl;
-
-
-    /* Crate model shader program. */
-    std::cout << log_ID_ << "Setting up model shader." << std::endl;
-
-    try
-    {
-        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_model.vert").c_str(), (shader_folder + "/shader_model.frag").c_str());
-    }
-    catch (const std::runtime_error& e)
-    {
-        throw std::runtime_error(e.what());
-    }
-    if (shader_cad_ == nullptr)
-        throw std::runtime_error("ERROR::SICAD::CTOR::SHADER\nERROR: 3D model shader source file not found!");
-
-    std::cout << log_ID_ << "Model shader succesfully set up!" << std::endl;
-
-
-    /* Load models. */
-    for (const ModelPathElement& pair : objfile_map)
-    {
-        std::cout << log_ID_ << "Loading OpenGL " + pair.first + " model." << std::endl;
-        model_obj_[pair.first] = new (std::nothrow) Model(pair.second.c_str());
-        if (model_obj_[pair.first] == nullptr)
-            throw std::runtime_error("ERROR::SICAD::CTOR::OBJ\nERROR: File " + pair.second + " not found!");
-    }
-
-    back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, far_*100.f);
-
-    std::cout << log_ID_ << "OpenGL renderers succesfully set up!" << std::endl;
-
-    class_counter_++;
-    std::cout << log_ID_ << "Initialization completed!" << std::endl;
+    initSICAD(objfile_map,
+              cam_width, cam_height,
+              num_images,
+              ogl_to_cam,
+              shader_folder,
+              window_visible);
 }
 
 
@@ -271,6 +172,159 @@ SICAD::~SICAD()
     }
 
     std::cout << log_ID_ << "OpenGL resource deallocation completed!" << std::endl;
+}
+
+
+bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
+                      const GLsizei cam_width, const GLsizei cam_height,
+                      const GLint num_images,
+                      const std::vector<float> &ogl_to_cam,
+                      const std::string &shader_folder,
+                      const bool window_visible)
+{
+    if (is_initialized_)
+        return false;
+
+    if (ogl_to_cam.size() != 4)
+        throw std::runtime_error("ERROR::SICAD::CTOR::OGL_TO_CAM\nERROR: Wrong size provided. Should be 4, was given " + std::to_string(ogl_to_cam.size()) + ".");
+
+    if (!initOGL(cam_width, cam_height, num_images, window_visible))
+        throw std::runtime_error("ERROR::SICAD::CTOR::OPENGL\nERROR: Could not initialize OpenGL.");
+
+    std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
+
+
+    /* Rotation from real camera to OpenGL frame */
+    ogl_to_cam_ = glm::mat3(glm::rotate(glm::mat4(1.0f), ogl_to_cam[3], glm::make_vec3(ogl_to_cam.data())));
+
+    /* Make the OpenGL context of window the current one handled by this thread. */
+    glfwMakeContextCurrent(window_);
+
+
+    /* Enable scissor test. */
+    glEnable(GL_SCISSOR_TEST);
+
+
+    /* Create a background texture. */
+    glGenTextures(1, &texture_);
+
+
+    /* Crate the squared support for the backround texture. */
+    glGenVertexArrays(1, &vao_);
+    glBindVertexArray(vao_);
+    GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
+        1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
+        1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
+        -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
+        -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
+
+    GLuint indices[] = { 0, 1, 3,   // First Triangle
+        1, 2, 3 }; // Second Triangle
+
+
+    /* Create and bind an element buffer object. */
+    glGenBuffers(1, &ebo_);
+
+    glGenBuffers(1, &vbo_);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(0));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(5 * sizeof(GLfloat)));
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    glBindVertexArray(0);
+
+
+    /* Crate background shader program. */
+    std::cout << log_ID_ << "Setting up background shader." << std::endl;
+
+    try
+    {
+        shader_background_ = new (std::nothrow) Shader((shader_folder + "/shader_background.vert").c_str(), (shader_folder + "/shader_background.frag").c_str());
+    }
+    catch (const std::runtime_error& e)
+    {
+        throw std::runtime_error(e.what());
+    }
+    if (shader_background_ == nullptr)
+        throw std::runtime_error("ERROR::SICAD::CTOR::SHADER\nERROR: Background shader source file not found!");
+
+    std::cout << log_ID_ << "Background shader succesfully set up!" << std::endl;
+
+
+    /* Crate model shader program. */
+    std::cout << log_ID_ << "Setting up model shader." << std::endl;
+
+    try
+    {
+        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_model.vert").c_str(), (shader_folder + "/shader_model.frag").c_str());
+    }
+    catch (const std::runtime_error& e)
+    {
+        throw std::runtime_error(e.what());
+    }
+    if (shader_cad_ == nullptr)
+        throw std::runtime_error("ERROR::SICAD::CTOR::SHADER\nERROR: 3D model shader source file not found!");
+
+    std::cout << log_ID_ << "Model shader succesfully set up!" << std::endl;
+
+
+    /* Load models. */
+    for (const ModelPathElement& pair : objfile_map)
+    {
+        std::cout << log_ID_ << "Loading OpenGL " + pair.first + " model." << std::endl;
+        model_obj_[pair.first] = new (std::nothrow) Model(pair.second.c_str());
+        if (model_obj_[pair.first] == nullptr)
+            throw std::runtime_error("ERROR::SICAD::CTOR::OBJ\nERROR: File " + pair.second + " not found!");
+    }
+
+    back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, far_*100.f);
+
+    std::cout << log_ID_ << "OpenGL renderers succesfully set up!" << std::endl;
+
+
+    /* Increase static class counter. */
+    ++class_counter_;
+
+    /* Allow the class to be used. */
+    is_initialized_ = true;
+
+    std::cout << log_ID_ << "Initialization completed!" << std::endl;
+
+    return true;
+}
+
+
+bool SICAD::initSICAD(const ModelPathContainer& objfile_map,
+                      const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
+                      const GLint num_images,
+                      const std::vector<float>& ogl_to_cam,
+                      const std::string& shader_folder,
+                      const bool window_visible)
+{
+    if (!initSICAD(objfile_map,
+                   cam_width, cam_height,
+                   num_images,
+                   ogl_to_cam,
+                   shader_folder,
+                   window_visible))
+        return false;
+
+    std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
+
+    if (setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy))
+        return false;
+
+    return true;
 }
 
 
@@ -384,12 +438,18 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 
 bool SICAD::getOglWindowShouldClose()
 {
+    if (is_initialized_)
+        return false;
+
     return (glfwWindowShouldClose(window_) == GL_TRUE ? true : false);
 }
 
 
 void SICAD::setOglWindowShouldClose(bool should_close)
 {
+    if (is_initialized_)
+        return;
+
     glfwSetWindowShouldClose(window_, GL_TRUE);
 
     pollOrPostEvent();
@@ -398,6 +458,9 @@ void SICAD::setOglWindowShouldClose(bool should_close)
 
 bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
+    if (is_initialized_)
+        return false;
+
     glfwMakeContextCurrent(window_);
 
     /* Render in the upper-left-most tile of the render grid */
@@ -460,6 +523,9 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
 bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
+    if (is_initialized_)
+        return false;
+
     /* Model transformation matrix. */
     const int objpos_num = objpos_multimap.size();
     if (objpos_num != tiles_num_) return false;
@@ -538,6 +604,9 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
                         const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
 {
+    if (is_initialized_)
+        return false;
+
     setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 
     superimpose(objpos_map, cam_x, cam_o, img);
@@ -549,6 +618,9 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
                         const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
 {
+    if (is_initialized_)
+        return false;
+
     setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 
     superimpose(objpos_multimap, cam_x, cam_o, img);
@@ -559,6 +631,9 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 
 bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
 {
+    if (is_initialized_)
+        return false;
+
     glfwMakeContextCurrent(window_);
 
     /* Projection matrix. */
