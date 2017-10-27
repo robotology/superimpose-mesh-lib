@@ -6,14 +6,17 @@
 
 int main()
 {
-    std::string log_ID = "[TEST-HDPI]";
+    std::string log_ID = "[Test - HDPI]";
     std::cout << log_ID << "This is a FAKE TEST to check whether the present machine sports HiDPI monitor or not." << std::endl;
     std::cout << log_ID << "A runtime error will be caught, but the test will always pass." << std::endl;
     std::cout << log_ID << "HiDPI should be handled automatically by the library." << std::endl  << std::endl;
 
     try
     {
-        SICAD si_cad(SICAD::ModelPathContainer(), 320, 240, "");
+        SICAD si_cad(SICAD::ModelPathContainer(),
+                     320, 240,
+                     "",
+                     false);
     }
     catch (const std::runtime_error& e)
     {

@@ -14,7 +14,7 @@
 
 int main()
 {
-    std::string log_ID = "[TEST-SCISSORS]";
+    std::string log_ID = "[Test - Scissors]";
     std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
     std::cout << log_ID << "The same mesh will be rendered on 2 differente viewport." << std::endl;
 
@@ -34,7 +34,8 @@ int main()
         si_cad = new SICAD(obj,
                            cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
                            2,
-                           ".");
+                           ".",
+                           true);
     }
     catch (const std::runtime_error& e)
     {
