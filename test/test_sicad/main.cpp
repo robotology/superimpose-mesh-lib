@@ -32,7 +32,7 @@ int main()
     {
         si_cad = new SICAD(obj,
                            cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
-                           2,
+                           1,
                            ".",
                            true);
     }
