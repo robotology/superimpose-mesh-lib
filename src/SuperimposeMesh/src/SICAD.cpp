@@ -183,7 +183,10 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
                       const bool window_visible)
 {
     if (is_initialized_)
+    {
+        std::cout << "INFO::SICAD::InitSICAD\nINFO: already initialized." << std::endl;
         return false;
+    }
 
     if (ogl_to_cam.size() != 4)
         throw std::runtime_error("ERROR::SICAD::CTOR::OGL_TO_CAM\nERROR: Wrong size provided. Should be 4, was given " + std::to_string(ogl_to_cam.size()) + ".");
@@ -438,8 +441,11 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 
 bool SICAD::getOglWindowShouldClose()
 {
-    if (is_initialized_)
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::getOglWindowShouldClose\nERROR: not initialized." << std::endl;
         return false;
+    }
 
     return (glfwWindowShouldClose(window_) == GL_TRUE ? true : false);
 }
@@ -447,8 +453,11 @@ bool SICAD::getOglWindowShouldClose()
 
 void SICAD::setOglWindowShouldClose(bool should_close)
 {
-    if (is_initialized_)
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::setOglWindowShouldClose\nERROR: not initialized." << std::endl;
         return;
+    }
 
     glfwSetWindowShouldClose(window_, GL_TRUE);
 
@@ -458,8 +467,11 @@ void SICAD::setOglWindowShouldClose(bool should_close)
 
 bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
-    if (is_initialized_)
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::superimpose\nERROR: not initialized." << std::endl;
         return false;
+    }
 
     glfwMakeContextCurrent(window_);
 
@@ -523,8 +535,11 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
 bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
-    if (is_initialized_)
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::superimpose\nERROR: not initialized." << std::endl;
         return false;
+    }
 
     /* Model transformation matrix. */
     const int objpos_num = objpos_multimap.size();
@@ -604,8 +619,11 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
                         const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
 {
-    if (is_initialized_)
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::superimpose\nERROR: not initialized." << std::endl;
         return false;
+    }
 
     setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 
@@ -618,8 +636,11 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
                         const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
 {
-    if (is_initialized_)
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::superimpose\nERROR: not initialized." << std::endl;
         return false;
+    }
 
     setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 
@@ -631,8 +652,11 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 
 bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
 {
-    if (is_initialized_)
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::setProjectionMatrix\nERROR: not initialized." << std::endl;
         return false;
+    }
 
     glfwMakeContextCurrent(window_);
 
