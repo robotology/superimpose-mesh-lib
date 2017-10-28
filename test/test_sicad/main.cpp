@@ -60,9 +60,16 @@ int main()
     double cam_x[] = {0.0, 0.1, 0.1};
     double cam_o[] = {1.0,   0,   0, 0};
 
-    cv::Mat img;
-    si_cad->superimpose(objpose_map, cam_x, cam_o, img);
-    cv::imwrite("./Space_Invader.jpg", img);
+
+    cv::Mat img_1;
+    si_cad->superimpose(objpose_map, cam_x, cam_o, img_1);
+    cv::imwrite("./Space_Invader_1.jpg", img_1);
+
+
+    cv::Mat img_2;
+    si_cad->superimpose(objposes, cam_x, cam_o, img_2);
+    cv::imwrite("./Space_Invader_2.jpg", img_2);
+
 
     delete si_cad;
 

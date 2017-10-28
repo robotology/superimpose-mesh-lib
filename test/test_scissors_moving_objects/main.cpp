@@ -16,8 +16,8 @@
 int main()
 {
     std::string log_ID = "[Test - Moving object]";
-    std::cout << log_ID << "This test checks whether the present machine can render a moving object properly using OpenGL." << std::endl;
-    std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
+    std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
+    std::cout << log_ID << "A single moving mesh will be rendered on 2 different viewports." << std::endl;
 
     SICAD::ModelPathContainer obj;
     obj.emplace("alien", "./Space_Invader.obj");

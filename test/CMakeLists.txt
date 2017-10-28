@@ -1,4 +1,5 @@
 add_subdirectory(test_hdpi)
+add_subdirectory(test_initialization_control)
 add_subdirectory(test_moving_object)
 add_subdirectory(test_multiple_windows_moving_object)
 add_subdirectory(test_scissors)

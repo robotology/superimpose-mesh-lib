@@ -16,7 +16,7 @@ int main()
 {
     std::string log_ID = "[Test - Scissors - Background]";
     std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
-    std::cout << log_ID << "The same mesh will be rendered on 2 differente viewport." << std::endl;
+    std::cout << log_ID << "The same mesh will be rendered on 2 different viewports with a background texture." << std::endl;
 
     SICAD::ModelPathContainer obj;
     obj.emplace("alien", "./Space_Invader.obj");

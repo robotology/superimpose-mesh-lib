@@ -1,4 +1,4 @@
-set(TEST_TARGET_NAME test_multiple_windows_moving_object)
+set(TEST_TARGET_NAME test_initialization_control)
 
 set(${TEST_TARGET_NAME}_SRC
         main.cpp
