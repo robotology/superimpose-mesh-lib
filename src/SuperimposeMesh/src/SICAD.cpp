@@ -473,6 +473,12 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
         return false;
     }
 
+    if (!has_proj_matrix_)
+    {
+        std::cerr << "ERROR::SICAD::superimpose\nERROR: projection matrix not set." << std::endl;
+        return false;
+    }
+
     glfwMakeContextCurrent(window_);
 
     /* Render in the upper-left-most tile of the render grid */
@@ -540,6 +546,13 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
         std::cerr << "ERROR::SICAD::superimpose\nERROR: not initialized." << std::endl;
         return false;
     }
+
+    if (!has_proj_matrix_)
+    {
+        std::cerr << "ERROR::SICAD::superimpose\nERROR: projection matrix not set." << std::endl;
+        return false;
+    }
+
 
     /* Model transformation matrix. */
     const int objpos_num = objpos_multimap.size();
@@ -691,6 +704,8 @@ bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_heigh
     shader_cad_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
     shader_cad_->uninstall();
+
+    has_proj_matrix_ = true;
 
     return true;
 }

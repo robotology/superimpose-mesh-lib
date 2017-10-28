@@ -120,6 +120,7 @@ private:
     bool initOGL(const GLsizei width, const GLsizei height, const GLint num_viewports, const bool window_visibile);
 
     bool is_initialized_  = false;
+    bool has_proj_matrix_ = false;
 
 
     static int         class_counter_;
