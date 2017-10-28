@@ -166,9 +166,9 @@ private:
     void               pollOrPostEvent();
 
 
-    void               set_background(cv::Mat& img);
-    void               set_wireframe(GLenum mode);
-    static void        key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+    void               setBackground(cv::Mat& img);
+    void               setWireframe(GLenum mode);
+    static void        callbackKeypress(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 
     void               factorize_int(const GLsizei area, const GLsizei width_limit, const GLsizei height_limit, GLsizei& width, GLsizei& height);

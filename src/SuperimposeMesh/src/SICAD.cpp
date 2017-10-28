@@ -216,13 +216,13 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
     GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
-        1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
-        1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
-        -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
-        -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
+                             1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
+                             1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
+                            -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
+                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
 
     GLuint indices[] = { 0, 1, 3,   // First Triangle
-        1, 2, 3 }; // Second Triangle
+                         1, 2, 3 }; // Second Triangle
 
 
     /* Create and bind an element buffer object. */
@@ -401,7 +401,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 
 
     /* Set window callback functions. */
-    glfwSetKeyCallback(window_, key_callback);
+    glfwSetKeyCallback(window_, callbackKeypress);
 
 
     /* Initialize GLEW to use the OpenGL implementation provided by the videocard manufacturer. */
@@ -492,10 +492,10 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Draw the background picture. */
-    if (getBackgroundOpt()) set_background(img);
+    if (getBackgroundOpt()) setBackground(img);
 
     /* View mesh filled or as wireframe. */
-    set_wireframe(getWireframeOpt());
+    setWireframe(getWireframeOpt());
 
     /* View transformation matrix. */
     glm::mat4 view = getViewTransformationMatrix(cam_x, cam_o);
@@ -586,10 +586,10 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             /* Draw the background picture. */
-            if (getBackgroundOpt()) set_background(img);
+            if (getBackgroundOpt()) setBackground(img);
 
             /* View mesh filled or as wireframe. */
-            set_wireframe(getWireframeOpt());
+            setWireframe(getWireframeOpt());
 
             /* Install/Use the program specified by the shader. */
             shader_cad_->install();
@@ -784,7 +784,7 @@ void SICAD::pollOrPostEvent()
 }
 
 
-void SICAD::set_background(cv::Mat& img)
+void SICAD::setBackground(cv::Mat& img)
 {
     /* Load and generate the texture. */
     glBindTexture(GL_TEXTURE_2D, texture_);
@@ -818,16 +818,17 @@ void SICAD::set_background(cv::Mat& img)
 }
 
 
-void SICAD::set_wireframe(GLenum mode)
+void SICAD::setWireframe(GLenum mode)
 {
     glPolygonMode(GL_FRONT_AND_BACK, mode);
 }
 
 
-void SICAD::key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+void SICAD::callbackKeypress(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
     /* When a user presses the escape key, we set the WindowShouldClose property to true, closing the application. */
-    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 
