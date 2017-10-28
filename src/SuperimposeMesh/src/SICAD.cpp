@@ -324,7 +324,7 @@ bool SICAD::initSICAD(const ModelPathContainer& objfile_map,
 
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
 
-    if (setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy))
+    if (!setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy))
         return false;
 
     return true;
