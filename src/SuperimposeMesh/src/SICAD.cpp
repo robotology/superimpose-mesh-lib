@@ -158,11 +158,9 @@ SICAD::~SICAD()
     delete shader_background_;
     delete shader_cad_;
 
-    std::cout << log_ID_ << "Closing OpenGL context." << std::endl;
-    glfwMakeContextCurrent(NULL);
-
-    std::cout << log_ID_ << "Closing OpenGL window." << std::endl;
+    std::cout << log_ID_ << "Closing OpenGL window/context." << std::endl;
     glfwSetWindowShouldClose(window_, GL_TRUE);
+    glfwMakeContextCurrent(nullptr);
 
     class_counter_--;
     if (class_counter_ == 0)
@@ -292,6 +290,8 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
 
     back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, far_*100.f);
 
+    glfwMakeContextCurrent(nullptr);
+
     std::cout << log_ID_ << "OpenGL renderers succesfully set up!" << std::endl;
 
 
@@ -351,6 +351,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     glfwWindowHint(GLFW_RESIZABLE,                GL_FALSE);
     glfwWindowHint(GLFW_VISIBLE,                  window_visibile);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT,    GL_TRUE);
+    glfwWindowHint(GLFW_CONTEXT_RELEASE_BEHAVIOR, GLFW_RELEASE_BEHAVIOR_NONE);
 #ifdef GLFW_MAC
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);
 #endif
@@ -368,6 +369,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 
         /* Close the test window */
         glfwDestroyWindow(window_);
+        glfwMakeContextCurrent(nullptr);
     }
 
 
@@ -432,6 +434,8 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 
     glfwPollEvents();
     main_thread_id_ = std::this_thread::get_id();
+
+    glfwMakeContextCurrent(nullptr);
 
     std::cout << log_ID_ << "Succesfully set up!" << std::endl;
 
@@ -535,6 +539,8 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
     pollOrPostEvent();
 
+    glfwMakeContextCurrent(nullptr);
+
     return true;
 }
 
@@ -625,6 +631,8 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 
     pollOrPostEvent();
 
+    glfwMakeContextCurrent(nullptr);
+
     return true;
 }
 
@@ -704,6 +712,8 @@ bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_heigh
     shader_cad_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
     shader_cad_->uninstall();
+
+    glfwMakeContextCurrent(nullptr);
 
     has_proj_matrix_ = true;
 
