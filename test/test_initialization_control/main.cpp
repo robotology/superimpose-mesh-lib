@@ -49,33 +49,61 @@ int main()
     double cam_x[] = {0.0, 0.1, 0.1};
     double cam_o[] = {1.0,   0,   0, 0};
 
+
+    std::cout << log_ID << "assert(!si_cad.getOglWindowShouldClose());...";
     assert(!si_cad.getOglWindowShouldClose());
+    std::cout << "...passed." << std::endl;
 
+    std::cout << log_ID << "assert(!si_cad.superimpose(objpose_map, cam_x, cam_o, img));...";
     assert(!si_cad.superimpose(objpose_map, cam_x, cam_o, img));
+    std::cout << "...passed." << std::endl;
 
+
+    std::cout << log_ID << "assert(!si_cad.superimpose(objpose_map, cam_x, cam_o, img, cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));...";
     assert(!si_cad.superimpose(objpose_map, cam_x, cam_o, img,
                                cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));
+    std::cout << "...passed." << std::endl;
 
+
+    std::cout << log_ID << "assert(!si_cad.superimpose(objposes, cam_x, cam_o, img));...";
     assert(!si_cad.superimpose(objposes, cam_x, cam_o, img));
+    std::cout << "...passed." << std::endl;
 
+
+    std::cout << log_ID << "assert(!si_cad.superimpose(objposes, cam_x, cam_o, img, cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));...";
     assert(!si_cad.superimpose(objposes, cam_x, cam_o, img,
                                cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));
+    std::cout << "...passed." << std::endl;
 
+
+    std::cout << log_ID << "assert(!si_cad.setProjectionMatrix(cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));...";
     assert(!si_cad.setProjectionMatrix(cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));
+    std::cout << "...passed." << std::endl;
 
 
+    std::cout << log_ID << "assert(si_cad.initSICAD(obj, cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_, 1, {1.0, 0.0, 0.0, 0.0}, '.', true));...";
     assert(si_cad.initSICAD(obj,
                             cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
                             1,
                             {1.0, 0.0, 0.0, 0.0},
                             ".",
                             true));
+    std::cout << "...passed." << std::endl;
 
+
+    std::cout << log_ID << "assert(!si_cad.getOglWindowShouldClose());...";
     assert(!si_cad.getOglWindowShouldClose());
+    std::cout << "...passed." << std::endl;
 
+
+    std::cout << log_ID << "assert(si_cad.superimpose(objpose_map, cam_x, cam_o, img));...";
     assert(si_cad.superimpose(objpose_map, cam_x, cam_o, img));
+    std::cout << "...passed." << std::endl;
 
+
+    std::cout << log_ID << "assert(si_cad.superimpose(objposes, cam_x, cam_o, img));...";
     assert(si_cad.superimpose(objposes, cam_x, cam_o, img));
+    std::cout << "...passed." << std::endl;
 
     return EXIT_SUCCESS;
 }
