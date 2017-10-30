@@ -713,6 +713,7 @@ bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_heigh
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
     shader_cad_->uninstall();
 
+    glfwSwapBuffers(window_);
     glfwMakeContextCurrent(nullptr);
 
     has_proj_matrix_ = true;
