@@ -27,20 +27,11 @@ int main()
     const float        cam_fy_     = 120;
     const float        cam_cy_     = 257.34;
 
-    SICAD* si_cad;
-    try
-    {
-        si_cad = new SICAD(obj,
-                           cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
-                           1,
-                           ".",
-                           true);
-    }
-    catch (const std::runtime_error& e)
-    {
-        std::cerr << log_ID << "Caught error:" << std::endl << e.what();
-        return EXIT_FAILURE;
-    }
+    SICAD si_cad(obj,
+                 cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
+                 1,
+                 ".",
+                 true);
 
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
@@ -60,11 +51,13 @@ int main()
     double cam_x[] = {0.0, 0.1, 0.1};
     double cam_o[] = {1.0,   0,   0, 0};
 
-    cv::Mat img;
-    si_cad->superimpose(objpose_map, cam_x, cam_o, img);
-    cv::imwrite("./Space_Invader.jpg", img);
+    cv::Mat img_1;
+    si_cad.superimpose(objpose_map, cam_x, cam_o, img_1);
+    cv::imwrite("./Space_Invader_1.jpg", img_1);
 
-    delete si_cad;
+    cv::Mat img_2;
+    si_cad.superimpose(objposes, cam_x, cam_o, img_2);
+    cv::imwrite("./Space_Invader_2.jpg", img_2);    
 
     return EXIT_SUCCESS;
 }

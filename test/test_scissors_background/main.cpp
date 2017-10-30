@@ -16,7 +16,7 @@ int main()
 {
     std::string log_ID = "[Test - Scissors - Background]";
     std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
-    std::cout << log_ID << "The same mesh will be rendered on 2 differente viewport." << std::endl;
+    std::cout << log_ID << "The same mesh will be rendered on 2 different viewports with a background texture." << std::endl;
 
     SICAD::ModelPathContainer obj;
     obj.emplace("alien", "./Space_Invader.obj");
@@ -28,20 +28,11 @@ int main()
     const float        cam_fy_     = 120;
     const float        cam_cy_     = 257.34;
 
-    SICAD* si_cad;
-    try
-    {
-        si_cad = new SICAD(obj,
-                           cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
-                           2,
-                           ".",
-                           true);
-    }
-    catch (const std::runtime_error& e)
-    {
-        std::cerr << log_ID << "Caught error:" << std::endl << e.what();
-        return EXIT_FAILURE;
-    }
+    SICAD si_cad(obj,
+                 cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
+                 2,
+                 ".",
+                 true);
 
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
@@ -63,11 +54,9 @@ int main()
     double cam_o[] = {1.0,   0,   0, 0};
 
     cv::Mat img = cv::imread("./space.png");
-    si_cad->setBackgroundOpt(true);
-    si_cad->superimpose(objposes, cam_x, cam_o, img);
+    si_cad.setBackgroundOpt(true);
+    si_cad.superimpose(objposes, cam_x, cam_o, img);
     cv::imwrite("./Space_Invader.jpg", img);
-
-    delete si_cad;
 
     return EXIT_SUCCESS;
 }

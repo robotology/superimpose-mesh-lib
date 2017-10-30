@@ -1,12 +1,18 @@
-set(TEST_TARGET_NAME test_multiple_windows_moving_object)
+set(TEST_TARGET_NAME test_thread_contexts)
 
 set(${TEST_TARGET_NAME}_SRC
         main.cpp
 )
 
+if(UNIX)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads REQUIRED)
+endif()
+
 add_executable(${TEST_TARGET_NAME} ${${TEST_TARGET_NAME}_SRC})
 
-target_link_libraries(${TEST_TARGET_NAME} SuperimposeMesh)
+target_link_libraries(${TEST_TARGET_NAME} SuperimposeMesh Threads::Threads)
 
 add_test(NAME ${TEST_TARGET_NAME} COMMAND ${TEST_TARGET_NAME})
 
