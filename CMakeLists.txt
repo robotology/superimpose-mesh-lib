@@ -26,8 +26,8 @@ endif()
 option(BUILD_SHARED_LIBS "Build libraries as shared as opposed to static" ON)
 
 # Build test related commands?
-option(BUILD_TESTS "Create tests using CMake" OFF)
-if(BUILD_TESTS)
+option(BUILD_TESTING "Create tests using CMake" OFF)
+if(BUILD_TESTING)
     enable_testing()
 endif()
 
@@ -62,6 +62,6 @@ install_basic_package_files(${PROJECT_NAME} VARS_PREFIX ${PROJECT_NAME}
 include(AddUninstallTarget)
 
 # Add integration tests (unit tests for each library should be in each sublibrary directory)
-if(BUILD_TESTS)
+if(BUILD_TESTING)
     add_subdirectory(test)
 endif()
