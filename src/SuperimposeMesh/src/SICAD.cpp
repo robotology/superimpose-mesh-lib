@@ -187,10 +187,10 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
     }
 
     if (ogl_to_cam.size() != 4)
-        throw std::runtime_error("ERROR::SICAD::CTOR::OGL_TO_CAM\nERROR: Wrong size provided. Should be 4, was given " + std::to_string(ogl_to_cam.size()) + ".");
+        throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\tWrong size provided for ogl_to_cam.\n\tShould be 4, was given " + std::to_string(ogl_to_cam.size()) + ".");
 
     if (!initOGL(cam_width, cam_height, num_images, window_visible))
-        throw std::runtime_error("ERROR::SICAD::CTOR::OPENGL\nERROR: Could not initialize OpenGL.");
+        throw std::runtime_error("ERROR::SICAD::CTOR::\nERROR:\n\tCould not initialize OpenGL.");
 
     std::cout << log_ID_ << "Setting up OpenGL renderers." << std::endl;
 
@@ -257,7 +257,7 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
         throw std::runtime_error(e.what());
     }
     if (shader_background_ == nullptr)
-        throw std::runtime_error("ERROR::SICAD::CTOR::SHADER\nERROR: Background shader source file not found!");
+        throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\tBackground shader source file not found!");
 
     std::cout << log_ID_ << "Background shader succesfully set up!" << std::endl;
 
@@ -274,7 +274,7 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
         throw std::runtime_error(e.what());
     }
     if (shader_cad_ == nullptr)
-        throw std::runtime_error("ERROR::SICAD::CTOR::SHADER\nERROR: 3D model shader source file not found!");
+        throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\t3D model shader source file not found!");
 
     std::cout << log_ID_ << "Model shader succesfully set up!" << std::endl;
 
@@ -285,7 +285,7 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
         std::cout << log_ID_ << "Loading OpenGL " + pair.first + " model." << std::endl;
         model_obj_[pair.first] = new (std::nothrow) Model(pair.second.c_str());
         if (model_obj_[pair.first] == nullptr)
-            throw std::runtime_error("ERROR::SICAD::CTOR::OBJ\nERROR: File " + pair.second + " not found!");
+            throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\tFile " + pair.second + " not found!");
     }
 
     back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, far_*100.f);
@@ -447,7 +447,7 @@ bool SICAD::getOglWindowShouldClose()
 {
     if (!is_initialized_)
     {
-        std::cerr << "ERROR::SICAD::getOglWindowShouldClose\nERROR: not initialized." << std::endl;
+        std::cerr << "ERROR::SICAD::GETOGLWINDOWSHOULDCLOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
         return false;
     }
 
@@ -459,7 +459,7 @@ void SICAD::setOglWindowShouldClose(bool should_close)
 {
     if (!is_initialized_)
     {
-        std::cerr << "ERROR::SICAD::setOglWindowShouldClose\nERROR: not initialized." << std::endl;
+        std::cerr << "ERROR::SICAD::SETOGLWINDOWSHOULDCLOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
         return;
     }
 
@@ -473,13 +473,13 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 {
     if (!is_initialized_)
     {
-        std::cerr << "ERROR::SICAD::superimpose\nERROR: not initialized." << std::endl;
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
         return false;
     }
 
     if (!has_proj_matrix_)
     {
-        std::cerr << "ERROR::SICAD::superimpose\nERROR: projection matrix not set." << std::endl;
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
         return false;
     }
 
@@ -549,13 +549,13 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 {
     if (!is_initialized_)
     {
-        std::cerr << "ERROR::SICAD::superimpose\nERROR: not initialized." << std::endl;
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
         return false;
     }
 
     if (!has_proj_matrix_)
     {
-        std::cerr << "ERROR::SICAD::superimpose\nERROR: projection matrix not set." << std::endl;
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
         return false;
     }
 
@@ -642,7 +642,7 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 {
     if (!is_initialized_)
     {
-        std::cerr << "ERROR::SICAD::superimpose\nERROR: not initialized." << std::endl;
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
         return false;
     }
 
@@ -659,7 +659,7 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 {
     if (!is_initialized_)
     {
-        std::cerr << "ERROR::SICAD::superimpose\nERROR: not initialized." << std::endl;
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
         return false;
     }
 
@@ -675,7 +675,7 @@ bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_heigh
 {
     if (!is_initialized_)
     {
-        std::cerr << "ERROR::SICAD::setProjectionMatrix\nERROR: not initialized." << std::endl;
+        std::cerr << "ERROR::SICAD::SETPROJECTIONMATRIX\nERROR:\n\tSICAD object not initialized." << std::endl;
         return false;
     }
 
