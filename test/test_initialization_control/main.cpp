@@ -49,60 +49,82 @@ int main()
     double cam_x[] = {0.0, 0.1, 0.1};
     double cam_o[] = {1.0,   0,   0, 0};
 
+    unsigned int num_test = 1;
+    unsigned int tot_test = 10;
 
-    std::cout << log_ID << "assert(!si_cad.getOglWindowShouldClose());...";
-    assert(!si_cad.getOglWindowShouldClose());
+    std::cout << log_ID << " " << num_test << "/" << tot_test << " " << "testing si_cad.getOglWindowShouldClose()...";
+    if (si_cad.getOglWindowShouldClose())
+        return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
+    ++num_test;
 
-    std::cout << log_ID << "assert(!si_cad.superimpose(objpose_map, cam_x, cam_o, img));...";
-    assert(!si_cad.superimpose(objpose_map, cam_x, cam_o, img));
+
+    std::cout << log_ID << " " << num_test << "/" << tot_test << " " << "testing si_cad.superimpose(objpose_map, cam_x, cam_o, img)...";
+    if (si_cad.superimpose(objpose_map, cam_x, cam_o, img))
+        return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
+    ++num_test;
 
 
-    std::cout << log_ID << "assert(!si_cad.superimpose(objpose_map, cam_x, cam_o, img, cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));...";
-    assert(!si_cad.superimpose(objpose_map, cam_x, cam_o, img,
-                               cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));
+    std::cout << log_ID << " " << num_test << "/" << tot_test << " " << "testing si_cad.superimpose(objpose_map, cam_x, cam_o, img, cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_)...";
+    if (si_cad.superimpose(objpose_map, cam_x, cam_o, img,
+                            cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_))
+        return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
+    ++num_test;
 
 
-    std::cout << log_ID << "assert(!si_cad.superimpose(objposes, cam_x, cam_o, img));...";
-    assert(!si_cad.superimpose(objposes, cam_x, cam_o, img));
+    std::cout << log_ID << " " << num_test << "/" << tot_test << " " << "testing si_cad.superimpose(objposes, cam_x, cam_o, img)...";
+    if (si_cad.superimpose(objposes, cam_x, cam_o, img))
+        return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
+    ++num_test;
 
 
-    std::cout << log_ID << "assert(!si_cad.superimpose(objposes, cam_x, cam_o, img, cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));...";
-    assert(!si_cad.superimpose(objposes, cam_x, cam_o, img,
-                               cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));
+    std::cout << log_ID << " " << num_test << "/" << tot_test << " " << "testing si_cad.superimpose(objposes, cam_x, cam_o, img, cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_)...";
+    if (si_cad.superimpose(objposes, cam_x, cam_o, img,
+                           cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_))
+        return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
+    ++num_test;
 
 
-    std::cout << log_ID << "assert(!si_cad.setProjectionMatrix(cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));...";
-    assert(!si_cad.setProjectionMatrix(cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_));
+    std::cout << log_ID << " " << num_test << "/" << tot_test << " " << "testing si_cad.setProjectionMatrix(cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_)...";
+    if (si_cad.setProjectionMatrix(cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_))
+        return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
+    ++num_test;
 
 
-    std::cout << log_ID << "assert(si_cad.initSICAD(obj, cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_, 1, {1.0, 0.0, 0.0, 0.0}, '.', true));...";
-    assert(si_cad.initSICAD(obj,
-                            cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
-                            1,
-                            {1.0, 0.0, 0.0, 0.0},
-                            ".",
-                            true));
+    std::cout << log_ID << " " << num_test << "/" << tot_test << " " << "testing si_cad.initSICAD(obj, cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_, 1, {1.0, 0.0, 0.0, 0.0}, '.', true)...";
+    if (!si_cad.initSICAD(obj,
+                          cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
+                          1,
+                          {1.0, 0.0, 0.0, 0.0},
+                          ".",
+                          true))
+        return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
+    ++num_test;
 
 
-    std::cout << log_ID << "assert(!si_cad.getOglWindowShouldClose());...";
-    assert(!si_cad.getOglWindowShouldClose());
+    std::cout << log_ID << " " << num_test << "/" << tot_test << " " << "testing si_cad.getOglWindowShouldClose()...";
+    if (si_cad.getOglWindowShouldClose())
+        return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
+    ++num_test;
 
 
-    std::cout << log_ID << "assert(si_cad.superimpose(objpose_map, cam_x, cam_o, img));...";
-    assert(si_cad.superimpose(objpose_map, cam_x, cam_o, img));
+    std::cout << log_ID << " " << num_test << "/" << tot_test << " " << "testing si_cad.superimpose(objpose_map, cam_x, cam_o, img)...";
+    if (!si_cad.superimpose(objpose_map, cam_x, cam_o, img))
+        return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
+    ++num_test;
 
 
-    std::cout << log_ID << "assert(si_cad.superimpose(objposes, cam_x, cam_o, img));...";
-    assert(si_cad.superimpose(objposes, cam_x, cam_o, img));
+    std::cout << log_ID << " " << num_test << "/" << tot_test << " " << "testing si_cad.superimpose(objposes, cam_x, cam_o, img)...";
+    if (!si_cad.superimpose(objposes, cam_x, cam_o, img))
+        return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
 
     return EXIT_SUCCESS;
