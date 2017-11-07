@@ -15,6 +15,9 @@
 #include <glm/glm.hpp>
 
 
+/**
+ * A Superimpose derived class to superimpose mesh models on top of images.
+ **/
 class SICAD : public Superimpose
 {
 public:
@@ -46,7 +49,6 @@ public:
           const std::string& shader_folder,
           const bool window_visible);
 
-    /* Principal constructor */
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height,
           const GLint num_images,
@@ -65,6 +67,30 @@ public:
           const std::string& shader_folder,
           const bool window_visible);
 
+    /**
+     * Create a SICAD object with a dedicated OpenGL window and context.
+     *
+     * For the SICAD object to work properly, four shaders are needed.
+     * Further, their name must be as follows:
+     *
+     *  - shader_model.vert for the model vertex shader
+     *
+     *  - shader_model.frag for the model fragment shader
+     *
+     *  - shader_background.vert for the background vertex shader
+     *
+     *  - shader_background.frag for the background fragment shader
+     *
+     * @param objfile_map a (tag, path) container to associate a 'tag' to the mesh file specified in 'path'.
+     * @param cam_width camera or image width.
+     * @param cam_height camera or image height.
+     * @param cam_fx focal length along the x axis in pixels.
+     * @param cam_fy focal length along the y axis in pixels.
+     * @param num_images number of images to render (using glScissor) in the same window and context.
+     * @param ogl_to_cam a 7 component pose vector, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, defining a camera rotation to be applied to the OpenGL camera.
+     * @param shader_folder folder path containing four shaders, two for the background and two for the mesh.
+     * @param window_visible true to show the rendering window, false to perform off-screen rendering.
+     */
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
           const GLint num_images,
@@ -92,6 +118,21 @@ public:
     bool         getOglWindowShouldClose();
     void         setOglWindowShouldClose(bool should_close);
 
+    /**
+     * Superimpose one of the mesh models loaded during SICAD object construction in a given pose from a particular camera viewpoint.
+     *
+     * If the size of cv::Mat img is not correct to store the result of the superimposition process, it is automatically resized.
+     *
+     * @note If cv::Mat img is a background image it must be of size cam_width*cam_height, as specified during object construction, and the SICAD::setBackgroundOpt(bool show_background)
+     * must have been evoked with true.
+     *
+     * @param objpos_map a (tag, pose) container to associate a 7 component 'pose', (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, to a mesh with tag 'tag'.
+     * @param cam_x (x, y, z) position
+     * @param cam_o (ux, uy, uz, theta) axis-angle orientation
+     * @param img an image where the result of the superimposition is stored
+     *
+     * @return true upon success, false otherswise.
+     **/
     bool         superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img) override;
 
     virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
