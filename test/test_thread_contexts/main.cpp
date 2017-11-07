@@ -18,7 +18,7 @@ void doMeshRotation(SICAD* const & si_cad)
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
     obj_pose[1] = 0;
-    obj_pose[2] = 0;
+    obj_pose[2] = -0.1;
     obj_pose[3] = 0;
     obj_pose[4] = 1.0;
     obj_pose[5] = 0;
@@ -27,8 +27,8 @@ void doMeshRotation(SICAD* const & si_cad)
     Superimpose::ModelPoseContainer objpose_map;
     objpose_map.emplace("alien", obj_pose);
 
-    double cam_x[] = {  0, 0.1, 0.1};
-    double cam_o[] = {1.0,   0,   0, 0};
+    double cam_x[] = {  0, 0, 0};
+    double cam_o[] = {1.0, 0, 0, 0};
 
     for (double ang = 0; ang <= 2*M_PI; ang += 0.082)
     {
@@ -59,8 +59,8 @@ int main()
     const unsigned int cam_height_ = 240;
     const float        cam_fx_     = 257.34;
     const float        cam_cx_     = 160;
-    const float        cam_fy_     = 120;
-    const float        cam_cy_     = 257.34;
+    const float        cam_fy_     = 257.34;
+    const float        cam_cy_     = 120;
 
     SICAD* si_cad_1;
     SICAD* si_cad_2;
