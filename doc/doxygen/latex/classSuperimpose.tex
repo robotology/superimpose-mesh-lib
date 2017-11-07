@@ -1,0 +1,102 @@
+\hypertarget{classSuperimpose}{}\section{Superimpose Class Reference}
+\label{classSuperimpose}\index{Superimpose@{Superimpose}}
+
+
+{\ttfamily \#include $<$Superimpose.\+h$>$}
+
+
+
+Inheritance diagram for Superimpose\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=208pt]{classSuperimpose__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef std\+::vector$<$ double $>$ \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Model\+Pose}}
+\item 
+typedef std\+::multimap$<$ std\+::string, \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Model\+Pose}} $>$ \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Model\+Pose\+Container}}
+\item 
+typedef std\+::pair$<$ std\+::string, \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Model\+Pose}} $>$ \mbox{\hyperlink{classSuperimpose_a1e02e0225687b42296dcfee4eadf8a55}{Model\+Pose\+Container\+Element}}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual \mbox{\hyperlink{classSuperimpose_a9e32031994dc105b1572e7a6db26b41b}{$\sim$\+Superimpose}} ()
+\item 
+virtual bool \mbox{\hyperlink{classSuperimpose_a62c4c269b8fc34cc36d3d54fa4acb35c}{superimpose}} (const \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Model\+Pose\+Container}} \&objpos\+\_\+map, const double $\ast$cam\+\_\+x, const double $\ast$cam\+\_\+o, cv\+::\+Mat \&img)=0
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 20 of file Superimpose.\+h.
+
+
+
+\subsection{Member Typedef Documentation}
+\mbox{\Hypertarget{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}\label{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}} 
+\index{Superimpose@{Superimpose}!Model\+Pose@{Model\+Pose}}
+\index{Model\+Pose@{Model\+Pose}!Superimpose@{Superimpose}}
+\subsubsection{\texorpdfstring{Model\+Pose}{ModelPose}}
+{\footnotesize\ttfamily typedef std\+::vector$<$double$>$ \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Superimpose\+::\+Model\+Pose}}}
+
+
+
+Definition at line 23 of file Superimpose.\+h.
+
+\mbox{\Hypertarget{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}\label{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}} 
+\index{Superimpose@{Superimpose}!Model\+Pose\+Container@{Model\+Pose\+Container}}
+\index{Model\+Pose\+Container@{Model\+Pose\+Container}!Superimpose@{Superimpose}}
+\subsubsection{\texorpdfstring{Model\+Pose\+Container}{ModelPoseContainer}}
+{\footnotesize\ttfamily typedef std\+::multimap$<$std\+::string, \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Model\+Pose}}$>$ \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Superimpose\+::\+Model\+Pose\+Container}}}
+
+
+
+Definition at line 25 of file Superimpose.\+h.
+
+\mbox{\Hypertarget{classSuperimpose_a1e02e0225687b42296dcfee4eadf8a55}\label{classSuperimpose_a1e02e0225687b42296dcfee4eadf8a55}} 
+\index{Superimpose@{Superimpose}!Model\+Pose\+Container\+Element@{Model\+Pose\+Container\+Element}}
+\index{Model\+Pose\+Container\+Element@{Model\+Pose\+Container\+Element}!Superimpose@{Superimpose}}
+\subsubsection{\texorpdfstring{Model\+Pose\+Container\+Element}{ModelPoseContainerElement}}
+{\footnotesize\ttfamily typedef std\+::pair$<$std\+::string, \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Model\+Pose}}$>$ \mbox{\hyperlink{classSuperimpose_a1e02e0225687b42296dcfee4eadf8a55}{Superimpose\+::\+Model\+Pose\+Container\+Element}}}
+
+
+
+Definition at line 27 of file Superimpose.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classSuperimpose_a9e32031994dc105b1572e7a6db26b41b}\label{classSuperimpose_a9e32031994dc105b1572e7a6db26b41b}} 
+\index{Superimpose@{Superimpose}!````~Superimpose@{$\sim$\+Superimpose}}
+\index{````~Superimpose@{$\sim$\+Superimpose}!Superimpose@{Superimpose}}
+\subsubsection{\texorpdfstring{$\sim$\+Superimpose()}{~Superimpose()}}
+{\footnotesize\ttfamily virtual Superimpose\+::$\sim$\+Superimpose (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+
+
+Definition at line 29 of file Superimpose.\+h.
+
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classSuperimpose_a62c4c269b8fc34cc36d3d54fa4acb35c}\label{classSuperimpose_a62c4c269b8fc34cc36d3d54fa4acb35c}} 
+\index{Superimpose@{Superimpose}!superimpose@{superimpose}}
+\index{superimpose@{superimpose}!Superimpose@{Superimpose}}
+\subsubsection{\texorpdfstring{superimpose()}{superimpose()}}
+{\footnotesize\ttfamily virtual bool Superimpose\+::superimpose (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Model\+Pose\+Container}} \&}]{objpos\+\_\+map,  }\item[{const double $\ast$}]{cam\+\_\+x,  }\item[{const double $\ast$}]{cam\+\_\+o,  }\item[{cv\+::\+Mat \&}]{img }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+
+
+Implemented in \mbox{\hyperlink{classSICAD_a356e0ac8a0f130952a72326bedd4ab60}{S\+I\+C\+AD}}, and \mbox{\hyperlink{classSISkeleton_a3f49fa3419370c2597435768f280c747}{S\+I\+Skeleton}}.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{Superimpose_8h}{Superimpose.\+h}}\end{DoxyCompactItemize}

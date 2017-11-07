@@ -1,0 +1,264 @@
+\hypertarget{classModel}{}\section{Model Class Reference}
+\label{classModel}\index{Model@{Model}}
+
+
+{\ttfamily \#include $<$Model.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classModel_a97ced90b9b512521b2e5bdeaeac6b907}{Model}} (const G\+Lchar $\ast$path)
+\item 
+void \mbox{\hyperlink{classModel_a191a00d937b9e911bf4881ea14d79b6c}{Draw}} (\mbox{\hyperlink{classShader}{Shader}} shader)
+\item 
+bool \mbox{\hyperlink{classModel_ad4fd21aa8d404f371ea754f5a117e9fb}{has\+\_\+texture}} ()
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classModel_a3cd88224a93dc81a8503d42be807eb86}{load\+Model}} (std\+::string path)
+\item 
+void \mbox{\hyperlink{classModel_a23b167ce0d33f7e6ab5693cd5e81a9a5}{process\+Node}} (ai\+Node $\ast$node, const ai\+Scene $\ast$scene)
+\item 
+\mbox{\hyperlink{classMesh}{Mesh}} \mbox{\hyperlink{classModel_a95ae1a9980ded3d98b1c8785cb889d96}{process\+Mesh}} (ai\+Mesh $\ast$mesh, const ai\+Scene $\ast$scene)
+\item 
+G\+Lint \mbox{\hyperlink{classModel_a4633dd862f3066d920c2c4177a30310e}{Texture\+From\+File}} (const char $\ast$path, std\+::string directory)
+\item 
+std\+::vector$<$ \mbox{\hyperlink{structMesh_1_1Texture}{Mesh\+::\+Texture}} $>$ \mbox{\hyperlink{classModel_aa7d0215f3ee74bef71ddeef173dd36dd}{load\+Material\+Textures}} (ai\+Material $\ast$mat, ai\+Texture\+Type type, std\+::string type\+Name)
+\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{classMesh}{Mesh}} $>$ \mbox{\hyperlink{classModel_afdaef518b8ca4c7d9f95fda34f6b8ac9}{meshes\+\_\+}}
+\item 
+std\+::string \mbox{\hyperlink{classModel_a2b8d86d272ebf7cd808a02b4d140ca12}{directory\+\_\+}}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{structMesh_1_1Texture}{Mesh\+::\+Texture}} $>$ \mbox{\hyperlink{classModel_a92d229e44cb31a539ec4b5c7db977059}{textures\+\_\+loaded\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 22 of file Model.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classModel_a97ced90b9b512521b2e5bdeaeac6b907}\label{classModel_a97ced90b9b512521b2e5bdeaeac6b907}} 
+\index{Model@{Model}!Model@{Model}}
+\index{Model@{Model}!Model@{Model}}
+\subsubsection{\texorpdfstring{Model()}{Model()}}
+{\footnotesize\ttfamily Model\+::\+Model (\begin{DoxyParamCaption}\item[{const G\+Lchar $\ast$}]{path }\end{DoxyParamCaption})}
+
+
+
+Definition at line 21 of file Model.\+cpp.
+
+
+
+References load\+Model().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classModel_a97ced90b9b512521b2e5bdeaeac6b907_cgraph}
+\end{center}
+\end{figure}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classModel_a191a00d937b9e911bf4881ea14d79b6c}\label{classModel_a191a00d937b9e911bf4881ea14d79b6c}} 
+\index{Model@{Model}!Draw@{Draw}}
+\index{Draw@{Draw}!Model@{Model}}
+\subsubsection{\texorpdfstring{Draw()}{Draw()}}
+{\footnotesize\ttfamily void Model\+::\+Draw (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classShader}{Shader}}}]{shader }\end{DoxyParamCaption})}
+
+
+
+Definition at line 27 of file Model.\+cpp.
+
+
+
+References meshes\+\_\+.
+
+\mbox{\Hypertarget{classModel_ad4fd21aa8d404f371ea754f5a117e9fb}\label{classModel_ad4fd21aa8d404f371ea754f5a117e9fb}} 
+\index{Model@{Model}!has\+\_\+texture@{has\+\_\+texture}}
+\index{has\+\_\+texture@{has\+\_\+texture}!Model@{Model}}
+\subsubsection{\texorpdfstring{has\+\_\+texture()}{has\_texture()}}
+{\footnotesize\ttfamily bool Model\+::has\+\_\+texture (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 36 of file Model.\+cpp.
+
+
+
+References textures\+\_\+loaded\+\_\+.
+
+\mbox{\Hypertarget{classModel_aa7d0215f3ee74bef71ddeef173dd36dd}\label{classModel_aa7d0215f3ee74bef71ddeef173dd36dd}} 
+\index{Model@{Model}!load\+Material\+Textures@{load\+Material\+Textures}}
+\index{load\+Material\+Textures@{load\+Material\+Textures}!Model@{Model}}
+\subsubsection{\texorpdfstring{load\+Material\+Textures()}{loadMaterialTextures()}}
+{\footnotesize\ttfamily std\+::vector$<$ \mbox{\hyperlink{structMesh_1_1Texture}{Mesh\+::\+Texture}} $>$ Model\+::load\+Material\+Textures (\begin{DoxyParamCaption}\item[{ai\+Material $\ast$}]{mat,  }\item[{ai\+Texture\+Type}]{type,  }\item[{std\+::string}]{type\+Name }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 139 of file Model.\+cpp.
+
+
+
+References directory\+\_\+, Mesh\+::\+Texture\+::id, Mesh\+::\+Texture\+::path, Texture\+From\+File(), textures\+\_\+loaded\+\_\+, and Mesh\+::\+Texture\+::type.
+
+
+
+Referenced by process\+Mesh().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classModel_aa7d0215f3ee74bef71ddeef173dd36dd_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classModel_a3cd88224a93dc81a8503d42be807eb86}\label{classModel_a3cd88224a93dc81a8503d42be807eb86}} 
+\index{Model@{Model}!load\+Model@{load\+Model}}
+\index{load\+Model@{load\+Model}!Model@{Model}}
+\subsubsection{\texorpdfstring{load\+Model()}{loadModel()}}
+{\footnotesize\ttfamily void Model\+::load\+Model (\begin{DoxyParamCaption}\item[{std\+::string}]{path }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 42 of file Model.\+cpp.
+
+
+
+References directory\+\_\+, and process\+Node().
+
+
+
+Referenced by Model().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classModel_a3cd88224a93dc81a8503d42be807eb86_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classModel_a95ae1a9980ded3d98b1c8785cb889d96}\label{classModel_a95ae1a9980ded3d98b1c8785cb889d96}} 
+\index{Model@{Model}!process\+Mesh@{process\+Mesh}}
+\index{process\+Mesh@{process\+Mesh}!Model@{Model}}
+\subsubsection{\texorpdfstring{process\+Mesh()}{processMesh()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classMesh}{Mesh}} Model\+::process\+Mesh (\begin{DoxyParamCaption}\item[{ai\+Mesh $\ast$}]{mesh,  }\item[{const ai\+Scene $\ast$}]{scene }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 84 of file Model.\+cpp.
+
+
+
+References load\+Material\+Textures(), Mesh\+::\+Vertex\+::\+Normal, Mesh\+::\+Vertex\+::\+Position, and Mesh\+::\+Vertex\+::\+Tex\+Coords.
+
+
+
+Referenced by process\+Node().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classModel_a95ae1a9980ded3d98b1c8785cb889d96_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classModel_a23b167ce0d33f7e6ab5693cd5e81a9a5}\label{classModel_a23b167ce0d33f7e6ab5693cd5e81a9a5}} 
+\index{Model@{Model}!process\+Node@{process\+Node}}
+\index{process\+Node@{process\+Node}!Model@{Model}}
+\subsubsection{\texorpdfstring{process\+Node()}{processNode()}}
+{\footnotesize\ttfamily void Model\+::process\+Node (\begin{DoxyParamCaption}\item[{ai\+Node $\ast$}]{node,  }\item[{const ai\+Scene $\ast$}]{scene }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 67 of file Model.\+cpp.
+
+
+
+References meshes\+\_\+, and process\+Mesh().
+
+
+
+Referenced by load\+Model().
+
+Here is the call graph for this function\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classModel_a23b167ce0d33f7e6ab5693cd5e81a9a5_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{classModel_a4633dd862f3066d920c2c4177a30310e}\label{classModel_a4633dd862f3066d920c2c4177a30310e}} 
+\index{Model@{Model}!Texture\+From\+File@{Texture\+From\+File}}
+\index{Texture\+From\+File@{Texture\+From\+File}!Model@{Model}}
+\subsubsection{\texorpdfstring{Texture\+From\+File()}{TextureFromFile()}}
+{\footnotesize\ttfamily G\+Lint Model\+::\+Texture\+From\+File (\begin{DoxyParamCaption}\item[{const char $\ast$}]{path,  }\item[{std\+::string}]{directory }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 176 of file Model.\+cpp.
+
+
+
+Referenced by load\+Material\+Textures().
+
+
+
+\subsection{Member Data Documentation}
+\mbox{\Hypertarget{classModel_a2b8d86d272ebf7cd808a02b4d140ca12}\label{classModel_a2b8d86d272ebf7cd808a02b4d140ca12}} 
+\index{Model@{Model}!directory\+\_\+@{directory\+\_\+}}
+\index{directory\+\_\+@{directory\+\_\+}!Model@{Model}}
+\subsubsection{\texorpdfstring{directory\+\_\+}{directory\_}}
+{\footnotesize\ttfamily std\+::string Model\+::directory\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 45 of file Model.\+h.
+
+
+
+Referenced by load\+Material\+Textures(), and load\+Model().
+
+\mbox{\Hypertarget{classModel_afdaef518b8ca4c7d9f95fda34f6b8ac9}\label{classModel_afdaef518b8ca4c7d9f95fda34f6b8ac9}} 
+\index{Model@{Model}!meshes\+\_\+@{meshes\+\_\+}}
+\index{meshes\+\_\+@{meshes\+\_\+}!Model@{Model}}
+\subsubsection{\texorpdfstring{meshes\+\_\+}{meshes\_}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{classMesh}{Mesh}}$>$ Model\+::meshes\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 43 of file Model.\+h.
+
+
+
+Referenced by Draw(), and process\+Node().
+
+\mbox{\Hypertarget{classModel_a92d229e44cb31a539ec4b5c7db977059}\label{classModel_a92d229e44cb31a539ec4b5c7db977059}} 
+\index{Model@{Model}!textures\+\_\+loaded\+\_\+@{textures\+\_\+loaded\+\_\+}}
+\index{textures\+\_\+loaded\+\_\+@{textures\+\_\+loaded\+\_\+}!Model@{Model}}
+\subsubsection{\texorpdfstring{textures\+\_\+loaded\+\_\+}{textures\_loaded\_}}
+{\footnotesize\ttfamily std\+::vector$<$\mbox{\hyperlink{structMesh_1_1Texture}{Mesh\+::\+Texture}}$>$ Model\+::textures\+\_\+loaded\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 47 of file Model.\+h.
+
+
+
+Referenced by has\+\_\+texture(), and load\+Material\+Textures().
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{Model_8h}{Model.\+h}}\item 
+\mbox{\hyperlink{Model_8cpp}{Model.\+cpp}}\end{DoxyCompactItemize}

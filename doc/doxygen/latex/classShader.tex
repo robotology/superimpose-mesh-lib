@@ -1,0 +1,138 @@
+\hypertarget{classShader}{}\section{Shader Class Reference}
+\label{classShader}\index{Shader@{Shader}}
+
+
+{\ttfamily \#include $<$Shader.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classShader_a9f793135f05ad21d6e4e4671de688d7b}{Shader}} (const std\+::string \&vertex\+\_\+shader\+\_\+path, const std\+::string \&fragment\+\_\+shader\+\_\+path)
+\begin{DoxyCompactList}\small\item\em Create a shader program with given vertex and fragment shader paths. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classShader_a8e53260be208ebf6c804a0d309e74097}{install}} ()
+\begin{DoxyCompactList}\small\item\em Activate the shader program. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classShader_afa6fb33b37c9385cf62a836092da570b}{uninstall}} ()
+\begin{DoxyCompactList}\small\item\em Deactivate the shader program. \end{DoxyCompactList}\item 
+const G\+Luint \mbox{\hyperlink{classShader_a3d9c30f7fb8c679a7389c31e51fac596}{get\+\_\+program}} ()
+\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+G\+Luint \mbox{\hyperlink{classShader_ab1d32c11e4114a95b484f819b950af5d}{shader\+\_\+program\+\_\+id\+\_\+}}
+\begin{DoxyCompactList}\small\item\em The program ID. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 17 of file Shader.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classShader_a9f793135f05ad21d6e4e4671de688d7b}\label{classShader_a9f793135f05ad21d6e4e4671de688d7b}} 
+\index{Shader@{Shader}!Shader@{Shader}}
+\index{Shader@{Shader}!Shader@{Shader}}
+\subsubsection{\texorpdfstring{Shader()}{Shader()}}
+{\footnotesize\ttfamily Shader\+::\+Shader (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{vertex\+\_\+shader\+\_\+path,  }\item[{const std\+::string \&}]{fragment\+\_\+shader\+\_\+path }\end{DoxyParamCaption})}
+
+
+
+Create a shader program with given vertex and fragment shader paths. 
+
+
+
+Definition at line 18 of file Shader.\+cpp.
+
+
+
+References shader\+\_\+program\+\_\+id\+\_\+.
+
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classShader_a3d9c30f7fb8c679a7389c31e51fac596}\label{classShader_a3d9c30f7fb8c679a7389c31e51fac596}} 
+\index{Shader@{Shader}!get\+\_\+program@{get\+\_\+program}}
+\index{get\+\_\+program@{get\+\_\+program}!Shader@{Shader}}
+\subsubsection{\texorpdfstring{get\+\_\+program()}{get\_program()}}
+{\footnotesize\ttfamily const G\+Luint Shader\+::get\+\_\+program (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line 36 of file Shader.\+h.
+
+
+
+References shader\+\_\+program\+\_\+id\+\_\+.
+
+
+
+Referenced by Mesh\+::\+Draw(), and S\+I\+C\+A\+D\+::render\+Background().
+
+\mbox{\Hypertarget{classShader_a8e53260be208ebf6c804a0d309e74097}\label{classShader_a8e53260be208ebf6c804a0d309e74097}} 
+\index{Shader@{Shader}!install@{install}}
+\index{install@{install}!Shader@{Shader}}
+\subsubsection{\texorpdfstring{install()}{install()}}
+{\footnotesize\ttfamily void Shader\+::install (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Activate the shader program. 
+
+
+
+Definition at line 129 of file Shader.\+cpp.
+
+
+
+References shader\+\_\+program\+\_\+id\+\_\+.
+
+
+
+Referenced by S\+I\+C\+A\+D\+::render\+Background().
+
+\mbox{\Hypertarget{classShader_afa6fb33b37c9385cf62a836092da570b}\label{classShader_afa6fb33b37c9385cf62a836092da570b}} 
+\index{Shader@{Shader}!uninstall@{uninstall}}
+\index{uninstall@{uninstall}!Shader@{Shader}}
+\subsubsection{\texorpdfstring{uninstall()}{uninstall()}}
+{\footnotesize\ttfamily void Shader\+::uninstall (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Deactivate the shader program. 
+
+
+
+Definition at line 135 of file Shader.\+cpp.
+
+
+
+Referenced by S\+I\+C\+A\+D\+::render\+Background().
+
+
+
+\subsection{Member Data Documentation}
+\mbox{\Hypertarget{classShader_ab1d32c11e4114a95b484f819b950af5d}\label{classShader_ab1d32c11e4114a95b484f819b950af5d}} 
+\index{Shader@{Shader}!shader\+\_\+program\+\_\+id\+\_\+@{shader\+\_\+program\+\_\+id\+\_\+}}
+\index{shader\+\_\+program\+\_\+id\+\_\+@{shader\+\_\+program\+\_\+id\+\_\+}!Shader@{Shader}}
+\subsubsection{\texorpdfstring{shader\+\_\+program\+\_\+id\+\_\+}{shader\_program\_id\_}}
+{\footnotesize\ttfamily G\+Luint Shader\+::shader\+\_\+program\+\_\+id\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+The program ID. 
+
+
+
+Definition at line 45 of file Shader.\+h.
+
+
+
+Referenced by get\+\_\+program(), install(), and Shader().
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{Shader_8h}{Shader.\+h}}\item 
+\mbox{\hyperlink{Shader_8cpp}{Shader.\+cpp}}\end{DoxyCompactItemize}

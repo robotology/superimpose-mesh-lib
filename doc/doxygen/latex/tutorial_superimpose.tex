@@ -1,0 +1,290 @@
+This tutorial introduces the basic steps to superimpose an object, i.\+e. a mesh, on top of an image by using the \mbox{\hyperlink{classSICAD}{S\+I\+C\+AD}} class and its methods.~\newline
+
+
+Just have a look at the following commented, ready-\/to-\/go, code snippets!~\newline
+
+
+\subsection*{Default easy-\/peasy \mbox{\hyperlink{classSICAD}{S\+I\+C\+AD}}}
+
+
+
+
+
+\href{https://github.com/robotology/superimpose-mesh-lib/blob/master/doc/tutorial_code/tutorial_superimpose.cpp}{\tt View it online.} 
+\begin{DoxyCodeInclude}
+1 \textcolor{preprocessor}{#include <\mbox{\hyperlink{SICAD_8h}{SuperimposeMesh/SICAD.h}}>}
+2 
+3 \textcolor{preprocessor}{#include <cmath>}
+4 \textcolor{preprocessor}{#include <exception>}
+5 \textcolor{preprocessor}{#include <iostream>}
+6 
+7 \textcolor{preprocessor}{#include <glm/gtc/matrix\_transform.hpp>}
+8 
+9 \textcolor{preprocessor}{#include <opencv2/core/core.hpp>}
+10 \textcolor{preprocessor}{#include <opencv2/imgcodecs/imgcodecs.hpp>}
+11 \textcolor{preprocessor}{#include <opencv2/imgproc/imgproc.hpp>}
+12 
+13 
+14 \textcolor{keywordtype}{int} \mbox{\hyperlink{tutorial__superimpose_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}}()
+15 \{\textcolor{comment}{}
+16 \textcolor{comment}{    /**}
+17 \textcolor{comment}{     * We want to rendere a single mesh on 1 OpenGL viewport.}
+18 \textcolor{comment}{     * The SICAD class can be profitably used to accomplish this!}
+19 \textcolor{comment}{     *}
+20 \textcolor{comment}{     * We first need some parameters to properly draw the object.}
+21 \textcolor{comment}{     * These parameters are the hypothetical intrinsic camera parameters that}
+22 \textcolor{comment}{     * would be used, or that is actually used, to take grab the image on which}
+23 \textcolor{comment}{     * we want to superimpose the mesh.}
+24 \textcolor{comment}{     *}
+25 \textcolor{comment}{     * For example, we suppose to have a 320x240 camera with focal length}
+26 \textcolor{comment}{     * of 257.34 pixels and exact camera center (principal point) at (160, 120).}
+27 \textcolor{comment}{     **/}
+28     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} cam\_width  = 320;
+29     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} cam\_height = 240;
+30     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_fx     = 257.34;
+31     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_cx     = 160;
+32     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_fy     = 257.34;
+33     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_cy     = 120;
+34 
+35 \textcolor{comment}{}
+36 \textcolor{comment}{    /**}
+37 \textcolor{comment}{     * Next, we need a mesh file!}
+38 \textcolor{comment}{     * For example, we may want to superimpose the good ol' fiend of Space}
+39 \textcolor{comment}{     * Invader arcade game.}
+40 \textcolor{comment}{     * Here, by chance, we have a mesh of it ready to for you!}
+41 \textcolor{comment}{     *}
+42 \textcolor{comment}{     * To associate a mesh to a particular object the SICAD::ModelPathContainer}
+43 \textcolor{comment}{     * comes into play. In this way we can associate a tag to a mesh model and}
+44 \textcolor{comment}{     * use it during rendering to assign to it a particular pose (position and}
+45 \textcolor{comment}{     * orientation).}
+46 \textcolor{comment}{     *}
+47 \textcolor{comment}{     * NOTE: supported mesh format are the one provided by the ASSIMP library.}
+48 \textcolor{comment}{     *       Have a look here: http://assimp.org/main\_features\_formats.html}
+49 \textcolor{comment}{     **/}
+50     \mbox{\hyperlink{classSICAD_a9e1e1460d4c0f331b4fd015aae4dd721}{SICAD::ModelPathContainer}} obj;
+51     obj.emplace(\textcolor{stringliteral}{"alien"}, \textcolor{stringliteral}{"./spaceinvader.obj"});
+52 
+53 \textcolor{comment}{}
+54 \textcolor{comment}{    /**}
+55 \textcolor{comment}{     * We create a SICAD object by just passing all the camera parameters.}
+56 \textcolor{comment}{     **/}
+57     \mbox{\hyperlink{classSICAD}{SICAD}} si\_cad(obj, cam\_width, cam\_height, cam\_fx, cam\_fy, cam\_cx, cam\_cy);
+58 
+59 \textcolor{comment}{}
+60 \textcolor{comment}{    /**}
+61 \textcolor{comment}{     * We are close to getting our superimposed mesh!}
+62 \textcolor{comment}{     * We now need to choose a pose (position and orientation) to which we}
+63 \textcolor{comment}{     * render the Space Invader fiend.}
+64 \textcolor{comment}{     * Suppose we want it right in front of us, 10 cm away from the camera.}
+65 \textcolor{comment}{     * Note that the OpenGL convention is right handed, expressed in meters,}
+66 \textcolor{comment}{     * with the z axis coming out from the screen.}
+67 \textcolor{comment}{     * This imply that we want the alien at -0.10 m on the z axis.}
+68 \textcolor{comment}{     * As far as the orientation is concerned we want it facing us.}
+69 \textcolor{comment}{     * Since we have to pass an axis-angle vector and that all zeros is invalid,}
+70 \textcolor{comment}{     * we can just pass any versor with a 0 degree angle.}
+71 \textcolor{comment}{     *}
+72 \textcolor{comment}{     * We now have to associate the pose with a particular mesh model.}
+73 \textcolor{comment}{     * Do you remember that we used "alien" for the Space Invader fiend?}
+74 \textcolor{comment}{     * Then we just have to associate a tag to the pose and we are ready to}
+75 \textcolor{comment}{     * render!}
+76 \textcolor{comment}{     * To do so, we just use Superimpose::ModelPose and}
+77 \textcolor{comment}{     * Superimpose::ModelPoseContainer as follows.}
+78 \textcolor{comment}{     **/}
+79     \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Superimpose::ModelPose}} obj\_pose(7);
+80     obj\_pose[0] = 0;
+81     obj\_pose[1] = 0;
+82     obj\_pose[2] = -0.1;
+83     obj\_pose[3] = 1;
+84     obj\_pose[4] = 0;
+85     obj\_pose[5] = 0;
+86     obj\_pose[6] = 0;
+87 
+88     \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Superimpose::ModelPoseContainer}} objpose\_map;
+89     objpose\_map.emplace(\textcolor{stringliteral}{"alien"}, obj\_pose);
+90 
+91 \textcolor{comment}{}
+92 \textcolor{comment}{    /**}
+93 \textcolor{comment}{     * Finally we trivially set the pose of the camera as follows.}
+94 \textcolor{comment}{     *}
+95 \textcolor{comment}{     * Q: why don't we have another Superimpose:: object to do this?}
+96 \textcolor{comment}{     * W: well...it's under development!}
+97 \textcolor{comment}{     **/}
+98     \textcolor{keywordtype}{double} cam\_x[] = \{  0, 0, 0\};
+99     \textcolor{keywordtype}{double} cam\_o[] = \{1.0, 0, 0, 0\};
+100 
+101 \textcolor{comment}{}
+102 \textcolor{comment}{    /**}
+103 \textcolor{comment}{     * It's render time!}
+104 \textcolor{comment}{     * We save the output of the render right into a cv::Mat and we can use}
+105 \textcolor{comment}{     * the well known OpenCV facilities to do whatever we want with it, for}
+106 \textcolor{comment}{     * example write it on the filesystem.}
+107 \textcolor{comment}{     **/}
+108     cv::Mat img;
+109     si\_cad.superimpose(objpose\_map, cam\_x, cam\_o, img);
+110     cv::imwrite(\textcolor{stringliteral}{"./spaceinvader.jpg"}, img);
+111 
+112     \textcolor{keywordflow}{return} EXIT\_SUCCESS;
+113 \}
+\end{DoxyCodeInclude}
+
+
+If instead you want to provide your own Open\+GL shader files the code changes just a tiny bit\+: you just have to provide two more paramenters to the the \mbox{\hyperlink{classSICAD}{S\+I\+C\+AD}} constructor.
+
+\subsection*{Use your own Open\+GL shaders in \mbox{\hyperlink{classSICAD}{S\+I\+C\+AD}}}
+
+
+
+
+
+\href{https://github.com/robotology/superimpose-mesh-lib/blob/master/doc/tutorial_code/tutorial_superimpose_customshader.cpp}{\tt View it online.} 
+\begin{DoxyCodeInclude}
+1 \textcolor{preprocessor}{#include <\mbox{\hyperlink{SICAD_8h}{SuperimposeMesh/SICAD.h}}>}
+2 
+3 \textcolor{preprocessor}{#include <cmath>}
+4 \textcolor{preprocessor}{#include <exception>}
+5 \textcolor{preprocessor}{#include <iostream>}
+6 
+7 \textcolor{preprocessor}{#include <glm/gtc/matrix\_transform.hpp>}
+8 
+9 \textcolor{preprocessor}{#include <opencv2/core/core.hpp>}
+10 \textcolor{preprocessor}{#include <opencv2/imgcodecs/imgcodecs.hpp>}
+11 \textcolor{preprocessor}{#include <opencv2/imgproc/imgproc.hpp>}
+12 
+13 
+14 \textcolor{keywordtype}{int} \mbox{\hyperlink{tutorial__superimpose__customshader_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}}()
+15 \{\textcolor{comment}{}
+16 \textcolor{comment}{    /**}
+17 \textcolor{comment}{     * We want to rendere a single mesh on 1 OpenGL viewport.}
+18 \textcolor{comment}{     * The SICAD class can be profitably used to accomplish this!}
+19 \textcolor{comment}{     *}
+20 \textcolor{comment}{     * We first need some parameters to properly draw the object.}
+21 \textcolor{comment}{     * These parameters are the hypothetical intrinsic camera parameters that}
+22 \textcolor{comment}{     * would be used, or that is actually used, to take grab the image on which}
+23 \textcolor{comment}{     * we want to superimpose the mesh.}
+24 \textcolor{comment}{     *}
+25 \textcolor{comment}{     * For example, we suppose to have a 320x240 camera with focal length}
+26 \textcolor{comment}{     * of 257.34 pixels and exact camera center (principal point) at (160, 120).}
+27 \textcolor{comment}{     **/}
+28     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} cam\_width  = 320;
+29     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} cam\_height = 240;
+30     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_fx     = 257.34;
+31     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_cx     = 160;
+32     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_fy     = 257.34;
+33     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_cy     = 120;
+34 
+35 \textcolor{comment}{}
+36 \textcolor{comment}{    /**}
+37 \textcolor{comment}{     * Next, we need a mesh file!}
+38 \textcolor{comment}{     * For example, we may want to superimpose the good ol' fiend of Space}
+39 \textcolor{comment}{     * Invader arcade game.}
+40 \textcolor{comment}{     * Here, by chance, we have a mesh of it ready to for you!}
+41 \textcolor{comment}{     *}
+42 \textcolor{comment}{     * To associate a mesh to a particular object the SICAD::ModelPathContainer}
+43 \textcolor{comment}{     * comes into play. In this way we can associate a tag to a mesh model and}
+44 \textcolor{comment}{     * use it during rendering to assign to it a particular pose (position and}
+45 \textcolor{comment}{     * orientation).}
+46 \textcolor{comment}{     *}
+47 \textcolor{comment}{     * NOTE: supported mesh format are the one provided by the ASSIMP library.}
+48 \textcolor{comment}{     *       Have a look here: http://assimp.org/main\_features\_formats.html}
+49 \textcolor{comment}{     **/}
+50     \mbox{\hyperlink{classSICAD_a9e1e1460d4c0f331b4fd015aae4dd721}{SICAD::ModelPathContainer}} obj;
+51     obj.emplace(\textcolor{stringliteral}{"alien"}, \textcolor{stringliteral}{"./spaceinvader.obj"});
+52 
+53 \textcolor{comment}{}
+54 \textcolor{comment}{    /**}
+55 \textcolor{comment}{     * We create a SICAD object by passing all the camera parameters, the shader}
+56 \textcolor{comment}{     * folder path containing the shader code (don't worry, we provide basic}
+57 \textcolor{comment}{     * shaders as well!).}
+58 \textcolor{comment}{     * Note that for this simple tutorial we assume that the shader files are}
+59 \textcolor{comment}{     * (magically) in the same folder of the executable, that's why we use ".".}
+60 \textcolor{comment}{     *}
+61 \textcolor{comment}{     * Shader code is included at the end of this snippet code. Have a look at}
+62 \textcolor{comment}{     * it, it's really simple! If you are not used to it, there are plenty of}
+63 \textcolor{comment}{     * tutorials online for writing OpenGL shaders.}
+64 \textcolor{comment}{     **/}
+65     \mbox{\hyperlink{classSICAD}{SICAD}} si\_cad(obj, cam\_width, cam\_height, cam\_fx, cam\_fy, cam\_cx, cam\_cy, 1, \textcolor{stringliteral}{"."});
+66 
+67 \textcolor{comment}{}
+68 \textcolor{comment}{    /**}
+69 \textcolor{comment}{     * We are close to getting our superimposed mesh!}
+70 \textcolor{comment}{     * We now need to choose a pose (position and orientation) to which we}
+71 \textcolor{comment}{     * render the Space Invader fiend.}
+72 \textcolor{comment}{     * Suppose we want it right in front of us, 10 cm away from the camera.}
+73 \textcolor{comment}{     * Note that the OpenGL convention is right handed, expressed in meters,}
+74 \textcolor{comment}{     * with the z axis coming out from the screen.}
+75 \textcolor{comment}{     * This imply that we want the alien at -0.10 m on the z axis.}
+76 \textcolor{comment}{     * As far as the orientation is concerned we want it facing us.}
+77 \textcolor{comment}{     * Since we have to pass an axis-angle vector and that all zeros is invalid,}
+78 \textcolor{comment}{     * we can just pass any versor with a 0 degree angle.}
+79 \textcolor{comment}{     *}
+80 \textcolor{comment}{     * We now have to associate the pose with a particular mesh model.}
+81 \textcolor{comment}{     * Do you remember that we used "alien" for the Space Invader fiend?}
+82 \textcolor{comment}{     * Then we just have to associate a tag to the pose and we are ready to}
+83 \textcolor{comment}{     * render!}
+84 \textcolor{comment}{     * To do so, we just use Superimpose::ModelPose and}
+85 \textcolor{comment}{     * Superimpose::ModelPoseContainer as follows.}
+86 \textcolor{comment}{     **/}
+87     \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Superimpose::ModelPose}} obj\_pose(7);
+88     obj\_pose[0] = 0;
+89     obj\_pose[1] = 0;
+90     obj\_pose[2] = -0.1;
+91     obj\_pose[3] = 1;
+92     obj\_pose[4] = 0;
+93     obj\_pose[5] = 0;
+94     obj\_pose[6] = 0;
+95 
+96     \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Superimpose::ModelPoseContainer}} objpose\_map;
+97     objpose\_map.emplace(\textcolor{stringliteral}{"alien"}, obj\_pose);
+98 
+99 \textcolor{comment}{}
+100 \textcolor{comment}{    /**}
+101 \textcolor{comment}{     * Finally we trivially set the pose of the camera as follows.}
+102 \textcolor{comment}{     *}
+103 \textcolor{comment}{     * Q: why don't we have another Superimpose:: object to do this?}
+104 \textcolor{comment}{     * W: well...it's under development!}
+105 \textcolor{comment}{     **/}
+106     \textcolor{keywordtype}{double} cam\_x[] = \{  0, 0, 0\};
+107     \textcolor{keywordtype}{double} cam\_o[] = \{1.0, 0, 0, 0\};
+108 
+109 \textcolor{comment}{}
+110 \textcolor{comment}{    /**}
+111 \textcolor{comment}{     * It's render time!}
+112 \textcolor{comment}{     * We save the output of the render right into a cv::Mat and we can use}
+113 \textcolor{comment}{     * the well known OpenCV facilities to do whatever we want with it, for}
+114 \textcolor{comment}{     * example write it on the filesystem.}
+115 \textcolor{comment}{     **/}
+116     cv::Mat img;
+117     si\_cad.superimpose(objpose\_map, cam\_x, cam\_o, img);
+118     cv::imwrite(\textcolor{stringliteral}{"./spaceinvader.jpg"}, img);
+119 
+120     \textcolor{keywordflow}{return} EXIT\_SUCCESS;
+121 \}
+\end{DoxyCodeInclude}
+
+
+Here are the shaders and the Space Invaders mesh model\+:
+\begin{DoxyItemize}
+\item \href{https://github.com/robotology/superimpose-mesh-lib/blob/master/doc/tutorial_code/shader_model.vert}{\tt Model vertex shader}
+\item \href{https://github.com/robotology/superimpose-mesh-lib/blob/master/doc/tutorial_code/shader_model_texture.vert}{\tt Textured model vertex shader}
+\item \href{https://github.com/robotology/superimpose-mesh-lib/blob/master/doc/tutorial_code/shader_model.frag}{\tt Model fragment shader}
+\item \href{https://github.com/robotology/superimpose-mesh-lib/blob/master/doc/tutorial_code/shader_background.vert}{\tt Background vertex shader}
+\item \href{https://github.com/robotology/superimpose-mesh-lib/blob/master/doc/tutorial_code/shader_background.frag}{\tt Background fragment shader}
+\item \href{https://github.com/robotology/superimpose-mesh-lib/blob/master/doc/tutorial_code/spaceinvader.obj}{\tt Space Invader fiend}
+\end{DoxyItemize}
+
+⚠️ The four shaders must have the following {\bfseries exact names}\+:
+\begin{DoxyItemize}
+\item {\itshape shader\+\_\+model.\+vert} for the model vertex shader
+\item {\itshape shader\+\_\+model\+\_\+texture.\+vert} for the textured model vertex shader
+\item {\itshape shader\+\_\+model.\+frag} for the model fragment shader
+\item {\itshape shader\+\_\+background.\+vert} for the background vertex shader
+\item {\itshape shader\+\_\+background.\+frag} for the background fragment shader
+\end{DoxyItemize}
+
+\subsection*{Result + Next}
+
+
+
+
+
+You should get something like this\+:  You can now proceed to the next tutorial\+: \mbox{\hyperlink{tutorial_superimpose_background}{how to add a background}}! 

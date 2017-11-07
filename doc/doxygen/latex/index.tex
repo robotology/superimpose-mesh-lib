@@ -1,0 +1,82 @@
+\hypertarget{index_overview}{}\section{Overview}\label{index_overview}
+A modern C++ augmented-\/reality library to superimpose 3D objects on an images.\hypertarget{index_versioning}{}\section{⚠️ About versioning}\label{index_versioning}
+
+
+ The project is undergoing {\itshape heavy} development\+: A\+P\+Is will be subject to changes quite often. To be able to understand A\+PI compatibility during development, the project will follow \href{http://semver.org/}{\tt Sem\+Ver} specs.
+
+In particular, the library will have {\bfseries zero major version}, i.\+e. {\bfseries 0.\+M\+I\+N\+O\+R.\+P\+A\+T\+CH}, as specified by \href{http://semver.org/#spec-item-4}{\tt Sem\+Ver spec. 4} and the project will comply with the following rules\+:
+\begin{DoxyEnumerate}
+\item {\bfseries M\+I\+N\+OR} version increases when A\+PI compatibility is broken;
+\item {\bfseries P\+A\+T\+CH} version increases when functionality are added in a backwards-\/compatible manner;
+\item Additional labels for pre-\/release and build metadata are available as extensions to the 0.\+M\+I\+N\+O\+R.\+P\+A\+T\+CH format.
+\end{DoxyEnumerate}\hypertarget{index_background}{}\section{📖 Background}\label{index_background}
+
+
+ This library provides superimposition facilities\+: the placement of one thing over another. In particular, this library provides classes to superimpose 3D mesh model on top of an image that are of central importance for computer vision and augmented-\/reality applications.\hypertarget{index_dependencies}{}\section{🎛 Dependencies}\label{index_dependencies}
+
+
+ Superimpose\+Mesh library depends on
+\begin{DoxyItemize}
+\item \href{http://www.glfw.org}{\tt G\+L\+FW} -\/ {\ttfamily version $>$= 3.\+1}, mac\+OS\+: {\ttfamily brew -\/-\/\+H\+E\+AD}
+\item \href{http://assimp.org}{\tt Open Asset Import Library, A\+S\+S\+I\+MP} -\/ {\ttfamily version $>$= 3.\+3.\+0}
+\item \href{http://glew.sourceforge.net}{\tt Open\+GL Extension Wrangler, G\+L\+EW} -\/ {\ttfamily version $>$= 2.\+0}
+\item \href{http://opencv.org}{\tt Open\+CV} -\/ {\ttfamily version $>$= 2.\+4.\+9}
+\item \href{http://glm.g-truc.net}{\tt Open\+GL Mathematics, G\+LM} -\/ {\ttfamily version $>$= 0.\+9}
+\end{DoxyItemize}\hypertarget{index_build-and-link-the-library}{}\section{🔨 Build and link the library}\label{index_build-and-link-the-library}
+
+
+
+
+Use the following commands to build, install and link the library.
+
+\subsection*{Build}
+
+With {\ttfamily make} facilities\+: 
+\begin{DoxyCode}
+$ git clone https://github.com/robotology/superimpose-mesh-lib
+$ cd superimpose-mesh-lib
+$ mkdir build && cd build
+$ cmake ..
+$ make
+$ [sudo] make install
+\end{DoxyCode}
+
+
+With I\+DE build tool facilities\+: 
+\begin{DoxyCode}
+$ git clone https://github.com/robotology/superimpose-mesh-lib
+$ cd superimpose-mesh-lib
+$ mkdir build && cd build
+$ cmake ..
+$ cmake --build . --target ALL\_BUILD --config Release
+$ cmake --build . --target INSTALL --config Release
+\end{DoxyCode}
+
+
+\subsection*{Link}
+
+Once the library is installed, you can link it using {\ttfamily C\+Make} with as little effort as writing the following line of code in your project\textquotesingle{}s {\ttfamily C\+Make\+Lists.\+txt}\+: 
+\begin{DoxyCode}
+...
+find\_package(SuperimposeMesh 0.MINOR.PATCH EXACT REQUIRED)
+...
+target\_link\_libraries(<target> SuperimposeMesh::SuperimposeMesh)
+...
+\end{DoxyCode}
+\hypertarget{index_test-the-library}{}\section{🔬 Test the library}\label{index_test-the-library}
+
+
+ We have designed several tests using {\ttfamily C\+Make}\textquotesingle{}s {\ttfamily ctest} to check whether everything is running smoothly or not. Simply run 
+\begin{DoxyCode}
+$ ctest [-VV]
+\end{DoxyCode}
+
+
+Tests are also well-\/designed {\bfseries starting points} to learn how to use the library and how to implement your own shaders! {\itshape Just have a look at them!}\hypertarget{index_tutorials}{}\section{📘 Tutorials}\label{index_tutorials}
+
+
+ The best way to learn the basic principles about the library are the tests, but here are some other step-\/by-\/step examples\+:
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{tutorial_superimpose}{Superimpose an object}}
+\item \mbox{\hyperlink{tutorial_superimpose_background}{Superimpose an object with the background}} 
+\end{DoxyItemize}

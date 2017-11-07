@@ -1,0 +1,6 @@
+<map id="SICAD::renderBackground" name="SICAD::renderBackground">
+<area shape="rect" id="node2" href="$classShader.html#a3d9c30f7fb8c679a7389c31e51fac596" title="Shader::get_program" alt="" coords="237,5,380,32"/>
+<area shape="rect" id="node3" href="$classSICAD.html#a8033a99745f595ea5205e3830cabc389" title="SICAD::getMipmapsOpt" alt="" coords="228,56,389,83"/>
+<area shape="rect" id="node4" href="$classShader.html#a8e53260be208ebf6c804a0d309e74097" title="Activate the shader program. " alt="" coords="256,107,361,133"/>
+<area shape="rect" id="node5" href="$classShader.html#afa6fb33b37c9385cf62a836092da570b" title="Deactivate the shader program. " alt="" coords="249,157,368,184"/>
+</map>

@@ -1,0 +1,228 @@
+\hypertarget{classSISkeleton}{}\section{S\+I\+Skeleton Class Reference}
+\label{classSISkeleton}\index{S\+I\+Skeleton@{S\+I\+Skeleton}}
+
+
+{\ttfamily \#include $<$S\+I\+Skeleton.\+h$>$}
+
+
+
+Inheritance diagram for S\+I\+Skeleton\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=154pt]{classSISkeleton__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef std\+::vector$<$ double $>$ \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Model\+Pose}}
+\item 
+typedef std\+::multimap$<$ std\+::string, \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Model\+Pose}} $>$ \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Model\+Pose\+Container}}
+\item 
+typedef std\+::pair$<$ std\+::string, \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Model\+Pose}} $>$ \mbox{\hyperlink{classSuperimpose_a1e02e0225687b42296dcfee4eadf8a55}{Model\+Pose\+Container\+Element}}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classSISkeleton_a9d7925269e60716f5eba550ee6d5a148}{S\+I\+Skeleton}} (const std\+::list$<$ std\+::string $>$ \&skeleton\+\_\+part, const float cam\+\_\+fx, const float cam\+\_\+fy, const float cam\+\_\+cx, const float cam\+\_\+cy)
+\item 
+\mbox{\hyperlink{classSISkeleton_a6e9f780999700a4695d4ed487f2499b9}{$\sim$\+S\+I\+Skeleton}} ()
+\item 
+bool \mbox{\hyperlink{classSISkeleton_a3f49fa3419370c2597435768f280c747}{superimpose}} (const \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Model\+Pose\+Container}} \&objpos\+\_\+map, const double $\ast$cam\+\_\+x, const double $\ast$cam\+\_\+o, cv\+::\+Mat \&img) override
+\item 
+bool \mbox{\hyperlink{classSISkeleton_aa1f5e1a67363038821a5d514fb361a38}{set\+Projection\+Matrix}} (const float cam\+\_\+fx, const float cam\+\_\+fy, const float cam\+\_\+cx, const float cam\+\_\+cy)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+glm\+::vec2 \mbox{\hyperlink{classSISkeleton_adbd224633ac2e4c0285cf2cf760cc42a}{get\+World\+To\+Pixel}} (const double $\ast$world\+\_\+point)
+\end{DoxyCompactItemize}
+\subsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+const std\+::string \mbox{\hyperlink{classSISkeleton_a6d4a9061880520792f467eb8e7faa66b}{log\+\_\+\+I\+D\+\_\+}} = \char`\"{}\mbox{[}S\+I\+::\+S\+I\+Skeleton\mbox{]}\char`\"{}
+\item 
+std\+::list$<$ std\+::string $>$ \mbox{\hyperlink{classSISkeleton_a9407c2f3b0889c2eda6f24120ea47559}{skeleton\+\_\+part\+\_\+}}
+\item 
+glm\+::mat3 \mbox{\hyperlink{classSISkeleton_a1ac569493d56bf099bdc364318ad5622}{projection\+\_\+}}
+\item 
+glm\+::mat3 \mbox{\hyperlink{classSISkeleton_a476442a8c9e9a1f4a703c3a84f0b83f1}{root\+\_\+to\+\_\+eye\+\_\+}}
+\item 
+glm\+::vec3 \mbox{\hyperlink{classSISkeleton_a63f1395d3e57e2d6a6d7de50928221a2}{cam\+\_\+pos\+\_\+}}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 19 of file S\+I\+Skeleton.\+h.
+
+
+
+\subsection{Member Typedef Documentation}
+\mbox{\Hypertarget{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}\label{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!Model\+Pose@{Model\+Pose}}
+\index{Model\+Pose@{Model\+Pose}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{Model\+Pose}{ModelPose}}
+{\footnotesize\ttfamily typedef std\+::vector$<$double$>$ \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Superimpose\+::\+Model\+Pose}}\hspace{0.3cm}{\ttfamily [inherited]}}
+
+
+
+Definition at line 23 of file Superimpose.\+h.
+
+\mbox{\Hypertarget{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}\label{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!Model\+Pose\+Container@{Model\+Pose\+Container}}
+\index{Model\+Pose\+Container@{Model\+Pose\+Container}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{Model\+Pose\+Container}{ModelPoseContainer}}
+{\footnotesize\ttfamily typedef std\+::multimap$<$std\+::string, \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Model\+Pose}}$>$ \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Superimpose\+::\+Model\+Pose\+Container}}\hspace{0.3cm}{\ttfamily [inherited]}}
+
+
+
+Definition at line 25 of file Superimpose.\+h.
+
+\mbox{\Hypertarget{classSuperimpose_a1e02e0225687b42296dcfee4eadf8a55}\label{classSuperimpose_a1e02e0225687b42296dcfee4eadf8a55}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!Model\+Pose\+Container\+Element@{Model\+Pose\+Container\+Element}}
+\index{Model\+Pose\+Container\+Element@{Model\+Pose\+Container\+Element}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{Model\+Pose\+Container\+Element}{ModelPoseContainerElement}}
+{\footnotesize\ttfamily typedef std\+::pair$<$std\+::string, \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Model\+Pose}}$>$ \mbox{\hyperlink{classSuperimpose_a1e02e0225687b42296dcfee4eadf8a55}{Superimpose\+::\+Model\+Pose\+Container\+Element}}\hspace{0.3cm}{\ttfamily [inherited]}}
+
+
+
+Definition at line 27 of file Superimpose.\+h.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classSISkeleton_a9d7925269e60716f5eba550ee6d5a148}\label{classSISkeleton_a9d7925269e60716f5eba550ee6d5a148}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{S\+I\+Skeleton()}{SISkeleton()}}
+{\footnotesize\ttfamily S\+I\+Skeleton\+::\+S\+I\+Skeleton (\begin{DoxyParamCaption}\item[{const std\+::list$<$ std\+::string $>$ \&}]{skeleton\+\_\+part,  }\item[{const float}]{cam\+\_\+fx,  }\item[{const float}]{cam\+\_\+fy,  }\item[{const float}]{cam\+\_\+cx,  }\item[{const float}]{cam\+\_\+cy }\end{DoxyParamCaption})}
+
+
+
+Definition at line 21 of file S\+I\+Skeleton.\+cpp.
+
+\mbox{\Hypertarget{classSISkeleton_a6e9f780999700a4695d4ed487f2499b9}\label{classSISkeleton_a6e9f780999700a4695d4ed487f2499b9}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!````~S\+I\+Skeleton@{$\sim$\+S\+I\+Skeleton}}
+\index{````~S\+I\+Skeleton@{$\sim$\+S\+I\+Skeleton}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{$\sim$\+S\+I\+Skeleton()}{~SISkeleton()}}
+{\footnotesize\ttfamily S\+I\+Skeleton\+::$\sim$\+S\+I\+Skeleton (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 36 of file S\+I\+Skeleton.\+cpp.
+
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classSISkeleton_adbd224633ac2e4c0285cf2cf760cc42a}\label{classSISkeleton_adbd224633ac2e4c0285cf2cf760cc42a}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!get\+World\+To\+Pixel@{get\+World\+To\+Pixel}}
+\index{get\+World\+To\+Pixel@{get\+World\+To\+Pixel}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{get\+World\+To\+Pixel()}{getWorldToPixel()}}
+{\footnotesize\ttfamily glm\+::vec2 S\+I\+Skeleton\+::get\+World\+To\+Pixel (\begin{DoxyParamCaption}\item[{const double $\ast$}]{world\+\_\+point }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [protected]}}
+
+
+
+Definition at line 98 of file S\+I\+Skeleton.\+cpp.
+
+
+
+References cam\+\_\+pos\+\_\+, projection\+\_\+, and root\+\_\+to\+\_\+eye\+\_\+.
+
+\mbox{\Hypertarget{classSISkeleton_aa1f5e1a67363038821a5d514fb361a38}\label{classSISkeleton_aa1f5e1a67363038821a5d514fb361a38}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!set\+Projection\+Matrix@{set\+Projection\+Matrix}}
+\index{set\+Projection\+Matrix@{set\+Projection\+Matrix}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{set\+Projection\+Matrix()}{setProjectionMatrix()}}
+{\footnotesize\ttfamily bool S\+I\+Skeleton\+::set\+Projection\+Matrix (\begin{DoxyParamCaption}\item[{const float}]{cam\+\_\+fx,  }\item[{const float}]{cam\+\_\+fy,  }\item[{const float}]{cam\+\_\+cx,  }\item[{const float}]{cam\+\_\+cy }\end{DoxyParamCaption})}
+
+
+
+Definition at line 77 of file S\+I\+Skeleton.\+cpp.
+
+\mbox{\Hypertarget{classSISkeleton_a3f49fa3419370c2597435768f280c747}\label{classSISkeleton_a3f49fa3419370c2597435768f280c747}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!superimpose@{superimpose}}
+\index{superimpose@{superimpose}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{superimpose()}{superimpose()}}
+{\footnotesize\ttfamily bool S\+I\+Skeleton\+::superimpose (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Model\+Pose\+Container}} \&}]{objpos\+\_\+map,  }\item[{const double $\ast$}]{cam\+\_\+x,  }\item[{const double $\ast$}]{cam\+\_\+o,  }\item[{cv\+::\+Mat \&}]{img }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Implements \mbox{\hyperlink{classSuperimpose_a62c4c269b8fc34cc36d3d54fa4acb35c}{Superimpose}}.
+
+
+
+Definition at line 41 of file S\+I\+Skeleton.\+cpp.
+
+
+
+\subsection{Member Data Documentation}
+\mbox{\Hypertarget{classSISkeleton_a63f1395d3e57e2d6a6d7de50928221a2}\label{classSISkeleton_a63f1395d3e57e2d6a6d7de50928221a2}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!cam\+\_\+pos\+\_\+@{cam\+\_\+pos\+\_\+}}
+\index{cam\+\_\+pos\+\_\+@{cam\+\_\+pos\+\_\+}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{cam\+\_\+pos\+\_\+}{cam\_pos\_}}
+{\footnotesize\ttfamily glm\+::vec3 S\+I\+Skeleton\+::cam\+\_\+pos\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 42 of file S\+I\+Skeleton.\+h.
+
+
+
+Referenced by get\+World\+To\+Pixel().
+
+\mbox{\Hypertarget{classSISkeleton_a6d4a9061880520792f467eb8e7faa66b}\label{classSISkeleton_a6d4a9061880520792f467eb8e7faa66b}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!log\+\_\+\+I\+D\+\_\+@{log\+\_\+\+I\+D\+\_\+}}
+\index{log\+\_\+\+I\+D\+\_\+@{log\+\_\+\+I\+D\+\_\+}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{log\+\_\+\+I\+D\+\_\+}{log\_ID\_}}
+{\footnotesize\ttfamily const std\+::string S\+I\+Skeleton\+::log\+\_\+\+I\+D\+\_\+ = \char`\"{}\mbox{[}S\+I\+::\+S\+I\+Skeleton\mbox{]}\char`\"{}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 34 of file S\+I\+Skeleton.\+h.
+
+\mbox{\Hypertarget{classSISkeleton_a1ac569493d56bf099bdc364318ad5622}\label{classSISkeleton_a1ac569493d56bf099bdc364318ad5622}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!projection\+\_\+@{projection\+\_\+}}
+\index{projection\+\_\+@{projection\+\_\+}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{projection\+\_\+}{projection\_}}
+{\footnotesize\ttfamily glm\+::mat3 S\+I\+Skeleton\+::projection\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 38 of file S\+I\+Skeleton.\+h.
+
+
+
+Referenced by get\+World\+To\+Pixel().
+
+\mbox{\Hypertarget{classSISkeleton_a476442a8c9e9a1f4a703c3a84f0b83f1}\label{classSISkeleton_a476442a8c9e9a1f4a703c3a84f0b83f1}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!root\+\_\+to\+\_\+eye\+\_\+@{root\+\_\+to\+\_\+eye\+\_\+}}
+\index{root\+\_\+to\+\_\+eye\+\_\+@{root\+\_\+to\+\_\+eye\+\_\+}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{root\+\_\+to\+\_\+eye\+\_\+}{root\_to\_eye\_}}
+{\footnotesize\ttfamily glm\+::mat3 S\+I\+Skeleton\+::root\+\_\+to\+\_\+eye\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 40 of file S\+I\+Skeleton.\+h.
+
+
+
+Referenced by get\+World\+To\+Pixel().
+
+\mbox{\Hypertarget{classSISkeleton_a9407c2f3b0889c2eda6f24120ea47559}\label{classSISkeleton_a9407c2f3b0889c2eda6f24120ea47559}} 
+\index{S\+I\+Skeleton@{S\+I\+Skeleton}!skeleton\+\_\+part\+\_\+@{skeleton\+\_\+part\+\_\+}}
+\index{skeleton\+\_\+part\+\_\+@{skeleton\+\_\+part\+\_\+}!S\+I\+Skeleton@{S\+I\+Skeleton}}
+\subsubsection{\texorpdfstring{skeleton\+\_\+part\+\_\+}{skeleton\_part\_}}
+{\footnotesize\ttfamily std\+::list$<$std\+::string$>$ S\+I\+Skeleton\+::skeleton\+\_\+part\+\_\+\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line 36 of file S\+I\+Skeleton.\+h.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{SISkeleton_8h}{S\+I\+Skeleton.\+h}}\item 
+\mbox{\hyperlink{SISkeleton_8cpp}{S\+I\+Skeleton.\+cpp}}\end{DoxyCompactItemize}

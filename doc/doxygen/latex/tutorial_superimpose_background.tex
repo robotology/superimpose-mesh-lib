@@ -1,0 +1,69 @@
+This tutorial is based upon the \mbox{\hyperlink{tutorial_superimpose}{previous one}} and explain how to add a background image to the rendering process. Our good ol\textquotesingle{} fiend 👾 from Space Invaders will finally have {\itshape Space} behind him.
+
+ One of the main reason to why this is important, and to why actually this library exists, is that in computer vision and augmented-\/reality applications you want your mesh to be in a specific pose relative to a camera viewpoint. As a consequence, you usually have an image grabbed from a camera and the pose of an object relative to it.
+
+Here is another commented, ready-\/to-\/go, code snippet (using default shaders)!~\newline
+
+
+\href{https://github.com/robotology/superimpose-mesh-lib/blob/master/doc/tutorial_code/tutorial_background.cpp}{\tt View it online.} 
+\begin{DoxyCodeInclude}
+1 \textcolor{preprocessor}{#include <cmath>}
+2 \textcolor{preprocessor}{#include <exception>}
+3 \textcolor{preprocessor}{#include <iostream>}
+4 \textcolor{preprocessor}{#include <string>}
+5 
+6 \textcolor{preprocessor}{#include <glm/glm.hpp>}
+7 \textcolor{preprocessor}{#include <glm/gtc/matrix\_transform.hpp>}
+8 \textcolor{preprocessor}{#include <opencv2/core/core.hpp>}
+9 \textcolor{preprocessor}{#include <opencv2/imgcodecs/imgcodecs.hpp>}
+10 \textcolor{preprocessor}{#include <opencv2/imgproc/imgproc.hpp>}
+11 \textcolor{preprocessor}{#include <\mbox{\hyperlink{SICAD_8h}{SuperimposeMesh/SICAD.h}}>}
+12 
+13 
+14 \textcolor{keywordtype}{int} \mbox{\hyperlink{tutorial__background_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}}()
+15 \{
+16     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} cam\_width  = 320;
+17     \textcolor{keyword}{const} \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{int} cam\_height = 240;
+18     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_fx     = 257.34;
+19     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_cx     = 160;
+20     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_fy     = 257.34;
+21     \textcolor{keyword}{const} \textcolor{keywordtype}{float}        cam\_cy     = 120;
+22 
+23     \mbox{\hyperlink{classSICAD_a9e1e1460d4c0f331b4fd015aae4dd721}{SICAD::ModelPathContainer}} obj;
+24     obj.emplace(\textcolor{stringliteral}{"alien"}, \textcolor{stringliteral}{"./spaceinvader.obj"});
+25 
+26     \mbox{\hyperlink{classSICAD}{SICAD}} si\_cad(obj, cam\_width, cam\_height, cam\_fx, cam\_fy, cam\_cx, cam\_cy);
+27 
+28     \mbox{\hyperlink{classSuperimpose_a85d40a5caf19f486d1e0c15c0a025378}{Superimpose::ModelPose}} obj\_pose(7);
+29     obj\_pose[0] = 0;
+30     obj\_pose[1] = 0;
+31     obj\_pose[2] = -0.1;
+32     obj\_pose[3] = 1;
+33     obj\_pose[4] = 0;
+34     obj\_pose[5] = 0;
+35     obj\_pose[6] = 0;
+36 
+37     \mbox{\hyperlink{classSuperimpose_a178e3d4e2def6635bfcf9454dd4b5d22}{Superimpose::ModelPoseContainer}} objpose\_map;
+38     objpose\_map.emplace(\textcolor{stringliteral}{"alien"}, obj\_pose);
+39 
+40     \textcolor{keywordtype}{double} cam\_x[] = \{  0, 0, 0\};
+41     \textcolor{keywordtype}{double} cam\_o[] = \{1.0, 0, 0, 0\};
+42 \textcolor{comment}{}
+43 \textcolor{comment}{    /**}
+44 \textcolor{comment}{     * It's background time!}
+45 \textcolor{comment}{     * The steps are the same, but this time the cv::Mat is created from an}
+46 \textcolor{comment}{     * existing image and we instruct the SICAD class to use it as a background}
+47 \textcolor{comment}{     * with setBackgroundOpt(true).}
+48 \textcolor{comment}{     * That's it!}
+49 \textcolor{comment}{     **/}
+50     cv::Mat img = cv::imread(\textcolor{stringliteral}{"./space.png"});
+51     si\_cad.setBackgroundOpt(\textcolor{keyword}{true});
+52     si\_cad.superimpose(objpose\_map, cam\_x, cam\_o, img);
+53     cv::imwrite(\textcolor{stringliteral}{"./spaceinvader.jpg"}, img);
+54 
+55     \textcolor{keywordflow}{return} EXIT\_SUCCESS;
+56 \}
+\end{DoxyCodeInclude}
+
+
+You should get something like this\+: 
