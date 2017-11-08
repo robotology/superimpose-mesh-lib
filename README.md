@@ -1,8 +1,8 @@
-# 📚 SuperimposeMesh Library [![Latest Release](	https://img.shields.io/github/release/robotology/superimpose-mesh-lib.svg?style=flat-square&label=Latest%20Release)](https://github.com/robotology/superimpose-mesh-lib/releases)
+# 📚 SuperimposeMesh Library [![Latest Release](https://img.shields.io/github/release/robotology/superimpose-mesh-lib.svg?style=flat-square&label=Latest%20Release)](https://github.com/robotology/superimpose-mesh-lib/releases)
 
 A modern C++ augmented-reality library to superimpose 3D objects on an images.
 
-[![SuperimposeMesh home](https://img.shields.io/badge/superimpose-mesh-lib-Home%20%26%20Doc-E0C57F.svg?style=flat-square)](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html)
+[![SuperimposeMesh home](https://img.shields.io/badge/SuperimposeMesh-Home%20%26%20Doc-E0C57F.svg?style=flat-square)](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html)
 
 
 # Overview
