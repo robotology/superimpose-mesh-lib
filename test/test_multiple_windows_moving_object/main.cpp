@@ -1,7 +1,9 @@
 #include <cmath>
+#include <chrono>
 #include <exception>
 #include <iostream>
 #include <string>
+#include <thread>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -13,8 +15,8 @@
 
 int main()
 {
-    std::string log_ID = "[Test - SICAD]";
-    std::cout << log_ID << "This test checks whether the present machine can render properly using OpenGL." << std::endl;
+    std::string log_ID = "[Test - Multiple windows - Moving Object]";
+    std::cout << log_ID << "This test checks whether the present machine can render a moving object properly using OpenGL." << std::endl;
     std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
 
     SICAD::ModelPathContainer obj;
@@ -27,11 +29,17 @@ int main()
     const float        cam_fy_     = 257.34;
     const float        cam_cy_     = 120;
 
-    SICAD si_cad(obj,
-                 cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
-                 1,
-                 ".",
-                 true);
+    SICAD si_cad_1(obj,
+                   cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
+                   1,
+                   ".",
+                   true);
+
+    SICAD si_cad_2(obj,
+                   cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
+                   1,
+                   ".",
+                   true);
 
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
@@ -45,20 +53,22 @@ int main()
     Superimpose::ModelPoseContainer objpose_map;
     objpose_map.emplace("alien", obj_pose);
 
-    std::vector<Superimpose::ModelPoseContainer> objposes;
-    objposes.push_back(objpose_map);
+    double cam_x[] = {  0, 0, 0};
+    double cam_o[] = {1.0, 0, 0, 0};
 
-    double cam_x[] = {  0, 0,  0};
-    double cam_o[] = {1.0, 0,  0, 0};
+    for (double ang = 0; ang <= 2*M_PI; ang += 0.082)
+    {
+        cv::Mat img;
 
-    cv::Mat img_1;
-    si_cad.superimpose(objpose_map, cam_x, cam_o, img_1);
-    cv::imwrite("./Space_Invader_1.jpg", img_1);
+        obj_pose[6] = ang;
+        objpose_map.clear();
+        objpose_map.emplace("alien", obj_pose);
 
-    cv::Mat img_2 = cv::imread("./space.png");
-    si_cad.setBackgroundOpt(true);
-    si_cad.superimpose(objposes, cam_x, cam_o, img_2);
-    cv::imwrite("./Space_Invader_2.jpg", img_2);    
+        si_cad_1.superimpose(objpose_map, cam_x, cam_o, img);
+        si_cad_2.superimpose(objpose_map, cam_x, cam_o, img);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(33));
+    }
 
     return EXIT_SUCCESS;
 }

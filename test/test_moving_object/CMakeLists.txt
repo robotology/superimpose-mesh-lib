@@ -1,4 +1,4 @@
-set(TEST_TARGET_NAME test_sicad)
+set(TEST_TARGET_NAME test_moving_object)
 
 set(${TEST_TARGET_NAME}_SRC
         main.cpp
@@ -21,11 +21,7 @@ set(${TEST_TARGET_NAME}_SHADER_FRAG
 set(${TEST_TARGET_NAME}_MESH
         ${CMAKE_CURRENT_SOURCE_DIR}/../common/Space_Invader.obj)
 
-set(${TEST_TARGET_NAME}_IMG
-        ${CMAKE_CURRENT_SOURCE_DIR}/../common/space.png)
-
 add_custom_command(TARGET  ${TEST_TARGET_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy ${${TEST_TARGET_NAME}_SHADER_VERT} $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>
                    COMMAND ${CMAKE_COMMAND} -E copy ${${TEST_TARGET_NAME}_SHADER_FRAG} $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>
-                   COMMAND ${CMAKE_COMMAND} -E copy ${${TEST_TARGET_NAME}_MESH}        $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>
-                   COMMAND ${CMAKE_COMMAND} -E copy ${${TEST_TARGET_NAME}_IMG}         $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>)
+                   COMMAND ${CMAKE_COMMAND} -E copy ${${TEST_TARGET_NAME}_MESH}        $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>)

@@ -1,4 +1,4 @@
-set(TEST_TARGET_NAME test_sicad)
+set(TEST_TARGET_NAME test_thread_contexts)
 
 set(${TEST_TARGET_NAME}_SRC
         main.cpp
@@ -7,6 +7,14 @@ set(${TEST_TARGET_NAME}_SRC
 add_executable(${TEST_TARGET_NAME} ${${TEST_TARGET_NAME}_SRC})
 
 target_link_libraries(${TEST_TARGET_NAME} SuperimposeMesh)
+
+if(UNIX AND NOT APPLE)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads REQUIRED)
+
+	target_link_libraries(${TEST_TARGET_NAME} Threads::Threads)
+endif()
 
 add_test(NAME ${TEST_TARGET_NAME} COMMAND ${TEST_TARGET_NAME})
 
@@ -21,11 +29,7 @@ set(${TEST_TARGET_NAME}_SHADER_FRAG
 set(${TEST_TARGET_NAME}_MESH
         ${CMAKE_CURRENT_SOURCE_DIR}/../common/Space_Invader.obj)
 
-set(${TEST_TARGET_NAME}_IMG
-        ${CMAKE_CURRENT_SOURCE_DIR}/../common/space.png)
-
 add_custom_command(TARGET  ${TEST_TARGET_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy ${${TEST_TARGET_NAME}_SHADER_VERT} $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>
                    COMMAND ${CMAKE_COMMAND} -E copy ${${TEST_TARGET_NAME}_SHADER_FRAG} $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>
-                   COMMAND ${CMAKE_COMMAND} -E copy ${${TEST_TARGET_NAME}_MESH}        $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>
-                   COMMAND ${CMAKE_COMMAND} -E copy ${${TEST_TARGET_NAME}_IMG}         $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>)
+                   COMMAND ${CMAKE_COMMAND} -E copy ${${TEST_TARGET_NAME}_MESH}        $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>)
