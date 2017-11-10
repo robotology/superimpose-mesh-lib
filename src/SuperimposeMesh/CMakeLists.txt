@@ -33,11 +33,11 @@ target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${CM
                                                          ${ASSIMP_INCLUDE_DIRS}
                                                          ${GLM_INCLUDE_DIRS})
 
-target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES}
-                                                    GLEW::GLEW
-                                                    glfw
-                                                    ${OpenCV_LIBS}
-                                                    ${OPENGL_gl_LIBRARY})
+target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC  -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES}
+                                                     GLEW::GLEW
+                                                     glfw
+                                                     ${OpenCV_LIBS}
+                                             PRIVATE ${OPENGL_gl_LIBRARY})
 
 set_target_properties(${LIBRARY_TARGET_NAME} PROPERTIES VERSION       ${${PROJECT_NAME}_VERSION}
                                                         PUBLIC_HEADER "${${LIBRARY_TARGET_NAME}_HDR}")
