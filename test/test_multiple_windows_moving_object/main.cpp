@@ -25,9 +25,9 @@ int main()
 
     const unsigned int cam_width_  = 320;
     const unsigned int cam_height_ = 240;
-    const float        cam_fx_     = 257.34;
+    const float        cam_fx_     = 257.34f;
     const float        cam_cx_     = 160;
-    const float        cam_fy_     = 257.34;
+    const float        cam_fy_     = 257.34f;
     const float        cam_cy_     = 120;
 
     SICAD si_cad_1(obj,
