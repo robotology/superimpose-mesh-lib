@@ -20,6 +20,10 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+if(WIN32)
+    add_definitions(-D_USE_MATH_DEFINES)
+endif()
+
 ### Options
 # Is macOS?
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
