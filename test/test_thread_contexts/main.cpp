@@ -1,6 +1,5 @@
-#define _USE_MATH_DEFINES
-#include <cmath>
 #include <chrono>
+#include <cmath>
 #include <exception>
 #include <iostream>
 #include <string>
