@@ -16,7 +16,9 @@ if(UNIX AND NOT APPLE)
 	target_link_libraries(${TEST_TARGET_NAME} Threads::Threads)
 endif()
 
-add_test(NAME ${TEST_TARGET_NAME} COMMAND ${TEST_TARGET_NAME})
+add_test(NAME ${TEST_TARGET_NAME}
+         COMMAND ${TEST_TARGET_NAME}
+         WORKING_DIRECTORY $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>)
 
 set(${TEST_TARGET_NAME}_SHADER_VERT
         ${CMAKE_CURRENT_SOURCE_DIR}/../common/shader_model.vert
