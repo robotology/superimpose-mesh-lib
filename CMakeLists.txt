@@ -6,7 +6,7 @@ endif()
 
 project(SuperimposeMesh
         LANGUAGES CXX
-        VERSION 0.9.1.0)
+        VERSION 0.9.2.0)
 
 set(CMAKE_CXX_STANDARD 11)
 

@@ -41,7 +41,7 @@ build_script:
     - ps: cd c:\dev\superimpose-mesh-lib
     - ps: mkdir build
     - ps: cd build
-    - ps: cmake -G "$env:CMAKE_GENERATOR" -DCMAKE_TOOLCHAIN_FILE=c:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+    - ps: cmake -G "$env:CMAKE_GENERATOR" -DCMAKE_TOOLCHAIN_FILE=c:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_TESTING:BOOL=ON ..
     - ps: cmake --build . --config $env:CONFIGURATION --target ALL_BUILD
 
 after_build:
