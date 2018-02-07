@@ -55,7 +55,7 @@ int main()
 
     cv::Mat img;
     si_cad.superimpose(objposes, cam_x, cam_o, img);
-    cv::imwrite("./Space_Invader.jpg", img);
+    cv::imwrite("./test_scissors_Space_Invader.jpg", img);
 
     return EXIT_SUCCESS;
 }
