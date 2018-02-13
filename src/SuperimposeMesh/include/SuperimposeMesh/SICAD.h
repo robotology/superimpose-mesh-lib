@@ -194,7 +194,10 @@ private:
     Shader           * shader_background_  = nullptr;
     Shader           * shader_cad_         = nullptr;
     ModelContainer     model_obj_;
-    GLuint             texture_;
+    GLuint             fbo_;
+    GLuint             texture_color_buffer_;
+    GLuint             texture_depth_buffer_;
+    GLuint             texture_background_;
     GLuint             vao_;
     GLuint             ebo_;
     GLuint             vbo_;

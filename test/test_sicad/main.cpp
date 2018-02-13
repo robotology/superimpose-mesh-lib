@@ -53,12 +53,12 @@ int main()
 
     cv::Mat img_1;
     si_cad.superimpose(objpose_map, cam_x, cam_o, img_1);
-    cv::imwrite("./Space_Invader_1.jpg", img_1);
+    cv::imwrite("./test_sicad_1_Space_Invader.jpg", img_1);
 
     cv::Mat img_2 = cv::imread("./space.png");
     si_cad.setBackgroundOpt(true);
     si_cad.superimpose(objposes, cam_x, cam_o, img_2);
-    cv::imwrite("./Space_Invader_2.jpg", img_2);    
+    cv::imwrite("./test_sicad_2_Space_Invader.jpg", img_2);    
 
     return EXIT_SUCCESS;
 }

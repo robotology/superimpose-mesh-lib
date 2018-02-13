@@ -149,10 +149,13 @@ SICAD::~SICAD()
         delete pair.second;
     }
 
+    glDeleteTextures    (1, &texture_color_buffer_);
+    glDeleteTextures    (1, &texture_depth_buffer_);
+    glDeleteFramebuffers(1, &fbo_);
     glDeleteVertexArrays(1, &vao_);
     glDeleteBuffers     (1, &ebo_);
     glDeleteBuffers     (1, &vbo_);
-    glDeleteTextures    (1, &texture_);
+    glDeleteTextures    (1, &texture_background_);
 
     std::cout << log_ID_ << "Deleting OpenGL shaders." << std::endl;
     delete shader_background_;
@@ -202,12 +205,45 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
     glfwMakeContextCurrent(window_);
 
 
-    /* Enable scissor test. */
+    /* Create a framebuffer color texture. */
+    glGenFramebuffers(1, &fbo_);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
+    glGenTextures(1, &texture_color_buffer_);
+    glBindTexture(GL_TEXTURE_2D, texture_color_buffer_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, framebuffer_width_, framebuffer_height_, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_buffer_, 0);
+
+    /* Create a framebuffer depth texture. */
+    glGenTextures(1, &texture_depth_buffer_);
+    glBindTexture(GL_TEXTURE_2D, texture_depth_buffer_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, framebuffer_width_, framebuffer_height_, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_buffer_, 0);
+
+    /* Check whether the framebuffer has been completely created or not. */
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        throw std::runtime_error("ERROR::SICAD::CTOR::\nERROR:\n\tCustom framebuffer could not be completed.");
+
+
+    /* Enable depth and scissor test. */
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
 
 
+    /* Unbind framebuffer. */
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
     /* Create a background texture. */
-    glGenTextures(1, &texture_);
+    glGenTextures(1, &texture_background_);
 
 
     /* Crate the squared support for the backround texture. */
@@ -357,20 +393,24 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 #endif
 
 
-    if (renderbuffer_size_ == 0)
+    /* Create window to create context and enquire OpenGL for the maximum size of the renderbuffer */
+    window_ = glfwCreateWindow(1, 1, "OpenGL window", nullptr, nullptr);
+    if (window_ == nullptr)
     {
-        /* Create test window to enquire for OpenGL for the maximum size of the renderbuffer */
-        window_ = glfwCreateWindow(1, 1, "OpenGL renderbuffer test", nullptr, nullptr);
-        glfwMakeContextCurrent(window_);
-
-        /* Enquire GPU for maximum renderbuffer size (both width and height) of the default framebuffer */
-        glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &renderbuffer_size_);
-        std::cout << log_ID_ << "Max renderbuffer size is " + std::to_string(renderbuffer_size_) + "x"+std::to_string(renderbuffer_size_) + " size." << std::endl;
-
-        /* Close the test window */
-        glfwDestroyWindow(window_);
-        glfwMakeContextCurrent(nullptr);
+        std::cerr << log_ID_ << "Failed to create GLFW window.";
+        glfwTerminate();
+        return false;
     }
+
+    /* Make the OpenGL context of window the current one handled by this thread. */
+    glfwMakeContextCurrent(window_);
+
+    /* Set window callback functions. */
+    glfwSetKeyCallback(window_, callbackKeypress);
+
+    /* Enquire GPU for maximum renderbuffer size (both width and height) of the default framebuffer */
+    glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &renderbuffer_size_);
+    std::cout << log_ID_ << "Max renderbuffer size is " + std::to_string(renderbuffer_size_) + "x"+std::to_string(renderbuffer_size_) + " size." << std::endl;
 
 
     /* Given image size */
@@ -385,29 +425,17 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     std::cout << log_ID_ << "Required to render " + std::to_string(num_images) + " image(s)." << std::endl;
     std::cout << log_ID_ << "Allowed number or rendered images is " + std::to_string(tiles_num_) + " (" + std::to_string(tiles_rows_) + "x" + std::to_string(tiles_cols_) + " grid)." << std::endl;
 
+    /* Set framebuffer size. */
+    framebuffer_width_ = image_width_ * tiles_cols_;
+    framebuffer_height_ = image_height_ * tiles_rows_;
 
-    /* Create a window. */
-    window_ = glfwCreateWindow(image_width_ * tiles_cols_, image_height_ * tiles_rows_, "OpenGL Window", nullptr, nullptr);
-    if (window_ == nullptr)
-    {
-        std::cerr << log_ID_ << "Failed to create GLFW window.";
-        glfwTerminate();
-        return false;
-    }
-    glfwGetWindowSize(window_, &window_width_, &window_height_);
-    std::cout << log_ID_ << "Window created with size " + std::to_string(window_width_) + "x" + std::to_string(window_height_) + "." << std::endl;
-
-
-    /* Make the OpenGL context of window the current one handled by this thread. */
-    glfwMakeContextCurrent(window_);
-
-
-    /* Set window callback functions. */
-    glfwSetKeyCallback(window_, callbackKeypress);
+    /* Set rendered image size. May vary in HDPI monitors. */
+    render_img_width_ = framebuffer_width_ / tiles_cols_;
+    render_img_height_ = framebuffer_height_ / tiles_rows_;
+    std::cout << log_ID_ << "The rendered image size is " + std::to_string(render_img_width_) + "x" + std::to_string(render_img_height_) + "." << std::endl;
 
 
     /* Initialize GLEW to use the OpenGL implementation provided by the videocard manufacturer. */
-    /* Note: remember that the OpenGL are only specifications, the implementation is provided by the manufacturers. */
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
     {
@@ -416,22 +444,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     }
 
 
-    /* Set default OpenGL viewport for the current window. */
-    /* Note that framebuffer_width_ and framebuffer_height_ may differ w.r.t. width and height in hdpi monitors. */
-    glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
-    glViewport(0, 0, framebuffer_width_, framebuffer_height_);
-    std::cout << log_ID_ << "The window framebuffer size is " + std::to_string(framebuffer_width_) + "x" + std::to_string(framebuffer_height_) + "." << std::endl;
-
-
-    /* Set rendered image size. May vary in HDPI monitors. */
-    render_img_width_  = framebuffer_width_  / tiles_cols_;
-    render_img_height_ = framebuffer_height_ / tiles_rows_;
-    std::cout << log_ID_ << "The rendered image size is " + std::to_string(render_img_width_) + "x" + std::to_string(render_img_height_) + "." << std::endl;
-
-
     /* Set GL property. */
-    glEnable(GL_DEPTH_TEST);
-
     glfwPollEvents();
     main_thread_id_ = std::this_thread::get_id();
 
@@ -485,6 +498,8 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
     glfwMakeContextCurrent(window_);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
     /* Render in the upper-left-most tile of the render grid */
     glViewport(0,                 framebuffer_height_ - render_img_height_,
                render_img_width_, render_img_height_                       );
@@ -496,7 +511,8 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Draw the background picture. */
-    if (getBackgroundOpt()) setBackground(img);
+    if (getBackgroundOpt())
+        setBackground(img);
 
     /* View mesh filled or as wireframe. */
     setWireframe(getWireframeOpt());
@@ -528,6 +544,7 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
        and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
     cv::Mat ogl_pixel(framebuffer_height_ / tiles_rows_, framebuffer_width_ / tiles_cols_, CV_8UC3);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
     glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
@@ -538,6 +555,8 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     glfwSwapBuffers(window_);
 
     pollOrPostEvent();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glfwMakeContextCurrent(nullptr);
 
@@ -566,6 +585,8 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 
     glfwMakeContextCurrent(window_);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
     /* View transformation matrix. */
     glm::mat4 view = getViewTransformationMatrix(cam_x, cam_o);
 
@@ -592,7 +613,8 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             /* Draw the background picture. */
-            if (getBackgroundOpt()) setBackground(img);
+            if (getBackgroundOpt())
+                setBackground(img);
 
             /* View mesh filled or as wireframe. */
             setWireframe(getWireframeOpt());
@@ -620,6 +642,7 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
        and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
     cv::Mat ogl_pixel(framebuffer_height_, framebuffer_width_, CV_8UC3);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
     glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
@@ -630,6 +653,8 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
     glfwSwapBuffers(window_);
 
     pollOrPostEvent();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glfwMakeContextCurrent(nullptr);
 
@@ -798,7 +823,7 @@ void SICAD::pollOrPostEvent()
 void SICAD::setBackground(cv::Mat& img)
 {
     /* Load and generate the texture. */
-    glBindTexture(GL_TEXTURE_2D, texture_);
+    glBindTexture(GL_TEXTURE_2D, texture_background_);
 
     /* Set the texture wrapping/filtering options (on the currently bound texture object). */
     if (getMipmapsOpt() == MIPMaps::nearest)

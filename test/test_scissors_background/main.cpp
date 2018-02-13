@@ -56,7 +56,7 @@ int main()
     cv::Mat img = cv::imread("./space.png");
     si_cad.setBackgroundOpt(true);
     si_cad.superimpose(objposes, cam_x, cam_o, img);
-    cv::imwrite("./Space_Invader.jpg", img);
+    cv::imwrite("./test_scissors_background_Space_Invader.jpg", img);
 
     return EXIT_SUCCESS;
 }
