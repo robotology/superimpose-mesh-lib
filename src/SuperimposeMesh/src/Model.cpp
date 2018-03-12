@@ -27,13 +27,13 @@ void Model::loadModel(std::string path)
 {
     Assimp::Importer import;
     const aiScene*   scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-    
+
     if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         std::cerr << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
         return;
     }
-    
+
     size_t foundpos = path.find_last_of('/');
     if (foundpos == std::string::npos)
     {
@@ -43,7 +43,7 @@ void Model::loadModel(std::string path)
     {
         this->directory = path.substr(0, foundpos);
     }
-    
+
     this->processNode(scene->mRootNode, scene);
 }
 
@@ -55,7 +55,7 @@ void Model::processNode(aiNode* node, const aiScene* scene) {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         this->meshes.push_back(this->processMesh(mesh, scene));
     }
-    
+
     /* Then do the same for each of its children. */
     for (GLuint i = 0; i < node->mNumChildren; ++i)
     {
@@ -70,16 +70,16 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     std::vector<Vertex>  vertices;
     std::vector<GLuint>  indices;
     std::vector<Texture> textures;
-    
+
     /* Process vertices. */
     for (GLuint i = 0; i < mesh->mNumVertices; ++i)
     {
         Vertex vertex;
-        
+
         /* Process vertex positions, normals and texture coordinates. */
         vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
         vertex.Normal   = glm::vec3(mesh->mNormals[i].x,  mesh->mNormals[i].y,  mesh->mNormals[i].z);
-        
+
         /* Does the mesh contain texture coordinates? */
         if (mesh->mTextureCoords[0])
         {
@@ -90,10 +90,10 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
         }
         /* Note: Assimp allows a model to have up to 8 different texture coordinates per vertex, i.e. mTextureCoords[0:7][*], which we're not going to use. We only care about the first set of texture coordinates. */
-        
+
         vertices.push_back(vertex);
     }
-    
+
     /* Process indices. */
     /* Assimp's interface defines meshes with an array of faces, where each face represents a single primitive which, in our case (due to the aiProcess_Triangulate option), are always triangles. A face contains the indices that define which vertices we need to draw in what order for each primitive so if we iterate over all the faces and store all the face's indices in the indices vector we're all set. */
     for (GLuint i = 0; i < mesh->mNumFaces; ++i)
@@ -104,15 +104,15 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
             indices.push_back(face.mIndices[j]);
         }
     }
-    
+
 //    /* Process textures. */
 //    /* The texture code is taken as-is. The tutorial on texture was skipped. */
 //    if (mesh->mMaterialIndex > 0) {
 //        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-//        
+//
 //        std::vector<Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 //        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-//        
+//
 //        std::vector<Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 //        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 //    }
@@ -141,12 +141,12 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 //            texture.type = typeName;
 //            texture.path = str;
 //            textures.push_back(texture);
-//            
+//
 //            /* Add to loaded textures. */
 //            this->textures_loaded.push_back(texture);
 //        }
 //    }
-//    
+//
 //    return textures;
 //}
 
@@ -161,12 +161,12 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 //    int width;
 //    int height;
 //    unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
-//    
+//
 //    /* Assign texture to ID. */
 //    glBindTexture(GL_TEXTURE_2D, textureID);
 //    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 //    glGenerateMipmap(GL_TEXTURE_2D);
-//    
+//
 //    /* Parameters. */
 //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -174,6 +174,6 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 //    glBindTexture(GL_TEXTURE_2D, 0);
 //    SOIL_free_image_data(image);
-//    
+//
 //    return textureID;
 //}

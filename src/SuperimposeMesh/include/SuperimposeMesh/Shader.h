@@ -11,7 +11,7 @@ class Shader
 public:
 	/* Constructor reads and builds the shader. */
 	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
-  	
+
     /* Install (i.e. use) the program object. */
     void install();
 

@@ -13,7 +13,7 @@ class SISkeleton : public Superimpose
 {
 public:
     SISkeleton();
-    
+
     SISkeleton(const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
 
     ~SISkeleton();

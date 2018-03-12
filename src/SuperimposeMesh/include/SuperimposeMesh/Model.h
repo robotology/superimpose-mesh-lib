@@ -16,15 +16,15 @@ class Model
 public:
     /* Functions */
     Model(const GLchar* path);
-    
+
     void Draw(Shader shader);
-    
+
 private:
     /* Model Data */
     std::vector<Mesh>    meshes;
     std::string          directory;
     std::vector<Texture> textures_loaded;
-    
+
     /* Functions */
     void loadModel(std::string path);
 
@@ -33,7 +33,7 @@ private:
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
 //    GLint TextureFromFile(const char* path, std::string directory);
-    
+
 //    std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 };
 
