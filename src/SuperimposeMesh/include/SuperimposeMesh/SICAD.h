@@ -176,8 +176,6 @@ private:
     GLsizei            tiles_rows_         = 0;
     GLsizei            image_width_        = 0;
     GLsizei            image_height_       = 0;
-    GLsizei            window_width_       = 0;
-    GLsizei            window_height_      = 0;
     glm::mat3          ogl_to_cam_         = glm::mat3(1.0f);
     GLsizei            framebuffer_width_  = 0;
     GLsizei            framebuffer_height_ = 0;
