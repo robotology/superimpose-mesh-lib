@@ -1,4 +1,4 @@
-set(TEST_TARGET_NAME test_sicad)
+set(TEST_TARGET_NAME test_sicad_model)
 
 set(${TEST_TARGET_NAME}_SRC
         main.cpp

@@ -244,10 +244,6 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-    /* Create a background texture. */
-    glGenTextures(1, &texture_background_);
-
-
     /* Crate the vertices for 3D reference frame. */
     glGenVertexArrays(1, &vao_frame_);
     glBindVertexArray(vao_frame_);
@@ -256,8 +252,12 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
     glBindBuffer(GL_ARRAY_BUFFER, vbo_frame_);
 
     GLfloat vert_frame[] = {// Positions       // Colors
-                            0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,   // Origin X
-                            1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f }; // End X
+                            0.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,   // Origin X
+                            0.1f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,   // End X
+                            0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,   // Origin Y
+                            0.0f, 0.1f, 0.0f,  0.0f, 1.0f, 0.0f,   // End Y
+                            0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,   // Origin Z
+                            0.0f, 0.0f, 0.1f,  0.0f, 0.0f, 1.0f }; // End Z
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(vert_frame), vert_frame, GL_STATIC_DRAW);
 
@@ -269,6 +269,9 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
 
     glBindVertexArray(0);
 
+
+    /* Create a background texture. */
+    glGenTextures(1, &texture_background_);
 
     /* Crate the squared support for the backround texture. */
     glGenVertexArrays(1, &vao_background_);
@@ -326,7 +329,7 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
 
     try
     {
-        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_frame.vert").c_str(), (shader_folder + "/shader_frame.frag").c_str());
+        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_model.vert").c_str(), (shader_folder + "/shader_model.frag").c_str());
     }
     catch (const std::runtime_error& e)
     {
@@ -336,6 +339,23 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
         throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\t3D model shader source file not found!");
 
     std::cout << log_ID_ << "Model shader succesfully set up!" << std::endl;
+
+
+    /* Crate axis frame shader program. */
+    std::cout << log_ID_ << "Setting up maxis frame shader." << std::endl;
+
+    try
+    {
+        shader_frame_ = new (std::nothrow) Shader((shader_folder + "/shader_frame.vert").c_str(), (shader_folder + "/shader_frame.frag").c_str());
+    }
+    catch (const std::runtime_error& e)
+    {
+        throw std::runtime_error(e.what());
+    }
+    if (shader_frame_ == nullptr)
+        throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\taxis frame shader source file not found!");
+
+    std::cout << log_ID_ << "Axis frame shader succesfully set up!" << std::endl;
 
 
     /* Load models. */
@@ -546,6 +566,11 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     /* Install/Use the program specified by the shader. */
     shader_cad_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_cad_->uninstall();
+
+    shader_frame_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_frame_->uninstall();
 
     /* Model transformation matrix. */
     for (const ModelPoseContainerElement& pair : objpos_map)
@@ -557,20 +582,24 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
         model[3][1] = pose[1];
         model[3][2] = pose[2];
 
-        glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
         auto iter_model = model_obj_.find(pair.first);
         if (iter_model != model_obj_.end())
+        {
+            shader_cad_->install();
+            glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
             (iter_model->second)->Draw(*shader_cad_);
+            shader_cad_->uninstall();
+        }
         else if (pair.first == "frame")
         {
+            shader_frame_->install();
+            glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
             glBindVertexArray(vao_frame_);
-            glLineWidth(3.0f);
-            glDrawArrays(GL_LINES, 0, 2);
+            glDrawArrays(GL_LINES, 0, 6);
             glBindVertexArray(0);
+            shader_frame_->uninstall();
         }
     }
-    shader_cad_->uninstall();
 
     /* Read before swap. glReadPixels read the current framebuffer, i.e. the back one. */
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
@@ -627,6 +656,10 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_cad_->uninstall();
 
+    shader_frame_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_frame_->uninstall();
+
     for (unsigned int i = 0; i < tiles_rows_; ++i)
     {
         for (unsigned int j = 0; j < tiles_cols_; ++j)
@@ -652,7 +685,6 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
             setWireframe(getWireframeOpt());
 
             /* Install/Use the program specified by the shader. */
-            shader_cad_->install();
             for (const ModelPoseContainerElement& pair : objpos_multimap[idx])
             {
                 const double* pose = pair.second.data();
@@ -662,11 +694,24 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
                 model[3][1] = static_cast<float>(pose[1]);
                 model[3][2] = static_cast<float>(pose[2]);
 
-                glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-                model_obj_[pair.first]->Draw(*shader_cad_);
+                auto iter_model = model_obj_.find(pair.first);
+                if (iter_model != model_obj_.end())
+                {
+                    shader_cad_->install();
+                    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    (iter_model->second)->Draw(*shader_cad_);
+                    shader_cad_->uninstall();
+                }
+                else if (pair.first == "frame")
+                {
+                    shader_frame_->install();
+                    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    glBindVertexArray(vao_frame_);
+                    glDrawArrays(GL_LINES, 0, 6);
+                    glBindVertexArray(0);
+                    shader_frame_->uninstall();
+                }
             }
-            shader_cad_->uninstall();
         }
     }
 
@@ -769,6 +814,10 @@ bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_heigh
     shader_cad_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
     shader_cad_->uninstall();
+
+    shader_frame_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
+    shader_frame_->uninstall();
 
     glfwSwapBuffers(window_);
     glfwMakeContextCurrent(nullptr);

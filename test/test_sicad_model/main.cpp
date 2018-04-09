@@ -45,9 +45,6 @@ int main()
     Superimpose::ModelPoseContainer objpose_map;
     objpose_map.emplace("alien", obj_pose);
 
-    std::vector<Superimpose::ModelPoseContainer> objposes;
-    objposes.push_back(objpose_map);
-
     double cam_x[] = {  0, 0,  0};
     double cam_o[] = {1.0, 0,  0, 0};
 
@@ -57,7 +54,7 @@ int main()
 
     cv::Mat img_2 = cv::imread("./space.png");
     si_cad.setBackgroundOpt(true);
-    si_cad.superimpose(objposes, cam_x, cam_o, img_2);
+    si_cad.superimpose(objpose_map, cam_x, cam_o, img_2);
     cv::imwrite("./test_sicad_2_Space_Invader.jpg", img_2);
 
     return EXIT_SUCCESS;

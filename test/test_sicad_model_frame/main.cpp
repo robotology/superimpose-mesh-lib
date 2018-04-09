@@ -17,6 +17,7 @@ int main()
     std::cout << log_ID << "This test checks whether the present machine can render a frame using OpenGL." << std::endl;
 
     SICAD::ModelPathContainer objfile_map;
+    objfile_map.emplace("alien", "./Space_Invader.obj");
 
     const unsigned int cam_width_  = 320;
     const unsigned int cam_height_ = 240;
@@ -42,13 +43,14 @@ int main()
 
     Superimpose::ModelPoseContainer objpose_map;
     objpose_map.emplace("frame", obj_pose);
+    objpose_map.emplace("alien", obj_pose);
 
     double cam_x[] = { 0, 0,  0 };
     double cam_o[] = { 1.0, 0,  0, 0 };
 
     cv::Mat img_1;
     si_cad.superimpose(objpose_map, cam_x, cam_o, img_1);
-    cv::imwrite("./test_sicad_frame.jpg", img_1);
+    cv::imwrite("./test_sicad_1_Space_Invader_frame.jpg", img_1);
 
     return EXIT_SUCCESS;
 }

@@ -191,6 +191,7 @@ private:
     MIPMaps            mesh_mmaps_         = MIPMaps::nearest;
     Shader*            shader_background_  = nullptr;
     Shader*            shader_cad_         = nullptr;
+    Shader*            shader_frame_       = nullptr;
     ModelContainer     model_obj_;
     GLuint             fbo_;
     GLuint             texture_color_buffer_;
