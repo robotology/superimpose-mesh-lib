@@ -155,6 +155,8 @@ SICAD::~SICAD()
     glDeleteVertexArrays(1, &vao_background_);
     glDeleteBuffers     (1, &ebo_background_);
     glDeleteBuffers     (1, &vbo_background_);
+    glDeleteVertexArrays(1, &vao_frame_);
+    glDeleteBuffers     (1, &vbo_frame_);
     glDeleteTextures    (1, &texture_background_);
 
     std::cout << log_ID_ << "Deleting OpenGL shaders." << std::endl;
@@ -247,24 +249,41 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
 
 
     /* Crate the vertices for 3D reference frame. */
+    glGenVertexArrays(1, &vao_frame_);
+    glBindVertexArray(vao_frame_);
 
+    glGenBuffers(1, &vbo_frame_);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_frame_);
+
+    GLfloat vert_frame[] = {// Positions       // Colors
+                            0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,   // Origin X
+                            1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f }; // End X
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vert_frame), vert_frame, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(0));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
 
 
     /* Crate the squared support for the backround texture. */
     glGenVertexArrays(1, &vao_background_);
     glBindVertexArray(vao_background_);
 
-    /* Create and bind an element buffer object. */
     glGenBuffers(1, &vbo_background_);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_background_);
 
-    GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
-                           1.0f,  1.0f,   1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
-                           1.0f, -1.0f,   0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
-                          -1.0f, -1.0f,   0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
-                          -1.0f,  1.0f,   1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
+    GLfloat vert_background[] = {// Positions    // Colors            // Texture Coords
+                                  1.0f,  1.0f,   1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
+                                  1.0f, -1.0f,   0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
+                                 -1.0f, -1.0f,   0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
+                                 -1.0f,  1.0f,   1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vert_background), vert_background, GL_STATIC_DRAW);
 
     glGenBuffers(1, &ebo_background_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_background_);
@@ -307,7 +326,7 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
 
     try
     {
-        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_model.vert").c_str(), (shader_folder + "/shader_model.frag").c_str());
+        shader_cad_ = new (std::nothrow) Shader((shader_folder + "/shader_frame.vert").c_str(), (shader_folder + "/shader_frame.frag").c_str());
     }
     catch (const std::runtime_error& e)
     {
@@ -540,7 +559,16 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
         glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-        model_obj_[pair.first]->Draw(*shader_cad_);
+        auto iter_model = model_obj_.find(pair.first);
+        if (iter_model != model_obj_.end())
+            (iter_model->second)->Draw(*shader_cad_);
+        else if (pair.first == "frame")
+        {
+            glBindVertexArray(vao_frame_);
+            glLineWidth(3.0f);
+            glDrawArrays(GL_LINES, 0, 2);
+            glBindVertexArray(0);
+        }
     }
     shader_cad_->uninstall();
 
@@ -849,10 +877,11 @@ void SICAD::setBackground(cv::Mat& img)
     /* Install/Use the program specified by the shader. */
     shader_background_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_background_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(back_proj_));
+
     glBindVertexArray(vao_background_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
     glBindVertexArray(0);
+
     glBindTexture(GL_TEXTURE_2D, 0);
     shader_background_->uninstall();
 }

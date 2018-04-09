@@ -201,6 +201,8 @@ private:
     GLuint             vao_background_;
     GLuint             ebo_background_;
     GLuint             vbo_background_;
+    GLuint             vao_frame_;
+    GLuint             vbo_frame_;
     glm::mat4          back_proj_;
     glm::mat4          projection_;
 
