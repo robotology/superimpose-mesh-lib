@@ -170,7 +170,7 @@ private:
 
     const std::string  log_ID_             = "[SI-CAD]";
 
-    GLFWwindow       * window_             = nullptr;
+    GLFWwindow*        window_             = nullptr;
     GLint              tiles_num_          = 0;
     GLsizei            tiles_cols_         = 0;
     GLsizei            tiles_rows_         = 0;
@@ -191,8 +191,8 @@ private:
     bool               show_background_    = false;
     GLenum             show_mesh_mode_     = GL_FILL;
     MIPMaps            mesh_mmaps_         = MIPMaps::nearest;
-    Shader           * shader_background_  = nullptr;
-    Shader           * shader_cad_         = nullptr;
+    Shader*            shader_background_  = nullptr;
+    Shader*            shader_cad_         = nullptr;
     ModelContainer     model_obj_;
     GLuint             fbo_;
     GLuint             texture_color_buffer_;
