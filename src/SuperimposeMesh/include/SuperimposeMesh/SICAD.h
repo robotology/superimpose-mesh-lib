@@ -176,8 +176,6 @@ private:
     GLsizei            tiles_rows_         = 0;
     GLsizei            image_width_        = 0;
     GLsizei            image_height_       = 0;
-    GLsizei            window_width_       = 0;
-    GLsizei            window_height_      = 0;
     glm::mat3          ogl_to_cam_         = glm::mat3(1.0f);
     GLsizei            framebuffer_width_  = 0;
     GLsizei            framebuffer_height_ = 0;
@@ -193,6 +191,7 @@ private:
     MIPMaps            mesh_mmaps_         = MIPMaps::nearest;
     Shader*            shader_background_  = nullptr;
     Shader*            shader_cad_         = nullptr;
+    Shader*            shader_frame_       = nullptr;
     ModelContainer     model_obj_;
     GLuint             fbo_;
     GLuint             texture_color_buffer_;
@@ -201,6 +200,8 @@ private:
     GLuint             vao_background_;
     GLuint             ebo_background_;
     GLuint             vbo_background_;
+    GLuint             vao_frame_;
+    GLuint             vbo_frame_;
     glm::mat4          back_proj_;
     glm::mat4          projection_;
 
