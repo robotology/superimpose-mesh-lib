@@ -152,9 +152,9 @@ SICAD::~SICAD()
     glDeleteTextures    (1, &texture_color_buffer_);
     glDeleteTextures    (1, &texture_depth_buffer_);
     glDeleteFramebuffers(1, &fbo_);
-    glDeleteVertexArrays(1, &vao_);
-    glDeleteBuffers     (1, &ebo_);
-    glDeleteBuffers     (1, &vbo_);
+    glDeleteVertexArrays(1, &vao_background_);
+    glDeleteBuffers     (1, &ebo_background_);
+    glDeleteBuffers     (1, &vbo_background_);
     glDeleteTextures    (1, &texture_background_);
 
     std::cout << log_ID_ << "Deleting OpenGL shaders." << std::endl;
@@ -246,28 +246,32 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
     glGenTextures(1, &texture_background_);
 
 
+    /* Crate the vertices for 3D reference frame. */
+
+
+
     /* Crate the squared support for the backround texture. */
-    glGenVertexArrays(1, &vao_);
-    glBindVertexArray(vao_);
+    glGenVertexArrays(1, &vao_background_);
+    glBindVertexArray(vao_background_);
+
+    /* Create and bind an element buffer object. */
+    glGenBuffers(1, &vbo_background_);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_background_);
+
     GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
-                             1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
-                             1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
-                            -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
-                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
+                           1.0f,  1.0f,   1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
+                           1.0f, -1.0f,   0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
+                          -1.0f, -1.0f,   0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
+                          -1.0f,  1.0f,   1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &ebo_background_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_background_);
 
     GLuint indices[] = { 0, 1, 3,   // First Triangle
                          1, 2, 3 }; // Second Triangle
 
-
-    /* Create and bind an element buffer object. */
-    glGenBuffers(1, &ebo_);
-
-    glGenBuffers(1, &vbo_);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(0));
@@ -845,7 +849,7 @@ void SICAD::setBackground(cv::Mat& img)
     /* Install/Use the program specified by the shader. */
     shader_background_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_background_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(back_proj_));
-    glBindVertexArray(vao_);
+    glBindVertexArray(vao_background_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glBindVertexArray(0);

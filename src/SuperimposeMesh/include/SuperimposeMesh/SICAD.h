@@ -198,9 +198,9 @@ private:
     GLuint             texture_color_buffer_;
     GLuint             texture_depth_buffer_;
     GLuint             texture_background_;
-    GLuint             vao_;
-    GLuint             ebo_;
-    GLuint             vbo_;
+    GLuint             vao_background_;
+    GLuint             ebo_background_;
+    GLuint             vbo_background_;
     glm::mat4          back_proj_;
     glm::mat4          projection_;
 
