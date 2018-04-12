@@ -13,10 +13,12 @@ add_test(NAME ${TEST_TARGET_NAME}
          WORKING_DIRECTORY $<TARGET_FILE_DIR:${TEST_TARGET_NAME}>)
 
 set(${TEST_TARGET_NAME}_SHADER_VERT
-        ${CMAKE_CURRENT_SOURCE_DIR}/../common/shader_frame.vert)
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/shader_model.vert
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/shader_background.vert)
 
 set(${TEST_TARGET_NAME}_SHADER_FRAG
-        ${CMAKE_CURRENT_SOURCE_DIR}/../common/shader_frame.frag)
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/shader_model.frag
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/shader_background.frag)
 
 set(${TEST_TARGET_NAME}_MESH
         ${CMAKE_CURRENT_SOURCE_DIR}/../common/Space_Invader.obj)
