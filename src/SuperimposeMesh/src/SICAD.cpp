@@ -448,8 +448,6 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     /* Make the OpenGL context of window the current one handled by this thread. */
     glfwMakeContextCurrent(window_);
 
-    /* Set window callback functions. */
-    glfwSetKeyCallback(window_, callbackKeypress);
 
     /* Enquire GPU for maximum renderbuffer size (both width and height) of the default framebuffer */
     glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &renderbuffer_size_);
@@ -938,14 +936,6 @@ void SICAD::setBackground(cv::Mat& img)
 void SICAD::setWireframe(GLenum mode)
 {
     glPolygonMode(GL_FRONT_AND_BACK, mode);
-}
-
-
-void SICAD::callbackKeypress(GLFWwindow* window, int key, int scancode, int action, int mode)
-{
-    /* When a user presses the escape key, we set the WindowShouldClose property to true, closing the application. */
-    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 
