@@ -74,7 +74,7 @@ install_basic_package_files(${PROJECT_NAME}
                             NO_SET_AND_CHECK_MACRO
                             VARS_PREFIX ${PROJECT_NAME}
                             NO_CHECK_REQUIRED_COMPONENTS_MACRO
-                            DEPENDENCIES assimp GLEW GLFW3 OpenCV)
+                            DEPENDENCIES assimp "GLEW CONFIG" GLFW3 OpenCV)
 
 # Add the uninstall target
 include(AddUninstallTarget)

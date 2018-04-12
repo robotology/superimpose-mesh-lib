@@ -149,10 +149,15 @@ SICAD::~SICAD()
         delete pair.second;
     }
 
-    glDeleteVertexArrays(1, &vao_);
-    glDeleteBuffers     (1, &ebo_);
-    glDeleteBuffers     (1, &vbo_);
-    glDeleteTextures    (1, &texture_);
+    glDeleteTextures    (1, &texture_color_buffer_);
+    glDeleteTextures    (1, &texture_depth_buffer_);
+    glDeleteFramebuffers(1, &fbo_);
+    glDeleteVertexArrays(1, &vao_background_);
+    glDeleteBuffers     (1, &ebo_background_);
+    glDeleteBuffers     (1, &vbo_background_);
+    glDeleteVertexArrays(1, &vao_frame_);
+    glDeleteBuffers     (1, &vbo_frame_);
+    glDeleteTextures    (1, &texture_background_);
 
     std::cout << log_ID_ << "Deleting OpenGL shaders." << std::endl;
     delete shader_background_;
@@ -202,36 +207,93 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
     glfwMakeContextCurrent(window_);
 
 
-    /* Enable scissor test. */
+    /* Create a framebuffer color texture. */
+    glGenFramebuffers(1, &fbo_);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
+    glGenTextures(1, &texture_color_buffer_);
+    glBindTexture(GL_TEXTURE_2D, texture_color_buffer_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, framebuffer_width_, framebuffer_height_, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_buffer_, 0);
+
+    /* Create a framebuffer depth texture. */
+    glGenTextures(1, &texture_depth_buffer_);
+    glBindTexture(GL_TEXTURE_2D, texture_depth_buffer_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, framebuffer_width_, framebuffer_height_, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_buffer_, 0);
+
+    /* Check whether the framebuffer has been completely created or not. */
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        throw std::runtime_error("ERROR::SICAD::CTOR::\nERROR:\n\tCustom framebuffer could not be completed.");
+
+
+    /* Enable depth and scissor test. */
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
 
 
-    /* Create a background texture. */
-    glGenTextures(1, &texture_);
+    /* Unbind framebuffer. */
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+
+    /* Crate the vertices for 3D reference frame. */
+    glGenVertexArrays(1, &vao_frame_);
+    glBindVertexArray(vao_frame_);
+
+    glGenBuffers(1, &vbo_frame_);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_frame_);
+
+    GLfloat vert_frame[] = {// Positions       // Colors
+                            0.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,   // Origin X
+                            0.1f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,   // End X
+                            0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,   // Origin Y
+                            0.0f, 0.1f, 0.0f,  0.0f, 1.0f, 0.0f,   // End Y
+                            0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f,   // Origin Z
+                            0.0f, 0.0f, 0.1f,  0.0f, 0.0f, 1.0f }; // End Z
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vert_frame), vert_frame, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(0));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+
+    /* Create a background texture. */
+    glGenTextures(1, &texture_background_);
 
     /* Crate the squared support for the backround texture. */
-    glGenVertexArrays(1, &vao_);
-    glBindVertexArray(vao_);
-    GLfloat vertices[] = {// Positions    // Colors            // Texture Coords
-                             1.0f,  1.0f,    1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
-                             1.0f, -1.0f,    0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
-                            -1.0f, -1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
-                            -1.0f,  1.0f,    1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
+    glGenVertexArrays(1, &vao_background_);
+    glBindVertexArray(vao_background_);
+
+    glGenBuffers(1, &vbo_background_);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo_background_);
+
+    GLfloat vert_background[] = {// Positions    // Colors            // Texture Coords
+                                  1.0f,  1.0f,   1.0f, 0.0f, 0.0f,    1.0f, 1.0f,   // Top Right
+                                  1.0f, -1.0f,   0.0f, 1.0f, 0.0f,    1.0f, 0.0f,   // Bottom Right
+                                 -1.0f, -1.0f,   0.0f, 0.0f, 1.0f,    0.0f, 0.0f,   // Bottom Left
+                                 -1.0f,  1.0f,   1.0f, 1.0f, 0.0f,    0.0f, 1.0f }; // Top Left
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vert_background), vert_background, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &ebo_background_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_background_);
 
     GLuint indices[] = { 0, 1, 3,   // First Triangle
                          1, 2, 3 }; // Second Triangle
 
-
-    /* Create and bind an element buffer object. */
-    glGenBuffers(1, &ebo_);
-
-    glGenBuffers(1, &vbo_);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(0));
@@ -277,6 +339,23 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
         throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\t3D model shader source file not found!");
 
     std::cout << log_ID_ << "Model shader succesfully set up!" << std::endl;
+
+
+    /* Crate axis frame shader program. */
+    std::cout << log_ID_ << "Setting up maxis frame shader." << std::endl;
+
+    try
+    {
+        shader_frame_ = new (std::nothrow) Shader((shader_folder + "/shader_frame.vert").c_str(), (shader_folder + "/shader_frame.frag").c_str());
+    }
+    catch (const std::runtime_error& e)
+    {
+        throw std::runtime_error(e.what());
+    }
+    if (shader_frame_ == nullptr)
+        throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\taxis frame shader source file not found!");
+
+    std::cout << log_ID_ << "Axis frame shader succesfully set up!" << std::endl;
 
 
     /* Load models. */
@@ -357,20 +436,22 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
 #endif
 
 
-    if (renderbuffer_size_ == 0)
+    /* Create window to create context and enquire OpenGL for the maximum size of the renderbuffer */
+    window_ = glfwCreateWindow(1, 1, "OpenGL window", nullptr, nullptr);
+    if (window_ == nullptr)
     {
-        /* Create test window to enquire for OpenGL for the maximum size of the renderbuffer */
-        window_ = glfwCreateWindow(1, 1, "OpenGL renderbuffer test", nullptr, nullptr);
-        glfwMakeContextCurrent(window_);
-
-        /* Enquire GPU for maximum renderbuffer size (both width and height) of the default framebuffer */
-        glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &renderbuffer_size_);
-        std::cout << log_ID_ << "Max renderbuffer size is " + std::to_string(renderbuffer_size_) + "x"+std::to_string(renderbuffer_size_) + " size." << std::endl;
-
-        /* Close the test window */
-        glfwDestroyWindow(window_);
-        glfwMakeContextCurrent(nullptr);
+        std::cerr << log_ID_ << "Failed to create GLFW window.";
+        glfwTerminate();
+        return false;
     }
+
+    /* Make the OpenGL context of window the current one handled by this thread. */
+    glfwMakeContextCurrent(window_);
+
+
+    /* Enquire GPU for maximum renderbuffer size (both width and height) of the default framebuffer */
+    glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &renderbuffer_size_);
+    std::cout << log_ID_ << "Max renderbuffer size is " + std::to_string(renderbuffer_size_) + "x"+std::to_string(renderbuffer_size_) + " size." << std::endl;
 
 
     /* Given image size */
@@ -385,29 +466,17 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     std::cout << log_ID_ << "Required to render " + std::to_string(num_images) + " image(s)." << std::endl;
     std::cout << log_ID_ << "Allowed number or rendered images is " + std::to_string(tiles_num_) + " (" + std::to_string(tiles_rows_) + "x" + std::to_string(tiles_cols_) + " grid)." << std::endl;
 
+    /* Set framebuffer size. */
+    framebuffer_width_ = image_width_ * tiles_cols_;
+    framebuffer_height_ = image_height_ * tiles_rows_;
 
-    /* Create a window. */
-    window_ = glfwCreateWindow(image_width_ * tiles_cols_, image_height_ * tiles_rows_, "OpenGL Window", nullptr, nullptr);
-    if (window_ == nullptr)
-    {
-        std::cerr << log_ID_ << "Failed to create GLFW window.";
-        glfwTerminate();
-        return false;
-    }
-    glfwGetWindowSize(window_, &window_width_, &window_height_);
-    std::cout << log_ID_ << "Window created with size " + std::to_string(window_width_) + "x" + std::to_string(window_height_) + "." << std::endl;
-
-
-    /* Make the OpenGL context of window the current one handled by this thread. */
-    glfwMakeContextCurrent(window_);
-
-
-    /* Set window callback functions. */
-    glfwSetKeyCallback(window_, callbackKeypress);
+    /* Set rendered image size. May vary in HDPI monitors. */
+    render_img_width_ = framebuffer_width_ / tiles_cols_;
+    render_img_height_ = framebuffer_height_ / tiles_rows_;
+    std::cout << log_ID_ << "The rendered image size is " + std::to_string(render_img_width_) + "x" + std::to_string(render_img_height_) + "." << std::endl;
 
 
     /* Initialize GLEW to use the OpenGL implementation provided by the videocard manufacturer. */
-    /* Note: remember that the OpenGL are only specifications, the implementation is provided by the manufacturers. */
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
     {
@@ -416,22 +485,7 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     }
 
 
-    /* Set default OpenGL viewport for the current window. */
-    /* Note that framebuffer_width_ and framebuffer_height_ may differ w.r.t. width and height in hdpi monitors. */
-    glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
-    glViewport(0, 0, framebuffer_width_, framebuffer_height_);
-    std::cout << log_ID_ << "The window framebuffer size is " + std::to_string(framebuffer_width_) + "x" + std::to_string(framebuffer_height_) + "." << std::endl;
-
-
-    /* Set rendered image size. May vary in HDPI monitors. */
-    render_img_width_  = framebuffer_width_  / tiles_cols_;
-    render_img_height_ = framebuffer_height_ / tiles_rows_;
-    std::cout << log_ID_ << "The rendered image size is " + std::to_string(render_img_width_) + "x" + std::to_string(render_img_height_) + "." << std::endl;
-
-
     /* Set GL property. */
-    glEnable(GL_DEPTH_TEST);
-
     glfwPollEvents();
     main_thread_id_ = std::this_thread::get_id();
 
@@ -485,6 +539,8 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
     glfwMakeContextCurrent(window_);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
     /* Render in the upper-left-most tile of the render grid */
     glViewport(0,                 framebuffer_height_ - render_img_height_,
                render_img_width_, render_img_height_                       );
@@ -496,7 +552,8 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     /* Draw the background picture. */
-    if (getBackgroundOpt()) setBackground(img);
+    if (getBackgroundOpt())
+        setBackground(img);
 
     /* View mesh filled or as wireframe. */
     setWireframe(getWireframeOpt());
@@ -507,6 +564,11 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     /* Install/Use the program specified by the shader. */
     shader_cad_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_cad_->uninstall();
+
+    shader_frame_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_frame_->uninstall();
 
     /* Model transformation matrix. */
     for (const ModelPoseContainerElement& pair : objpos_map)
@@ -518,16 +580,30 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
         model[3][1] = pose[1];
         model[3][2] = pose[2];
 
-        glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-        model_obj_[pair.first]->Draw(*shader_cad_);
+        auto iter_model = model_obj_.find(pair.first);
+        if (iter_model != model_obj_.end())
+        {
+            shader_cad_->install();
+            glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            (iter_model->second)->Draw(*shader_cad_);
+            shader_cad_->uninstall();
+        }
+        else if (pair.first == "frame")
+        {
+            shader_frame_->install();
+            glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glBindVertexArray(vao_frame_);
+            glDrawArrays(GL_LINES, 0, 6);
+            glBindVertexArray(0);
+            shader_frame_->uninstall();
+        }
     }
-    shader_cad_->uninstall();
 
     /* Read before swap. glReadPixels read the current framebuffer, i.e. the back one. */
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
        and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
     cv::Mat ogl_pixel(framebuffer_height_ / tiles_rows_, framebuffer_width_ / tiles_cols_, CV_8UC3);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
     glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
@@ -538,6 +614,8 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     glfwSwapBuffers(window_);
 
     pollOrPostEvent();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glfwMakeContextCurrent(nullptr);
 
@@ -566,6 +644,8 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 
     glfwMakeContextCurrent(window_);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
     /* View transformation matrix. */
     glm::mat4 view = getViewTransformationMatrix(cam_x, cam_o);
 
@@ -573,6 +653,10 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
     shader_cad_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_cad_->uninstall();
+
+    shader_frame_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_frame_->uninstall();
 
     for (unsigned int i = 0; i < tiles_rows_; ++i)
     {
@@ -592,13 +676,13 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             /* Draw the background picture. */
-            if (getBackgroundOpt()) setBackground(img);
+            if (getBackgroundOpt())
+                setBackground(img);
 
             /* View mesh filled or as wireframe. */
             setWireframe(getWireframeOpt());
 
             /* Install/Use the program specified by the shader. */
-            shader_cad_->install();
             for (const ModelPoseContainerElement& pair : objpos_multimap[idx])
             {
                 const double* pose = pair.second.data();
@@ -608,11 +692,24 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
                 model[3][1] = static_cast<float>(pose[1]);
                 model[3][2] = static_cast<float>(pose[2]);
 
-                glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-                model_obj_[pair.first]->Draw(*shader_cad_);
+                auto iter_model = model_obj_.find(pair.first);
+                if (iter_model != model_obj_.end())
+                {
+                    shader_cad_->install();
+                    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    (iter_model->second)->Draw(*shader_cad_);
+                    shader_cad_->uninstall();
+                }
+                else if (pair.first == "frame")
+                {
+                    shader_frame_->install();
+                    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    glBindVertexArray(vao_frame_);
+                    glDrawArrays(GL_LINES, 0, 6);
+                    glBindVertexArray(0);
+                    shader_frame_->uninstall();
+                }
             }
-            shader_cad_->uninstall();
         }
     }
 
@@ -620,6 +717,7 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
     /* See: http://stackoverflow.com/questions/16809833/opencv-image-loading-for-opengl-texture#16812529
        and http://stackoverflow.com/questions/9097756/converting-data-from-glreadpixels-to-opencvmat#9098883 */
     cv::Mat ogl_pixel(framebuffer_height_, framebuffer_width_, CV_8UC3);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
     glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
@@ -630,6 +728,8 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
     glfwSwapBuffers(window_);
 
     pollOrPostEvent();
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glfwMakeContextCurrent(nullptr);
 
@@ -649,7 +749,7 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy);
 
     superimpose(objpos_map, cam_x, cam_o, img);
-    
+
     return true;
 }
 
@@ -682,36 +782,39 @@ bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_heigh
     glfwMakeContextCurrent(window_);
 
     /* Projection matrix. */
-    /* In both OpenGL window coordinates and HZ image coordinate systems, (0,0) is the lower left corner with X and Y increasing right and up, respectively.
-       In a normal image file, the (0,0) pixel is in the upper left corner. We have code paths to deal with this in one of two ways:
-       first, we can draw our images upside down, so that all the pixel-based coordinate systems are the same. This is the code path used when “window_coords=’y up’”.
-       Second, we can keep the images right side up and modify the projection matrix so that OpenGL will generate window coordinates that compensate for the flipped image coordinates.
-       In this “window_coords=’y down’” path, the generated OpenGL Y window coordinates are (height-y).
-       
-       Enough of the preliminaries. We calculate the OpenGL Projection matrix when window_coords==’y up’ to be:
-       [2*K00/width,  -2*K01/width,   (width - 2*K02 + 2*x0)/width,                            0]
-       [          0, -2*K11/height, (height - 2*K12 + 2*y0)/height,                            0]
-       [          0,             0, (-zfar - znear)/(zfar - znear), -2*zfar*znear/(zfar - znear)]
-       [          0,             0,                             -1,                            0]
-       
-       With window_coords==’y down’, we have:
-       [2*K00/width, -2*K01/width,    (width - 2*K02 + 2*x0)/width,                            0]
-       [          0, 2*K11/height, (-height + 2*K12 + 2*y0)/height,                            0]
-       [          0,            0,  (-zfar - znear)/(zfar - znear), -2*zfar*znear/(zfar - znear)]
-       [          0,            0,                              -1,                            0]
-       
-       Where Knm is the (n,m) entry of the 3x3 HZ instrinsic camera calibration matrix K. (K is upper triangular and scaled such that the lower-right entry is one.)
-       Width and height are the size of the camera image, in pixels, and x0 and y0 are the camera image origin and are normally zero.
-       Znear and zfar are the standard OpenGL near and far clipping planes, respectively. */
-    projection_ = glm::mat4(2.0f*(cam_fx/cam_width),    0,                              0,                                  0,
-                            0,                          2.0f*(cam_fy/cam_height),       0,                                  0,
-                            1-2.0f*(cam_cx/cam_width),  1-2.0f*(cam_cy/cam_height),    -(far_+near_)/(far_-near_),         -1,
-                            0,                          0,                             -2.0f*(far_*near_)/(far_-near_),     0);
+    /* In both OpenGL window coordinates and Hartley-Zisserman (HZ) image coordinate systems, (0,0) is the lower left corner with X and Y increasing right and up, respectively. In a normal image file, the (0,0) pixel is in the upper left corner.
+       There are two possibilities to convert this coordinate system into the image file system coordinate (also used by OpenCV).
+       1. We can render/draw our images upside down, so that we have already a correspondence between OpenGL and image coordinate systems.
+          The projection matrix is the following:
+          [2*K00/width,  -2*K01/width,   (width - 2*K02 + 2*x0)/width,                            0]
+          [          0, -2*K11/height, (height - 2*K12 + 2*y0)/height,                            0]
+          [          0,             0, (-zfar - znear)/(zfar - znear), -2*zfar*znear/(zfar - znear)]
+          [          0,             0,                             -1,                            0]
+       2. We can render/draw our image normally and compensate the the flipped image externally (e.g. with OpenCV flip()).
+          The projection matrix is the following:
+          [2*K00/width, -2*K01/width,    (width - 2*K02 + 2*x0)/width,                            0]
+          [          0, 2*K11/height, (-height + 2*K12 + 2*y0)/height,                            0]
+          [          0,            0,  (-zfar - znear)/(zfar - znear), -2*zfar*znear/(zfar - znear)]
+          [          0,            0,                              -1,                            0]
+       Where "Knm" is the (n,m) entry of the 3x3 HZ instrinsic camera calibration matrix K. K is upper triangular and scaled such that the lower-right entry is one. "width" and "height" are the size of the camera image, in pixels, and "x0" and "y0" are the camera image origin, which are normally zero. "znear" and "zfar" are the standard OpenGL near and far clipping planes, respectively. */
+    // projection_ = glm::mat4(2.0f*(cam_fx/cam_width),    0,                              0,                                  0,
+    //                         0,                          -2.0f*(cam_fy/cam_height),      0,                                  0,
+    //                         1-2.0f*(cam_cx/cam_width),  1-2.0f*(cam_cy/cam_height),    -(far_+near_)/(far_-near_),         -1,
+    //                         0,                          0,                             -2.0f*(far_*near_)/(far_-near_),     0);
+
+    projection_ = glm::mat4(2.0f*(cam_fx/cam_width),    0,                           0,                               0,
+                            0,                          2.0f*(cam_fy/cam_height),    0,                               0,
+                            1-2.0f*(cam_cx/cam_width),  2.0f*(cam_cy/cam_height)-1, -(far_+near_)/(far_-near_),      -1,
+                            0,                          0,                          -2.0f*(far_*near_)/(far_-near_),  0 );
 
     /* Install/Use the program specified by the shader. */
     shader_cad_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
     shader_cad_->uninstall();
+
+    shader_frame_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
+    shader_frame_->uninstall();
 
     glfwSwapBuffers(window_);
     glfwMakeContextCurrent(nullptr);
@@ -798,7 +901,7 @@ void SICAD::pollOrPostEvent()
 void SICAD::setBackground(cv::Mat& img)
 {
     /* Load and generate the texture. */
-    glBindTexture(GL_TEXTURE_2D, texture_);
+    glBindTexture(GL_TEXTURE_2D, texture_background_);
 
     /* Set the texture wrapping/filtering options (on the currently bound texture object). */
     if (getMipmapsOpt() == MIPMaps::nearest)
@@ -820,10 +923,11 @@ void SICAD::setBackground(cv::Mat& img)
     /* Install/Use the program specified by the shader. */
     shader_background_->install();
     glUniformMatrix4fv(glGetUniformLocation(shader_background_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(back_proj_));
-    glBindVertexArray(vao_);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+    glBindVertexArray(vao_background_);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+
     glBindTexture(GL_TEXTURE_2D, 0);
     shader_background_->uninstall();
 }
@@ -832,14 +936,6 @@ void SICAD::setBackground(cv::Mat& img)
 void SICAD::setWireframe(GLenum mode)
 {
     glPolygonMode(GL_FRONT_AND_BACK, mode);
-}
-
-
-void SICAD::callbackKeypress(GLFWwindow* window, int key, int scancode, int action, int mode)
-{
-    /* When a user presses the escape key, we set the WindowShouldClose property to true, closing the application. */
-    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 

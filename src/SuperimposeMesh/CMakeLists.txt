@@ -19,7 +19,7 @@ set(${LIBRARY_TARGET_NAME}_HDR
 
 # Depndencies
 find_package(assimp REQUIRED)
-find_package(glew   REQUIRED)
+find_package(glew   REQUIRED CONFIG)
 find_package(glfw3  REQUIRED)
 find_package(glm    REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -29,7 +29,7 @@ find_package(OpenGL REQUIRED)
 add_library(${LIBRARY_TARGET_NAME} ${${LIBRARY_TARGET_NAME}_SRC} ${${LIBRARY_TARGET_NAME}_HDR})
 
 target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}>"
+                                                         "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
                                                          ${ASSIMP_INCLUDE_DIRS}
                                                          ${GLM_INCLUDE_DIRS})
 

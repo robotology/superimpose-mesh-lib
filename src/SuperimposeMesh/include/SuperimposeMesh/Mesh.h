@@ -31,7 +31,7 @@ public:
     Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
 
     void Draw(Shader shader);
-    
+
     /* Mesh Data */
     std::vector<Vertex>  vertices;
     std::vector<GLuint>  indices;
@@ -42,7 +42,7 @@ private:
     GLuint VAO;
     GLuint VBO;
     GLuint EBO;
-    
+
     /* Functions */
     void setupMesh();
 };

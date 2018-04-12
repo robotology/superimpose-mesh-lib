@@ -2,7 +2,6 @@
 #include <exception>
 #include <iostream>
 #include <string>
-#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,12 +13,11 @@
 
 int main()
 {
-    std::string log_ID = "[Test - Scissors - Background]";
-    std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
-    std::cout << log_ID << "The same mesh will be rendered on 2 different viewports with a background texture." << std::endl;
+    std::string log_ID = "[Test - SICAD - Frame]";
+    std::cout << log_ID << "This test checks whether the present machine can render a frame using OpenGL." << std::endl;
 
-    SICAD::ModelPathContainer obj;
-    obj.emplace("alien", "./Space_Invader.obj");
+    SICAD::ModelPathContainer objfile_map;
+    objfile_map.emplace("alien", "./Space_Invader.obj");
 
     const unsigned int cam_width_  = 320;
     const unsigned int cam_height_ = 240;
@@ -28,9 +26,9 @@ int main()
     const float        cam_fy_     = 257.34;
     const float        cam_cy_     = 120;
 
-    SICAD si_cad(obj,
+    SICAD si_cad(objfile_map,
                  cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
-                 2,
+                 1,
                  ".",
                  true);
 
@@ -38,25 +36,21 @@ int main()
     obj_pose[0] = 0;
     obj_pose[1] = 0;
     obj_pose[2] = -0.1;
-    obj_pose[3] = 0;
-    obj_pose[4] = 1.0;
+    obj_pose[3] = 1.0;
+    obj_pose[4] = 0;
     obj_pose[5] = 0;
     obj_pose[6] = 0;
 
     Superimpose::ModelPoseContainer objpose_map;
+    objpose_map.emplace("frame", obj_pose);
     objpose_map.emplace("alien", obj_pose);
 
-    std::vector<Superimpose::ModelPoseContainer> objposes;
-    objposes.push_back(objpose_map);
-    objposes.push_back(objpose_map);
+    double cam_x[] = { 0, 0,  0 };
+    double cam_o[] = { 1.0, 0,  0, 0 };
 
-    double cam_x[] = {  0, 0, 0};
-    double cam_o[] = {1.0, 0, 0, 0};
-
-    cv::Mat img = cv::imread("./space.png");
-    si_cad.setBackgroundOpt(true);
-    si_cad.superimpose(objposes, cam_x, cam_o, img);
-    cv::imwrite("./test_scissors_background_Space_Invader.jpg", img);
+    cv::Mat img_1;
+    si_cad.superimpose(objpose_map, cam_x, cam_o, img_1);
+    cv::imwrite("./test_sicad_1_Space_Invader_frame.jpg", img_1);
 
     return EXIT_SUCCESS;
 }

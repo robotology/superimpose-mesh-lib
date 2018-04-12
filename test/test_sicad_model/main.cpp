@@ -2,7 +2,6 @@
 #include <exception>
 #include <iostream>
 #include <string>
-#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,9 +13,9 @@
 
 int main()
 {
-    std::string log_ID = "[Test - Scissors - Background]";
-    std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
-    std::cout << log_ID << "The same mesh will be rendered on 2 different viewports with a background texture." << std::endl;
+    std::string log_ID = "[Test - SICAD]";
+    std::cout << log_ID << "This test checks whether the present machine can render properly using OpenGL." << std::endl;
+    std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
 
     SICAD::ModelPathContainer obj;
     obj.emplace("alien", "./Space_Invader.obj");
@@ -30,7 +29,7 @@ int main()
 
     SICAD si_cad(obj,
                  cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
-                 2,
+                 1,
                  ".",
                  true);
 
@@ -46,17 +45,17 @@ int main()
     Superimpose::ModelPoseContainer objpose_map;
     objpose_map.emplace("alien", obj_pose);
 
-    std::vector<Superimpose::ModelPoseContainer> objposes;
-    objposes.push_back(objpose_map);
-    objposes.push_back(objpose_map);
+    double cam_x[] = {  0, 0,  0};
+    double cam_o[] = {1.0, 0,  0, 0};
 
-    double cam_x[] = {  0, 0, 0};
-    double cam_o[] = {1.0, 0, 0, 0};
+    cv::Mat img_1;
+    si_cad.superimpose(objpose_map, cam_x, cam_o, img_1);
+    cv::imwrite("./test_sicad_1_Space_Invader.jpg", img_1);
 
-    cv::Mat img = cv::imread("./space.png");
+    cv::Mat img_2 = cv::imread("./space.png");
     si_cad.setBackgroundOpt(true);
-    si_cad.superimpose(objposes, cam_x, cam_o, img);
-    cv::imwrite("./test_scissors_background_Space_Invader.jpg", img);
+    si_cad.superimpose(objpose_map, cam_x, cam_o, img_2);
+    cv::imwrite("./test_sicad_2_Space_Invader.jpg", img_2);
 
     return EXIT_SUCCESS;
 }
