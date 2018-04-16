@@ -2,7 +2,7 @@
 
 A modern C++ augmented-reality library to superimpose 3D objects on images.
 
-[![SuperimposeMesh home](https://img.shields.io/badge/SuperimposeMesh-Home%20%26%20Doc-E0C57F.svg?style=flat-square)](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html) [![Latest Release](https://img.shields.io/github/release/robotology/superimpose-mesh-lib.svg?style=flat-square&label=Latest%20Release)](https://github.com/robotology/superimpose-mesh-lib/releases) [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-brightgreen.svg?style=flat-square)](http://semver.org/) <a href="https://zenhub.com"><img src="https://raw.githubusercontent.com/ZenHubIO/support/master/zenhub-badge.png"></a>
+[![SuperimposeMesh home](https://img.shields.io/badge/SuperimposeMesh-Home%20%26%20Doc-E0C57F.svg?style=flat-square)](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html) [![Latest Release](https://img.shields.io/github/release/robotology/superimpose-mesh-lib.svg?style=flat-square&label=Latest%20Release)](https://github.com/robotology/superimpose-mesh-lib/releases) [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-brightgreen.svg?style=flat-square)](http://semver.org/) [![ZenHub](https://img.shields.io/badge/Shipping_faster_with-ZenHub-blue.svg?style=flat-square)](https://zenhub.com)
 
 
 
