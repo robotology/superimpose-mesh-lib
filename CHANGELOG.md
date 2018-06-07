@@ -3,6 +3,7 @@
 ## Version 0.9.4.0
 ##### `Bugfix`
  - Fix tests, some shader files were not copied in the binary test folder.
+ - Fix exported dependencies, GLFW3 and GLEW are now lower case.
 
 
 ## Version 0.9.3.0
