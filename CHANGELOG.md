@@ -1,5 +1,11 @@
 # 📜 SuperimposeMesh changelog
 
+## Version 0.9.4.0
+##### `Bugfix`
+ - Fix tests, some shader files were not copied in the binary test folder.
+ - Fix exported dependencies, GLFW3 and GLEW are now lower case.
+
+
 ## Version 0.9.3.0
 ##### `Changed behavior`
  - The library now renders on a dedicated framebuffer and is no longer capable of showing the rendering status onscreen.
