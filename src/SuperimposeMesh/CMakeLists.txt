@@ -18,7 +18,7 @@ set(${LIBRARY_TARGET_NAME}_HDR
         include/SuperimposeMesh/Superimpose.h)
 
 # Depndencies
-find_package(assimp REQUIRED)
+find_package(assimp REQUIRED CONFIG)
 find_package(glew   REQUIRED CONFIG)
 find_package(glfw3  REQUIRED)
 find_package(glm    REQUIRED)
