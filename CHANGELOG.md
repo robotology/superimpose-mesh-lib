@@ -2,9 +2,11 @@
 
 
 ## Version 0.9.104.0
-###### `CMake`
+##### `CMake`
  - Devel branch will now have +100 on the patch number to differentiate from master branch.
-
+ - Use CONFIG mode for Assimp, fix inclusion of headers and linking to Assimp.
+##### `Dependencies`
+ - Minimum required version of Assimp is now `3.3.0`.
 
 ## Version 0.9.4.0
 ##### `Bugfix`
