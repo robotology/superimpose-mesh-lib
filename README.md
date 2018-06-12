@@ -34,7 +34,7 @@ In particular, this library provides function to superimpose 3D mesh model on to
 # 🎛 Dependencies
 SuperimposeMesh library depends on
 - [GLFW](http://www.glfw.org) - `version >= 3.1`
-- [Open Asset Import Library, ASSIMP](http://assimp.org) - `version >= 3.0`
+- [Open Asset Import Library, ASSIMP](http://assimp.org) - `version >= 3.3.0`
 - [OpenGL Extension Wrangler, GLEW](http://glew.sourceforge.net) - `version >= 2.0`
 - [OpenCV](http://opencv.org) - `version >= 3.0`
 - [OpenGL Mathematics, GLM](http://glm.g-truc.net) - `version >= 0.9`

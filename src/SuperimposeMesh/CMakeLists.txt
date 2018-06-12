@@ -18,7 +18,7 @@ set(${LIBRARY_TARGET_NAME}_HDR
         include/SuperimposeMesh/Superimpose.h)
 
 # Depndencies
-find_package(assimp REQUIRED)
+find_package(assimp REQUIRED CONFIG)
 find_package(glew   REQUIRED CONFIG)
 find_package(glfw3  REQUIRED)
 find_package(glm    REQUIRED)
@@ -33,7 +33,7 @@ target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${CM
                                                          ${ASSIMP_INCLUDE_DIRS}
                                                          ${GLM_INCLUDE_DIRS})
 
-target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC  -L${ASSIMP_LIBRARY_DIRS} ${ASSIMP_LIBRARIES}
+target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC  ${ASSIMP_LIBRARIES}
                                                      GLEW::GLEW
                                                      glfw
                                                      ${OpenCV_LIBS}
