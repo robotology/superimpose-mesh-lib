@@ -20,7 +20,7 @@ set(${LIBRARY_TARGET_NAME}_HDR
 # Depndencies
 find_package(assimp REQUIRED CONFIG)
 find_package(glew   REQUIRED CONFIG)
-find_package(glfw3  REQUIRED)
+find_package(glfw3  REQUIRED CONFIG)
 find_package(glm    REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
