@@ -25,22 +25,43 @@ find_package(glm    REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 
+if(APPLE)
+    message(AUTHOR_WARNING "Calling ASSIMP workaround for macOS until assimp/assimp#1517 (https://github.com/assimp/assimp/issues/1517) is not fixed.")
+    message(STATUS "ASSIMP_LIBRARIES before workaround: " ${ASSIMP_LIBRARIES})
+
+    find_library(assimp_LIBRARIES
+                 NAMES
+                     ${ASSIMP_LIBRARIES})
+    set(ASSIMP_LIBRARIES ${assimp_LIBRARIES})
+
+    message(STATUS "ASSIMP_LIBRARIES after workaround: " ${ASSIMP_LIBRARIES})
+endif()
+
 # Library main
 add_library(${LIBRARY_TARGET_NAME} ${${LIBRARY_TARGET_NAME}_SRC} ${${LIBRARY_TARGET_NAME}_HDR})
 
-target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                                                         "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
-                                                         ${ASSIMP_INCLUDE_DIRS}
-                                                         ${GLM_INCLUDE_DIRS})
+target_include_directories(${LIBRARY_TARGET_NAME}
+                           PUBLIC
+                               "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+                               "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
+                                ${ASSIMP_INCLUDE_DIRS}
+                                ${GLM_INCLUDE_DIRS})
 
-target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC  ${ASSIMP_LIBRARIES}
-                                                     GLEW::GLEW
-                                                     glfw
-                                                     ${OpenCV_LIBS}
-                                             PRIVATE ${OPENGL_gl_LIBRARY})
+target_link_libraries(${LIBRARY_TARGET_NAME}
+                      PUBLIC
+                          ${ASSIMP_LIBRARIES}
+                          GLEW::GLEW
+                          glfw
+                          ${OpenCV_LIBS}
+                      PRIVATE
+                          ${OPENGL_gl_LIBRARY})
 
-set_target_properties(${LIBRARY_TARGET_NAME} PROPERTIES VERSION       ${${PROJECT_NAME}_VERSION}
-                                                        PUBLIC_HEADER "${${LIBRARY_TARGET_NAME}_HDR}")
+set_target_properties(${LIBRARY_TARGET_NAME}
+                      PROPERTIES
+                      VERSION
+                          ${${PROJECT_NAME}_VERSION}
+                      PUBLIC_HEADER
+                          "${${LIBRARY_TARGET_NAME}_HDR}")
 
 set_property(GLOBAL APPEND PROPERTY ${PROJECT_NAME}_TARGETS ${LIBRARY_TARGET_NAME})
 
