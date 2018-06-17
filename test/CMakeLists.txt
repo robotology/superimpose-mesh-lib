@@ -32,6 +32,7 @@ set(TEST_IMG
 
 add_custom_target(test_files ALL)
 add_custom_command(TARGET test_files POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E make_directory           ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
                    COMMAND ${CMAKE_COMMAND} -E copy ${TEST_SHADER_VERT} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
                    COMMAND ${CMAKE_COMMAND} -E copy ${TEST_SHADER_FRAG} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
                    COMMAND ${CMAKE_COMMAND} -E copy ${TEST_MESH}        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
