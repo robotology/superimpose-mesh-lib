@@ -116,8 +116,8 @@ public:
     virtual ~SICAD();
 
 
-    bool         getOglWindowShouldClose();
-    void         setOglWindowShouldClose(bool should_close);
+    bool getOglWindowShouldClose();
+    void setOglWindowShouldClose(bool should_close);
 
     /**
      * Render the mesh models in the pose specified in `objpos_map` and move the virtual camera in `cam_x` position with orientation `cam_o`.
@@ -133,7 +133,7 @@ public:
      *
      * @return true upon success, false otherswise.
      **/
-    bool         superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img) override;
+    bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img) override;
 
     /**
      * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
@@ -233,17 +233,19 @@ public:
      **/
     virtual std::pair<bool, GLuint> superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const cv::Mat& img);
 
-    bool         getBackgroundOpt() const;
-    void         setBackgroundOpt(bool show_background);
+    bool setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
-    GLenum       getWireframeOpt()  const;
-    void         setWireframeOpt(bool show_mesh_wires);
+    bool getBackgroundOpt() const;
+    void setBackgroundOpt(bool show_background);
 
-    MIPMaps      getMipmapsOpt()    const;
+    GLenum getWireframeOpt() const;
+    void setWireframeOpt(bool show_mesh_wires);
 
-    int          getTilesNumber()   const;
-    int          getTilesRows()     const;
-    int          getTilesCols()     const;
+    MIPMaps getMipmapsOpt() const;
+
+    int getTilesNumber() const;
+    int getTilesRows() const;
+    int getTilesCols() const;
 
 private:
     bool initOGL(const GLsizei width, const GLsizei height, const GLint num_viewports, const bool window_visibile);
@@ -252,60 +254,60 @@ private:
     bool has_proj_matrix_ = false;
 
 
-    static int         class_counter_;
-    static GLsizei     renderbuffer_size_;
+    static int class_counter_;
+    static GLsizei renderbuffer_size_;
 
 
-    const std::string  log_ID_             = "[SI-CAD]";
+    const std::string log_ID_             = "[SI-CAD]";
 
-    GLFWwindow*        window_             = nullptr;
-    GLint              tiles_num_          = 0;
-    GLsizei            tiles_cols_         = 0;
-    GLsizei            tiles_rows_         = 0;
-    GLsizei            image_width_        = 0;
-    GLsizei            image_height_       = 0;
-    glm::mat3          ogl_to_cam_         = glm::mat3(1.0f);
-    GLsizei            framebuffer_width_  = 0;
-    GLsizei            framebuffer_height_ = 0;
-    GLsizei            render_img_width_   = 0;
-    GLsizei            render_img_height_  = 0;
-    const GLfloat      near_               = 0.001f;
-    const GLfloat      far_                = 1000.0f;
+    GLFWwindow*   window_             = nullptr;
+    GLint         tiles_num_          = 0;
+    GLsizei       tiles_cols_         = 0;
+    GLsizei       tiles_rows_         = 0;
+    GLsizei       image_width_        = 0;
+    GLsizei       image_height_       = 0;
+    glm::mat3     ogl_to_cam_         = glm::mat3(1.0f);
+    GLsizei       framebuffer_width_  = 0;
+    GLsizei       framebuffer_height_ = 0;
+    GLsizei       render_img_width_   = 0;
+    GLsizei       render_img_height_  = 0;
+    const GLfloat near_               = 0.001f;
+    const GLfloat far_                = 1000.0f;
 
-    std::thread::id    main_thread_id_;
+    std::thread::id main_thread_id_;
 
-    bool               show_background_    = false;
-    GLenum             show_mesh_mode_     = GL_FILL;
-    MIPMaps            mesh_mmaps_         = MIPMaps::nearest;
-    Shader*            shader_background_  = nullptr;
-    Shader*            shader_cad_         = nullptr;
-    Shader*            shader_frame_       = nullptr;
-    ModelContainer     model_obj_;
-    GLuint             fbo_;
-    GLuint             texture_color_buffer_;
-    GLuint             texture_depth_buffer_;
-    GLuint             texture_background_;
-    GLuint             vao_background_;
-    GLuint             ebo_background_;
-    GLuint             vbo_background_;
-    GLuint             vao_frame_;
-    GLuint             vbo_frame_;
-    glm::mat4          back_proj_;
-    glm::mat4          projection_;
+    bool           show_background_    = false;
+    GLenum         show_mesh_mode_     = GL_FILL;
+    MIPMaps        mesh_mmaps_         = MIPMaps::nearest;
+    Shader*        shader_background_  = nullptr;
+    Shader*        shader_cad_         = nullptr;
+    Shader*        shader_frame_       = nullptr;
+    ModelContainer model_obj_;
+    GLuint         fbo_;
+    GLuint         texture_color_buffer_;
+    GLuint         texture_depth_buffer_;
+    GLuint         texture_background_;
+    GLuint         vao_background_;
+    GLuint         ebo_background_;
+    GLuint         vbo_background_;
+    GLuint         vao_frame_;
+    GLuint         vbo_frame_;
     GLuint         pbo_render_[2];
+    glm::mat4      back_proj_;
+    glm::mat4      projection_;
 
-    glm::mat4          getViewTransformationMatrix(const double* cam_x, const double* cam_o);
-
-
-    void               pollOrPostEvent();
-
-
-    void               setBackground(cv::Mat& img);
-    void               setWireframe(GLenum mode);
-    static void        callbackKeypress(GLFWwindow* window, int key, int scancode, int action, int mode);
+    glm::mat4 getViewTransformationMatrix(const double* cam_x, const double* cam_o);
 
 
-    void               factorize_int(const GLsizei area, const GLsizei width_limit, const GLsizei height_limit, GLsizei& width, GLsizei& height);
+    void pollOrPostEvent();
+
+
+    void setBackground(cv::Mat& img);
+    void setWireframe(GLenum mode);
+    static void callbackKeypress(GLFWwindow* window, int key, int scancode, int action, int mode);
+
+
+    void factorize_int(const GLsizei area, const GLsizei width_limit, const GLsizei height_limit, GLsizei& width, GLsizei& height);
 };
 
 #endif /* SUPERIMPOSECAD_H */
