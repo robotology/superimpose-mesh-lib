@@ -86,8 +86,8 @@ public:
      * @param cam_height camera or image height.
      * @param cam_fx focal length along the x axis in pixels.
      * @param cam_fy focal length along the y axis in pixels.
-     * @param num_images number of images to render (using glScissor) in the same window and context.
-     * @param ogl_to_cam a 7 component pose vector, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, defining a camera rotation to be applied to the OpenGL camera.
+     * @param num_images number of images (i.e. viewports) rendered in the same GL context.
+     * @param ogl_to_cam a 7-component pose vector, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, defining a camera rotation applied to the OpenGL camera.
      * @param shader_folder folder path containing four shaders, two for the background and two for the mesh.
      * @param window_visible true to show the rendering window, false to perform off-screen rendering.
      */
@@ -119,22 +119,39 @@ public:
     void         setOglWindowShouldClose(bool should_close);
 
     /**
-     * Superimpose one of the mesh models loaded during SICAD object construction in a given pose from a particular camera viewpoint.
+     * Render the mesh models in the pose specified in `objpos_map` and move the virtual camera in `cam_x` position with orientation `cam_o`.
+     * The method then creates an image of the mesh models as they are seen by the virtual camera.
      *
-     * If the size of cv::Mat img is not correct to store the result of the superimposition process, it is automatically resized.
+     * @note If cv::Mat `img` is a background image it must be of size `cam_width * cam_height`, as specified during object construction,
+     * and the `SICAD::setBackgroundOpt(bool show_background)` must have been invoked with `true`.
      *
-     * @note If cv::Mat img is a background image it must be of size cam_width*cam_height, as specified during object construction, and the SICAD::setBackgroundOpt(bool show_background)
-     * must have been evoked with true.
-     *
-     * @param objpos_map a (tag, pose) container to associate a 7 component 'pose', (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, to a mesh with tag 'tag'.
-     * @param cam_x (x, y, z) position
-     * @param cam_o (ux, uy, uz, theta) axis-angle orientation
-     * @param img an image where the result of the superimposition is stored
+     * @param objpos_map A (tag, pose) container to associate a 7-component `pose`, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, to a mesh with tag 'tag'.
+     * @param cam_x (x, y, z) position.
+     * @param cam_o (ux, uy, uz, theta) axis-angle orientation.
+     * @param img An image representing the result of the superimposition. The variable is automatically resized if its size is not correct to store the entire result of the superimposition.
      *
      * @return true upon success, false otherswise.
      **/
     bool         superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img) override;
 
+    /**
+     * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
+     * `cam_x` position with orientation `cam_o`. Each group of meshes specified by the elements of `objpos_multimap` are rendered in a
+     * different viewport. Each viewport reports the mesh models as they are seen by the virtual camera.
+     * The method then creates a single image tiling the viewports in a regular grid.
+     *
+     * @note The size of the grid representing the tiled viewports can be accessed through `getTilesRows()` and `getTilesCols()`.
+     *
+     * @note If cv::Mat `img` is a background image it must be of size `cam_width * cam_height`, as specified during object construction,
+     * and the `SICAD::setBackgroundOpt(bool show_background)` must have been invoked with `true`.
+     *
+     * @param objpos_map A (tag, pose) container to associate a 7-component `pose`, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, to a mesh with tag 'tag'.
+     * @param cam_x (x, y, z) position.
+     * @param cam_o (ux, uy, uz, theta) axis-angle orientation.
+     * @param img An image representing the result of the superimposition. The variable is automatically resized if its size is not correct to store the entire result of the superimposition.
+     *
+     * @return true upon success, false otherswise.
+     **/
     virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
 
     virtual bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
