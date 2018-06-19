@@ -158,6 +158,7 @@ SICAD::~SICAD()
     glDeleteVertexArrays(1, &vao_frame_);
     glDeleteBuffers     (1, &vbo_frame_);
     glDeleteTextures    (1, &texture_background_);
+    glDeleteBuffers     (2, pbo_render_);
 
     std::cout << log_ID_ << "Deleting OpenGL shaders." << std::endl;
     delete shader_background_;
@@ -305,6 +306,19 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
     glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
+
+
+    /* Crate the Pixel Buffer Objects for reading rendered images and maniuplate data directly on GPU. */
+    glGenBuffers(2, pbo_render_);
+    unsigned int number_of_channel = 3;
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_render_[0]);
+    glBufferData(GL_PIXEL_PACK_BUFFER, framebuffer_width_ * framebuffer_height_ * number_of_channel, 0, GL_STREAM_READ);
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_render_[1]);
+    glBufferData(GL_PIXEL_PACK_BUFFER, framebuffer_width_ * framebuffer_height_ * number_of_channel, 0, GL_STREAM_READ);
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
 
     /* Crate background shader program. */
@@ -768,6 +782,99 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
     superimpose(objpos_multimap, cam_x, cam_o, img);
 
     return true;
+}
+
+
+std::pair<bool, GLuint> SICAD::superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o)
+{
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
+        return std::make_pair(false, 0);
+    }
+
+    if (!has_proj_matrix_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
+        return std::make_pair(false, 0);
+    }
+
+    glfwMakeContextCurrent(window_);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
+    /* Render in the upper-left-most tile of the render grid */
+    glViewport(0,                 framebuffer_height_ - render_img_height_,
+               render_img_width_, render_img_height_                       );
+    glScissor (0,                 framebuffer_height_ - render_img_height_,
+               render_img_width_, render_img_height_                       );
+
+    /* Clear the colorbuffer. */
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    /* View mesh filled or as wireframe. */
+    setWireframe(getWireframeOpt());
+
+    /* View transformation matrix. */
+    glm::mat4 view = getViewTransformationMatrix(cam_x, cam_o);
+
+    /* Install/Use the program specified by the shader. */
+    shader_cad_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_cad_->uninstall();
+
+    shader_frame_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_frame_->uninstall();
+
+    /* Model transformation matrix. */
+    for (const ModelPoseContainerElement& pair : objpos_map)
+    {
+        const double* pose = pair.second.data();
+
+        glm::mat4 model = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
+        model[3][0] = pose[0];
+        model[3][1] = pose[1];
+        model[3][2] = pose[2];
+
+        auto iter_model = model_obj_.find(pair.first);
+        if (iter_model != model_obj_.end())
+        {
+            shader_cad_->install();
+            glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            (iter_model->second)->Draw(*shader_cad_);
+            shader_cad_->uninstall();
+        }
+        else if (pair.first == "frame")
+        {
+            shader_frame_->install();
+            glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glBindVertexArray(vao_frame_);
+            glDrawArrays(GL_LINES, 0, 6);
+            glBindVertexArray(0);
+            shader_frame_->uninstall();
+        }
+    }
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_render_[pbo_index_]);
+    glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, 0);
+
+    /* Switch to the other PBO (total of 2) to avoid copying data again on the current PBO. */
+    /* glReadPixels() is non-blocking using PBO. */
+    pbo_index_ = (pbo_index_ + 1) % 2;
+
+    /* Swap the buffers. */
+    glfwSwapBuffers(window_);
+
+    pollOrPostEvent();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glfwMakeContextCurrent(nullptr);
+
+    return std::make_pair(true, pbo_render_[pbo_index_]);
 }
 
 

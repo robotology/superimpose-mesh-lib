@@ -191,7 +191,8 @@ public:
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual std::pair<bool, GLuint> superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const cv::Mat& img);
+    virtual std::pair<bool, GLuint> superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const cv::Mat& img)
+    { return std::make_pair(false, 0); }
 
     /**
      * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
@@ -209,7 +210,8 @@ public:
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual std::pair<bool, GLuint> superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o);
+    virtual std::pair<bool, GLuint> superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o)
+    { return std::make_pair(false, 0); }
 
     /**
      * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
@@ -231,7 +233,8 @@ public:
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual std::pair<bool, GLuint> superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const cv::Mat& img);
+    virtual std::pair<bool, GLuint> superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const cv::Mat& img)
+    { return std::make_pair(false, 0); }
 
     bool setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
@@ -292,6 +295,7 @@ private:
     GLuint         vbo_background_;
     GLuint         vao_frame_;
     GLuint         vbo_frame_;
+    unsigned int   pbo_index_ = 0;
     GLuint         pbo_render_[2];
     glm::mat4      back_proj_;
     glm::mat4      projection_;
