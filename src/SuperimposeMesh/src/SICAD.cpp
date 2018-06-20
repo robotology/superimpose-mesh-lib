@@ -857,13 +857,13 @@ std::pair<bool, GLuint> SICAD::superimposeGPU(const ModelPoseContainer& objpos_m
         }
     }
 
-    glReadBuffer(GL_COLOR_ATTACHMENT0);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_render_[pbo_index_]);
-    glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, 0);
-
     /* Switch to the other PBO (total of 2) to avoid copying data again on the current PBO. */
     /* glReadPixels() is non-blocking using PBO. */
     pbo_index_ = (pbo_index_ + 1) % 2;
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_render_[pbo_index_]);
+    glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, 0);
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
