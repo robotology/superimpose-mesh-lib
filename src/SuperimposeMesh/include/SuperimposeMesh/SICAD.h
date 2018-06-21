@@ -236,18 +236,28 @@ public:
     virtual std::pair<bool, GLuint> superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const cv::Mat& img)
     { return std::make_pair(false, 0); }
 
+    virtual bool releaseContext() const;
+
+    std::pair<GLuint*, size_t> getPBOs();
+
+    std::pair<bool, GLuint> getCurrentPBO();
+
     bool setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     bool getBackgroundOpt() const;
+
     void setBackgroundOpt(bool show_background);
 
     GLenum getWireframeOpt() const;
+
     void setWireframeOpt(bool show_mesh_wires);
 
     MIPMaps getMipmapsOpt() const;
 
     int getTilesNumber() const;
+
     int getTilesRows() const;
+
     int getTilesCols() const;
 
 private:
@@ -295,8 +305,9 @@ private:
     GLuint         vbo_background_;
     GLuint         vao_frame_;
     GLuint         vbo_frame_;
+    size_t         pbo_number_ = 2;
     unsigned int   pbo_index_ = 0;
-    GLuint         pbo_render_[2];
+    GLuint         pbo_[2];
     glm::mat4      back_proj_;
     glm::mat4      projection_;
 
@@ -305,11 +316,9 @@ private:
 
     void pollOrPostEvent();
 
-
     void setBackground(cv::Mat& img);
+    
     void setWireframe(GLenum mode);
-    static void callbackKeypress(GLFWwindow* window, int key, int scancode, int action, int mode);
-
 
     void factorize_int(const GLsizei area, const GLsizei width_limit, const GLsizei height_limit, GLsizei& width, GLsizei& height);
 };

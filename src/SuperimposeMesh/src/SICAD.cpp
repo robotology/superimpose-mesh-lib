@@ -158,7 +158,7 @@ SICAD::~SICAD()
     glDeleteVertexArrays(1, &vao_frame_);
     glDeleteBuffers     (1, &vbo_frame_);
     glDeleteTextures    (1, &texture_background_);
-    glDeleteBuffers     (2, pbo_render_);
+    glDeleteBuffers     (2, pbo_);
 
     std::cout << log_ID_ << "Deleting OpenGL shaders." << std::endl;
     delete shader_background_;
@@ -309,13 +309,13 @@ bool SICAD::initSICAD(const ModelPathContainer &objfile_map,
 
 
     /* Crate the Pixel Buffer Objects for reading rendered images and maniuplate data directly on GPU. */
-    glGenBuffers(2, pbo_render_);
+    glGenBuffers(2, pbo_);
     unsigned int number_of_channel = 3;
 
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_render_[0]);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[0]);
     glBufferData(GL_PIXEL_PACK_BUFFER, framebuffer_width_ * framebuffer_height_ * number_of_channel, 0, GL_STREAM_READ);
 
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_render_[1]);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[1]);
     glBufferData(GL_PIXEL_PACK_BUFFER, framebuffer_width_ * framebuffer_height_ * number_of_channel, 0, GL_STREAM_READ);
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -857,12 +857,8 @@ std::pair<bool, GLuint> SICAD::superimposeGPU(const ModelPoseContainer& objpos_m
         }
     }
 
-    /* Switch to the other PBO (total of 2) to avoid copying data again on the current PBO. */
-    /* glReadPixels() is non-blocking using PBO. */
-    pbo_index_ = (pbo_index_ + 1) % 2;
-
     glReadBuffer(GL_COLOR_ATTACHMENT0);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_render_[pbo_index_]);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[pbo_index_]);
     glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, 0);
 
     /* Swap the buffers. */
@@ -872,9 +868,32 @@ std::pair<bool, GLuint> SICAD::superimposeGPU(const ModelPoseContainer& objpos_m
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+bool SICAD::releaseContext() const
+{
     glfwMakeContextCurrent(nullptr);
 
-    return std::make_pair(true, pbo_render_[pbo_index_]);
+    return true;
+}
+
+
+std::pair<GLuint*, size_t> SICAD::getPBOs()
+{
+    return std::make_pair(pbo_, pbo_number_);
+}
+
+
+std::pair<bool, GLuint> SICAD::getCurrentPBO()
+{
+    GLuint out_pbo = pbo_[pbo_index_];
+
+    /* Switch to the other PBO (total of 2) to avoid copying data again on the current PBO. */
+    /* glReadPixels() is non-blocking using PBO. */
+    pbo_index_ = (pbo_index_ + 1) % pbo_number_;
+
+    return std::make_pair(true, out_pbo);
 }
 
 
