@@ -102,7 +102,7 @@ int main()
                           1,
                           {1.0, 0.0, 0.0, 0.0},
                           ".",
-                          true))
+                          false))
         return EXIT_FAILURE;
     std::cout << "...passed." << std::endl;
     ++num_test;

@@ -70,13 +70,13 @@ int main()
                              cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
                              1,
                              ".",
-                             true);
+                             false);
 
         si_cad_2 = new SICAD(obj,
                              cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
                              1,
                              ".",
-                             true);
+                             false);
     }
     catch (const std::runtime_error& e)
     {

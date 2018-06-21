@@ -31,7 +31,7 @@ int main()
                  cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
                  1,
                  ".",
-                 true);
+                 false);
 
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
