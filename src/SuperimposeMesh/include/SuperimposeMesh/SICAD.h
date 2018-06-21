@@ -193,8 +193,7 @@ public:
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img)
-    { return false; }
+    virtual bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img);
 
     /**
      * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
@@ -211,8 +210,7 @@ public:
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index)
-    { return false; }
+    virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index);
 
     /**
      * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
@@ -233,8 +231,7 @@ public:
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img)
-    { return false; }
+    virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img);
 
     /**
      * Make the current thread OpenGL context not current.
@@ -301,8 +298,8 @@ private:
     glm::mat3     ogl_to_cam_         = glm::mat3(1.0f);
     GLsizei       framebuffer_width_  = 0;
     GLsizei       framebuffer_height_ = 0;
-    GLsizei       render_img_width_   = 0;
-    GLsizei       render_img_height_  = 0;
+    GLsizei       tile_img_width_     = 0;
+    GLsizei       tile_img_height_    = 0;
     const GLfloat near_               = 0.001f;
     const GLfloat far_                = 1000.0f;
 

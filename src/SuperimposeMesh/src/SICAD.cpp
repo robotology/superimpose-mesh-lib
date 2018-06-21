@@ -485,9 +485,9 @@ bool SICAD::initOGL(const GLsizei width, const GLsizei height, const GLint num_i
     framebuffer_height_ = image_height_ * tiles_rows_;
 
     /* Set rendered image size. May vary in HDPI monitors. */
-    render_img_width_ = framebuffer_width_ / tiles_cols_;
-    render_img_height_ = framebuffer_height_ / tiles_rows_;
-    std::cout << log_ID_ << "The rendered image size is " + std::to_string(render_img_width_) + "x" + std::to_string(render_img_height_) + "." << std::endl;
+    tile_img_width_  = framebuffer_width_ / tiles_cols_;
+    tile_img_height_ = framebuffer_height_ / tiles_rows_;
+    std::cout << log_ID_ << "The rendered image size is " + std::to_string(tile_img_width_) + "x" + std::to_string(tile_img_height_) + "." << std::endl;
 
 
     /* Initialize GLEW to use the OpenGL implementation provided by the videocard manufacturer. */
@@ -556,10 +556,10 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
 
     /* Render in the upper-left-most tile of the render grid */
-    glViewport(0,                 framebuffer_height_ - render_img_height_,
-               render_img_width_, render_img_height_                       );
-    glScissor (0,                 framebuffer_height_ - render_img_height_,
-               render_img_width_, render_img_height_                       );
+    glViewport(0,               framebuffer_height_ - tile_img_height_,
+               tile_img_width_, tile_img_height_                       );
+    glScissor (0,               framebuffer_height_ - tile_img_height_,
+               tile_img_width_, tile_img_height_                       );
 
     /* Clear the colorbuffer. */
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -620,7 +620,7 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     glReadBuffer(GL_COLOR_ATTACHMENT0);
     glPixelStorei(GL_PACK_ALIGNMENT, (ogl_pixel.step & 3) ? 1 : 4);
     glPixelStorei(GL_PACK_ROW_LENGTH, ogl_pixel.step/ogl_pixel.elemSize());
-    glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
+    glReadPixels(0, framebuffer_height_ - tile_img_height_, tile_img_width_, tile_img_height_, GL_BGR, GL_UNSIGNED_BYTE, ogl_pixel.data);
 
     cv::flip(ogl_pixel, img, 0);
 
@@ -680,10 +680,10 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
             int idx = i * tiles_cols_ + j;
 
             /* Render starting by the upper-left-most tile of the render grid, proceding by columns and rows. */
-            glViewport(render_img_width_ * j, framebuffer_height_ - (render_img_height_ * (i + 1)),
-                       render_img_width_    , render_img_height_                                   );
-            glScissor (render_img_width_ * j, framebuffer_height_ - (render_img_height_ * (i + 1)),
-                       render_img_width_    , render_img_height_                                   );
+            glViewport(tile_img_width_ * j, framebuffer_height_ - (tile_img_height_ * (i + 1)),
+                       tile_img_width_    , tile_img_height_                                   );
+            glScissor (tile_img_width_ * j, framebuffer_height_ - (tile_img_height_ * (i + 1)),
+                       tile_img_width_    , tile_img_height_                                   );
 
             /* Clear the colorbuffer. */
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -810,10 +810,10 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
 
     /* Render in the upper-left-most tile of the render grid */
-    glViewport(0,                 framebuffer_height_ - render_img_height_,
-               render_img_width_, render_img_height_                       );
-    glScissor (0,                 framebuffer_height_ - render_img_height_,
-               render_img_width_, render_img_height_                       );
+    glViewport(0,               framebuffer_height_ - tile_img_height_,
+               tile_img_width_, tile_img_height_                       );
+    glScissor (0,               framebuffer_height_ - tile_img_height_,
+               tile_img_width_, tile_img_height_                       );
 
     /* Clear the colorbuffer. */
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -865,7 +865,325 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
     glReadBuffer(GL_COLOR_ATTACHMENT0);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[pbo_index]);
-    glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, 0);
+    glReadPixels(0, framebuffer_height_ - tile_img_height_, tile_img_width_, tile_img_height_, GL_BGR, GL_UNSIGNED_BYTE, 0);
+
+    /* Swap the buffers. */
+    glfwSwapBuffers(window_);
+
+    pollOrPostEvent();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return true;
+}
+
+
+bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img)
+{
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
+        return false;
+    }
+
+    if (pbo_index < pbo_number_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD PBO index out of bound." << std::endl;
+        return false;
+    }
+
+    if (!has_proj_matrix_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
+        return false;
+    }
+
+    glfwMakeContextCurrent(window_);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
+    /* Render in the upper-left-most tile of the render grid */
+    glViewport(0,               framebuffer_height_ - tile_img_height_,
+               tile_img_width_, tile_img_height_                       );
+    glScissor (0,               framebuffer_height_ - tile_img_height_,
+               tile_img_width_, tile_img_height_                       );
+
+    /* Clear the colorbuffer. */
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    /* Draw the background picture. */
+    if (getBackgroundOpt())
+        renderBackground(img);
+
+    /* View mesh filled or as wireframe. */
+    setWireframe(getWireframeOpt());
+
+    /* View transformation matrix. */
+    glm::mat4 view = getViewTransformationMatrix(cam_x, cam_o);
+
+    /* Install/Use the program specified by the shader. */
+    shader_cad_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_cad_->uninstall();
+
+    shader_frame_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_frame_->uninstall();
+
+    /* Model transformation matrix. */
+    for (const ModelPoseContainerElement& pair : objpos_map)
+    {
+        const double* pose = pair.second.data();
+
+        glm::mat4 model = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
+        model[3][0] = pose[0];
+        model[3][1] = pose[1];
+        model[3][2] = pose[2];
+
+        auto iter_model = model_obj_.find(pair.first);
+        if (iter_model != model_obj_.end())
+        {
+            shader_cad_->install();
+            glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            (iter_model->second)->Draw(*shader_cad_);
+            shader_cad_->uninstall();
+        }
+        else if (pair.first == "frame")
+        {
+            shader_frame_->install();
+            glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glBindVertexArray(vao_frame_);
+            glDrawArrays(GL_LINES, 0, 6);
+            glBindVertexArray(0);
+            shader_frame_->uninstall();
+        }
+    }
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[pbo_index]);
+    glReadPixels(0, framebuffer_height_ - tile_img_height_, tile_img_width_, tile_img_height_, GL_BGR, GL_UNSIGNED_BYTE, 0);
+
+    /* Swap the buffers. */
+    glfwSwapBuffers(window_);
+
+    pollOrPostEvent();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return true;
+}
+
+
+bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index)
+{
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
+        return false;
+    }
+
+    if (pbo_index < pbo_number_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD PBO index out of bound." << std::endl;
+        return false;
+    }
+
+    if (!has_proj_matrix_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
+        return false;
+    }
+
+
+    /* Model transformation matrix. */
+    const int objpos_num = objpos_multimap.size();
+    if (objpos_num != tiles_num_) return false;
+
+    glfwMakeContextCurrent(window_);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
+    /* View transformation matrix. */
+    glm::mat4 view = getViewTransformationMatrix(cam_x, cam_o);
+
+    /* Install/Use the program specified by the shader. */
+    shader_cad_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_cad_->uninstall();
+
+    shader_frame_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_frame_->uninstall();
+
+    for (unsigned int i = 0; i < tiles_rows_; ++i)
+    {
+        for (unsigned int j = 0; j < tiles_cols_; ++j)
+        {
+            /* Multimap index */
+            int idx = i * tiles_cols_ + j;
+
+            /* Render starting by the upper-left-most tile of the render grid, proceding by columns and rows. */
+            glViewport(tile_img_width_ * j, framebuffer_height_ - (tile_img_height_ * (i + 1)),
+                       tile_img_width_,     tile_img_height_                                   );
+            glScissor (tile_img_width_ * j, framebuffer_height_ - (tile_img_height_ * (i + 1)),
+                       tile_img_width_,     tile_img_height_                                   );
+
+            /* Clear the colorbuffer. */
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            /* View mesh filled or as wireframe. */
+            setWireframe(getWireframeOpt());
+
+            /* Install/Use the program specified by the shader. */
+            for (const ModelPoseContainerElement& pair : objpos_multimap[idx])
+            {
+                const double* pose = pair.second.data();
+
+                glm::mat4 model = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
+                model[3][0] = static_cast<float>(pose[0]);
+                model[3][1] = static_cast<float>(pose[1]);
+                model[3][2] = static_cast<float>(pose[2]);
+
+                auto iter_model = model_obj_.find(pair.first);
+                if (iter_model != model_obj_.end())
+                {
+                    shader_cad_->install();
+                    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    (iter_model->second)->Draw(*shader_cad_);
+                    shader_cad_->uninstall();
+                }
+                else if (pair.first == "frame")
+                {
+                    shader_frame_->install();
+                    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    glBindVertexArray(vao_frame_);
+                    glDrawArrays(GL_LINES, 0, 6);
+                    glBindVertexArray(0);
+                    shader_frame_->uninstall();
+                }
+            }
+        }
+    }
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[pbo_index]);
+    glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, 0);
+
+    /* Swap the buffers. */
+    glfwSwapBuffers(window_);
+
+    pollOrPostEvent();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return true;
+}
+
+
+bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img)
+{
+    if (!is_initialized_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
+        return false;
+    }
+
+    if (pbo_index < pbo_number_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD PBO index out of bound." << std::endl;
+        return false;
+    }
+
+    if (!has_proj_matrix_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
+        return false;
+    }
+
+
+    /* Model transformation matrix. */
+    const int objpos_num = objpos_multimap.size();
+    if (objpos_num != tiles_num_) return false;
+
+    glfwMakeContextCurrent(window_);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+
+    /* View transformation matrix. */
+    glm::mat4 view = getViewTransformationMatrix(cam_x, cam_o);
+
+    /* Install/Use the program specified by the shader. */
+    shader_cad_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_cad_->uninstall();
+
+    shader_frame_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_frame_->uninstall();
+
+    for (unsigned int i = 0; i < tiles_rows_; ++i)
+    {
+        for (unsigned int j = 0; j < tiles_cols_; ++j)
+        {
+            /* Multimap index */
+            int idx = i * tiles_cols_ + j;
+
+            /* Render starting by the upper-left-most tile of the render grid, proceding by columns and rows. */
+            glViewport(tile_img_width_ * j, framebuffer_height_ - (tile_img_height_ * (i + 1)),
+                       tile_img_width_,     tile_img_height_                                   );
+            glScissor (tile_img_width_ * j, framebuffer_height_ - (tile_img_height_ * (i + 1)),
+                       tile_img_width_,     tile_img_height_                                   );
+
+            /* Clear the colorbuffer. */
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            /* Draw the background picture. */
+            if (getBackgroundOpt())
+                renderBackground(img);
+
+            /* View mesh filled or as wireframe. */
+            setWireframe(getWireframeOpt());
+
+            /* Install/Use the program specified by the shader. */
+            for (const ModelPoseContainerElement& pair : objpos_multimap[idx])
+            {
+                const double* pose = pair.second.data();
+
+                glm::mat4 model = glm::rotate(glm::mat4(1.0f), static_cast<float>(pose[6]), glm::vec3(static_cast<float>(pose[3]), static_cast<float>(pose[4]), static_cast<float>(pose[5])));
+                model[3][0] = static_cast<float>(pose[0]);
+                model[3][1] = static_cast<float>(pose[1]);
+                model[3][2] = static_cast<float>(pose[2]);
+
+                auto iter_model = model_obj_.find(pair.first);
+                if (iter_model != model_obj_.end())
+                {
+                    shader_cad_->install();
+                    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    (iter_model->second)->Draw(*shader_cad_);
+                    shader_cad_->uninstall();
+                }
+                else if (pair.first == "frame")
+                {
+                    shader_frame_->install();
+                    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    glBindVertexArray(vao_frame_);
+                    glDrawArrays(GL_LINES, 0, 6);
+                    glBindVertexArray(0);
+                    shader_frame_->uninstall();
+                }
+            }
+        }
+    }
+
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[pbo_index]);
+    glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_BGR, GL_UNSIGNED_BYTE, 0);
 
     /* Swap the buffers. */
     glfwSwapBuffers(window_);
