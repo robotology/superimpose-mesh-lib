@@ -785,18 +785,18 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 }
 
 
-std::pair<bool, GLuint> SICAD::superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o)
+bool SICAD::superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o)
 {
     if (!is_initialized_)
     {
         std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
-        return std::make_pair(false, 0);
+        return false;
     }
 
     if (!has_proj_matrix_)
     {
         std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
-        return std::make_pair(false, 0);
+        return false;
     }
 
     glfwMakeContextCurrent(window_);
@@ -869,6 +869,8 @@ std::pair<bool, GLuint> SICAD::superimposeGPU(const ModelPoseContainer& objpos_m
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    return true;
+}
 
 
 bool SICAD::releaseContext() const

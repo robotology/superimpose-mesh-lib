@@ -173,7 +173,7 @@ public:
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual std::pair<bool, GLuint> superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o);
+    virtual bool superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o);
 
     /**
      * Render the mesh models in the pose specified in `objpos_map` and move the virtual camera in `cam_x` position with orientation `cam_o`.
@@ -191,8 +191,8 @@ public:
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual std::pair<bool, GLuint> superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const cv::Mat& img)
-    { return std::make_pair(false, 0); }
+    virtual bool superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const cv::Mat& img)
+    { return false; }
 
     /**
      * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
@@ -210,8 +210,8 @@ public:
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual std::pair<bool, GLuint> superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o)
-    { return std::make_pair(false, 0); }
+    virtual bool superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o)
+    { return false; }
 
     /**
      * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
@@ -233,8 +233,8 @@ public:
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual std::pair<bool, GLuint> superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const cv::Mat& img)
-    { return std::make_pair(false, 0); }
+    virtual bool superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const cv::Mat& img)
+    { return false; }
 
     virtual bool releaseContext() const;
 
