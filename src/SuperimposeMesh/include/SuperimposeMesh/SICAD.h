@@ -250,7 +250,7 @@ public:
      *
      * @return (PBO base array address, number of PBOs)
      */
-    std::pair<GLuint*, size_t> getPBOs();
+    std::pair<const GLuint*, size_t> getPBOs() const;
 
     /**
      * Returns `pbo_index`-th Pixel Buffer Object (PBO).
@@ -259,7 +259,7 @@ public:
      *
      * @return (true, PBO) if `pbo_index` exists, (false, 0) otherwise.
      */
-    std::pair<bool, GLuint> getPBO(const size_t pbo_index);
+    std::pair<bool, GLuint> getPBO(const size_t pbo_index) const;
 
     bool setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 

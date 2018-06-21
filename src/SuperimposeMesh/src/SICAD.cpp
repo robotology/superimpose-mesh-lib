@@ -885,13 +885,13 @@ void SICAD::releaseContext() const
 }
 
 
-std::pair<GLuint*, size_t> SICAD::getPBOs()
+std::pair<const GLuint*, size_t> SICAD::getPBOs() const
 {
     return std::make_pair(pbo_, pbo_number_);
 }
 
 
-std::pair<bool, GLuint> SICAD::getPBO(const size_t pbo_index)
+std::pair<bool, GLuint> SICAD::getPBO(const size_t pbo_index) const
 {
     if (pbo_index < pbo_number_)
         return std::make_pair(true, pbo_[pbo_index]);
