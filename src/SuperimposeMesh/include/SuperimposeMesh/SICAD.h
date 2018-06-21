@@ -240,7 +240,7 @@ public:
 
     std::pair<GLuint*, size_t> getPBOs();
 
-    std::pair<bool, GLuint> getCurrentPBO();
+    std::pair<bool, GLuint> getPBO(const size_t index);
 
     bool setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
