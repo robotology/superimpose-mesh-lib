@@ -785,11 +785,17 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 }
 
 
-bool SICAD::superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o)
+bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const size_t pbo_index)
 {
     if (!is_initialized_)
     {
         std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD object not initialized." << std::endl;
+        return false;
+    }
+
+    if (pbo_index < pbo_number_)
+    {
+        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD PBO index out of bound." << std::endl;
         return false;
     }
 
@@ -857,12 +863,8 @@ bool SICAD::superimposeGPU(const ModelPoseContainer& objpos_map, const double* c
         }
     }
 
-    /* Switch to the other PBO (total of 2) to avoid copying data again on the current PBO. */
-    /* glReadPixels() is non-blocking using PBO. */
-    pbo_index_ = (pbo_index_ + 1) % pbo_number_;
-
     glReadBuffer(GL_COLOR_ATTACHMENT0);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[pbo_index_]);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo_[pbo_index]);
     glReadPixels(0, framebuffer_height_ - render_img_height_, render_img_width_, render_img_height_, GL_BGR, GL_UNSIGNED_BYTE, 0);
 
     /* Swap the buffers. */
@@ -877,11 +879,9 @@ bool SICAD::superimposeGPU(const ModelPoseContainer& objpos_map, const double* c
 }
 
 
-bool SICAD::releaseContext() const
+void SICAD::releaseContext() const
 {
     glfwMakeContextCurrent(nullptr);
-
-    return true;
 }
 
 
@@ -891,10 +891,10 @@ std::pair<GLuint*, size_t> SICAD::getPBOs()
 }
 
 
-std::pair<bool, GLuint> SICAD::getPBO(const size_t index)
+std::pair<bool, GLuint> SICAD::getPBO(const size_t pbo_index)
 {
-    if (index < pbo_number_)
-        return std::make_pair(true, pbo_[index]);
+    if (pbo_index < pbo_number_)
+        return std::make_pair(true, pbo_[pbo_index]);
 
     return std::make_pair(false, 0);
 }

@@ -163,23 +163,24 @@ public:
 
     /**
      * Render the mesh models in the pose specified in `objpos_map` and move the virtual camera in `cam_x` position with orientation `cam_o`.
-     * The method then stores the pixels of the mesh models as they are seen by the virtual camera in a Pixel Buffer Object (PBO).
+     * The method then stores the pixels of the mesh models as they are seen by the virtual camera in the `pbo_index`-th Pixel Buffer Object (PBO).
      *
-     * @note SICAD class retains the ownership of the PBO.
+     * @note By invoking this command rendered pixels are stored in the `pbo_index`-th PBO and, in order to use it, the OpenGL context must remain current.
+     * As a consequence, once you are done working with the `pbo_index`-th PBO (can be accessed by means of `SICAD::getPBO(pbo_index)`) and before invoking again
+     * any other `SICAD::superimpose()` function, you must invoke `SICAD::releaseContext()`.
      *
      * @param objpos_map A (tag, pose) container to associate a 7-component `pose`, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, to a mesh with tag 'tag'.
      * @param cam_x (x, y, z) position.
      * @param cam_o (ux, uy, uz, theta) axis-angle orientation.
+     * @param pbo_index The index of the PBO where the pixel are stored.
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual bool superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o);
+    virtual bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const size_t pbo_index);
 
     /**
      * Render the mesh models in the pose specified in `objpos_map` and move the virtual camera in `cam_x` position with orientation `cam_o`.
-     * The method then stores the pixels of the mesh models as they are seen by the virtual camera in a Pixel Buffer Object (PBO).
-     *
-     * @note SICAD class retains the ownership of the PBO.
+     * The method then stores the pixels of the mesh models as they are seen by the virtual camera in the `pbo_index`-th Pixel Buffer Object (PBO).
      *
      * @note `img` must be of size `cam_width * cam_height`, as specified during object construction, and the
      * `SICAD::setBackgroundOpt(bool show_background)` must have been invoked with `true`.
@@ -187,41 +188,39 @@ public:
      * @param objpos_map A (tag, pose) container to associate a 7-component `pose`, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, to a mesh with tag 'tag'.
      * @param cam_x (x, y, z) position.
      * @param cam_o (ux, uy, uz, theta) axis-angle orientation.
+     * @param pbo_index The index of the PBO where the pixel are stored.
      * @param img A background image.
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual bool superimposeGPU(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const cv::Mat& img)
+    virtual bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img)
     { return false; }
 
     /**
      * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
      * `cam_x` position with orientation `cam_o`. Each group of meshes specified by the elements of `objpos_multimap` are rendered in a
      * different viewport. Each viewport reports the mesh models as they are seen by the virtual camera.
-     * The method then stores the pixels of the viewports in a Pixel Buffer Object (PBO) by tiling them in a regular grid.
+     * The method then stores the pixels of the viewports in the `pbo_index`-th Pixel Buffer Object (PBO) by tiling them in a regular grid.
      *
      * @note The size of the grid representing the tiled viewports can be accessed through `getTilesRows()` and `getTilesCols()`.
-     *
-     * @note SICAD class retains the ownership of the PBO.
      *
      * @param objpos_map A (tag, pose) container to associate a 7-component `pose`, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, to a mesh with tag 'tag'.
      * @param cam_x (x, y, z) position.
      * @param cam_o (ux, uy, uz, theta) axis-angle orientation.
+     * @param pbo_index The index of the PBO where the pixel are stored.
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual bool superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o)
+    virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index)
     { return false; }
 
     /**
      * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
      * `cam_x` position with orientation `cam_o`. Each group of meshes specified by the elements of `objpos_multimap` are rendered in a
      * different viewport. Each viewport reports the mesh models as they are seen by the virtual camera.
-     * The method then stores the pixels of the viewports in a Pixel Buffer Object (PBO) by tiling them in a regular grid.
+     * The method then stores the pixels of the viewports in the `pbo_index`-th Pixel Buffer Object (PBO) by tiling them in a regular grid.
      *
      * @note The size of the grid representing the tiled viewports can be accessed through `getTilesRows()` and `getTilesCols()`.
-     *
-     * @note SICAD class retains the ownership of the PBO.
      *
      * @note `img` must be of size `cam_width * cam_height`, as specified during object construction, and the
      * `SICAD::setBackgroundOpt(bool show_background)` must have been invoked with `true`.
@@ -229,18 +228,38 @@ public:
      * @param objpos_map A (tag, pose) container to associate a 7-component `pose`, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, to a mesh with tag 'tag'.
      * @param cam_x (x, y, z) position.
      * @param cam_o (ux, uy, uz, theta) axis-angle orientation.
+     * @param pbo_index The index of the PBO where the pixel are stored.
      * @param img A background image.
      *
      * @return (true, PBO) upon success, (false, 0) otherswise.
      **/
-    virtual bool superimposeGPU(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const cv::Mat& img)
+    virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img)
     { return false; }
 
-    virtual bool releaseContext() const;
+    /**
+     * Make the current thread OpenGL context not current.
+     *
+     * 
+     */
+    virtual void releaseContext() const;
 
+    /**
+     * Returns the Pixel Buffer Object (PBO) vector and its size.
+     *
+     * @note SICAD class retains the ownership of the PBO.
+     *
+     * @return (PBO base array address, number of PBOs)
+     */
     std::pair<GLuint*, size_t> getPBOs();
 
-    std::pair<bool, GLuint> getPBO(const size_t index);
+    /**
+     * Returns `pbo_index`-th Pixel Buffer Object (PBO).
+     *
+     * @note SICAD class retains the ownership of the PBO.
+     *
+     * @return (true, PBO) if `pbo_index` exists, (false, 0) otherwise.
+     */
+    std::pair<bool, GLuint> getPBO(const size_t pbo_index);
 
     bool setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
@@ -306,7 +325,6 @@ private:
     GLuint         vao_frame_;
     GLuint         vbo_frame_;
     size_t         pbo_number_ = 2;
-    unsigned int   pbo_index_ = 0;
     GLuint         pbo_[2];
     glm::mat4      back_proj_;
     glm::mat4      projection_;
