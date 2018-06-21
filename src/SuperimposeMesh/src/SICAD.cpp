@@ -567,7 +567,7 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
     /* Draw the background picture. */
     if (getBackgroundOpt())
-        setBackground(img);
+        renderBackground(img);
 
     /* View mesh filled or as wireframe. */
     setWireframe(getWireframeOpt());
@@ -691,7 +691,7 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 
             /* Draw the background picture. */
             if (getBackgroundOpt())
-                setBackground(img);
+                renderBackground(img);
 
             /* View mesh filled or as wireframe. */
             setWireframe(getWireframeOpt());
@@ -1027,7 +1027,7 @@ void SICAD::pollOrPostEvent()
 }
 
 
-void SICAD::setBackground(cv::Mat& img)
+void SICAD::renderBackground(const cv::Mat& img) const
 {
     /* Load and generate the texture. */
     glBindTexture(GL_TEXTURE_2D, texture_background_);

@@ -334,7 +334,7 @@ private:
 
     void pollOrPostEvent();
 
-    void setBackground(cv::Mat& img);
+    void renderBackground(const cv::Mat& img) const;
     
     void setWireframe(GLenum mode);
 
