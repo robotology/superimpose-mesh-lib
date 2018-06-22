@@ -2,10 +2,22 @@
 
 
 ## Version 0.9.104.0
+##### `Changed behavior`
+ - SICAD constructs now always require the intrinsic camera parameters.
+ - SICAD object construction cannot be procrastinated to a later call of SICAD::initSICAD().
+ - SICAD objects now always perform off-screen rendering and the constructor's window_visible parameter has been removed.
+
 ##### `CMake`
  - Devel branch will now have +100 on the patch number to differentiate from master branch.
  - Use CONFIG mode for Assimp, fix inclusion of headers and linking to Assimp.
  - Use CONFIG mode for glfw3.
+
+##### `Feature`
+  - Add SICAD::superimpose() methods to render images to Pixel Buffer Objects (PBO).
+  - Add SICAD::getPBOs() and SICDAD::getPBO(size_t) to access the allow the user to read the PBOs and manipulate the memory on the GPU.
+    As an example, the user may map the PBO on a CUDA/OpenCL-enabled GPU and do some processing on the images directly on the GPU, without wasting CPU time and copy on memory overheads.
+  - Add SICAD::setMipmapsOpt(SICAD::MIPMaps) public method to change the type of MIPMaps. Can be MIPMaps::nearest or MIPMaps::linear.
+
 ##### `Dependencies`
  - Minimum required version of Assimp is now `3.3.0`.
 
