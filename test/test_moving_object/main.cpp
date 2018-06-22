@@ -30,10 +30,10 @@ int main()
     const float        cam_cy_     = 120;
 
     SICAD si_cad(obj,
-                 cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
+                 cam_width_, cam_height_,
+                 cam_fx_, cam_fy_, cam_cx_, cam_cy_,
                  1,
-                 ".",
-                 false);
+                 ".");
 
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;

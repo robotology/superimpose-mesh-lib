@@ -67,16 +67,16 @@ int main()
     try
     {
         si_cad_1 = new SICAD(obj,
-                             cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
+                             cam_width_, cam_height_,
+                             cam_fx_, cam_fy_, cam_cx_, cam_cy_,
                              1,
-                             ".",
-                             false);
+                             ".");
 
         si_cad_2 = new SICAD(obj,
-                             cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
+                             cam_width_, cam_height_,
+                             cam_fx_, cam_fy_, cam_cx_, cam_cy_,
                              1,
-                             ".",
-                             false);
+                             ".");
     }
     catch (const std::runtime_error& e)
     {
