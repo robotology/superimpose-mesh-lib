@@ -231,6 +231,8 @@ public:
 
     void setWireframeOpt(bool show_mesh_wires);
 
+    void setMipmapsOpt(const MIPMaps& mipmaps);
+
     MIPMaps getMipmapsOpt() const;
 
     int getTilesNumber() const;

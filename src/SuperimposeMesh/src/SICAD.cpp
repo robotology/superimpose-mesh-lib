@@ -1119,6 +1119,12 @@ void SICAD::setWireframeOpt(bool show_mesh_wires)
 }
 
 
+void SICAD::setMipmapsOpt(const MIPMaps& mipmaps)
+{
+    mesh_mmaps_ = mipmaps;
+}
+
+
 GLenum SICAD::getWireframeOpt() const
 {
     return show_mesh_mode_;
