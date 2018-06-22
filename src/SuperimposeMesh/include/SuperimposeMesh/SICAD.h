@@ -30,15 +30,105 @@ public:
 
     enum class MIPMaps { nearest, linear };
 
+    /**
+     * Create a SICAD object with a dedicated OpenGL window and context.
+     *
+     * For the SICAD object to work properly, the following shaders with this exact names are needed:
+     *
+     *  - shader_model.vert for the vertex shader of the mesh models
+     *  - shader_model.frag for the fragment shader of the mesh models
+     *
+     *  - shader_frame.vert for the vertex shader of the reference frames
+     *  - shader_frame.frag for the fragment shader of the reference frames
+     *
+     *  - shader_background.vert for the vertex shader of the background
+     *  - shader_background.frag for the fragment shader of the background
+     *
+     * It is assumed that the shaders will be placed in the same folder of the executable/library.
+     *
+     * Only 1 image will be rendered in the OpenGL context.
+     *
+     * The reference frame of the OpenGL virtual camera is the standard right-handed system and can be
+     * changed by means of `ogl_to_cam` parameter.
+     *
+     * @param objfile_map A (tag, path) container to associate a 'tag' to the mesh file specified in 'path'.
+     * @param cam_width Camera or image width.
+     * @param cam_height Camera or image height.
+     * @param cam_fx focal Length along the x axis in pixels.
+     * @param cam_fy focal Length along the y axis in pixels.
+     */
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height,
           const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
+    /**
+     * Create a SICAD object with a dedicated OpenGL window and context.
+     *
+     * For the SICAD object to work properly, the following shaders with this exact names are needed:
+     *
+     *  - shader_model.vert for the vertex shader of the mesh models
+     *  - shader_model.frag for the fragment shader of the mesh models
+     *
+     *  - shader_frame.vert for the vertex shader of the reference frames
+     *  - shader_frame.frag for the fragment shader of the reference frames
+     *
+     *  - shader_background.vert for the vertex shader of the background
+     *  - shader_background.frag for the fragment shader of the background
+     *
+     * It is assumed that the shaders will be placed in the same folder of the executable/library.
+     *
+     * Up to `num_images` images will be rendered in the same OpenGL context and the result of
+     * the process will be tiled up in a regular grid. This implies that the total number
+     * of rendered images may be less than or equal to the required `num_images`. The total
+     * number of rendered images is chosen to optimize performance and accessibility and can be
+     * accessed through SICAD::getTilesNumber().
+     *
+     * The reference frame of the OpenGL virtual camera is the standard right-handed system.
+     *
+     * @param objfile_map A (tag, path) container to associate a 'tag' to the mesh file specified in 'path'.
+     * @param cam_width Camera or image width.
+     * @param cam_height Camera or image height.
+     * @param cam_fx focal Length along the x axis in pixels.
+     * @param cam_fy focal Length along the y axis in pixels.
+     * @param num_images Number of images (i.e. viewports) rendered in the same GL context.
+     */
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height,
           const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
           const GLint num_images);
 
+    /**
+     * Create a SICAD object with a dedicated OpenGL window and context.
+     *
+     * For the SICAD object to work properly, the following shaders with this exact names are needed:
+     *
+     *  - shader_model.vert for the vertex shader of the mesh models
+     *  - shader_model.frag for the fragment shader of the mesh models
+     *
+     *  - shader_frame.vert for the vertex shader of the reference frames
+     *  - shader_frame.frag for the fragment shader of the reference frames
+     *
+     *  - shader_background.vert for the vertex shader of the background
+     *  - shader_background.frag for the fragment shader of the background
+     *
+     * The folder where the shaders are stored can be specified in `shader_folder`.
+     *
+     * Up to `num_images` images will be rendered in the same OpenGL context and the result of
+     * the process will be tiled up in a regular grid. This implies that the total number
+     * of rendered images may be less than or equal to the required `num_images`. The total
+     * number of rendered images is chosen to optimize performance and accessibility and can be
+     * accessed through SICAD::getTilesNumber().
+     *
+     * The reference frame of the OpenGL virtual camera is the standard right-handed system.
+     *
+     * @param objfile_map A (tag, path) container to associate a 'tag' to the mesh file specified in 'path'.
+     * @param cam_width Camera or image width.
+     * @param cam_height Camera or image height.
+     * @param cam_fx focal Length along the x axis in pixels.
+     * @param cam_fy focal Length along the y axis in pixels.
+     * @param num_images Number of images (i.e. viewports) rendered in the same GL context.
+     * @param shader_folder Path to the folder containing the above-mentioned required shaders.
+     */
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height,
           const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
@@ -48,26 +138,36 @@ public:
     /**
      * Create a SICAD object with a dedicated OpenGL window and context.
      *
-     * For the SICAD object to work properly, four shaders are needed.
-     * Further, their name must be as follows:
+     * For the SICAD object to work properly, the following shaders with this exact names are needed:
      *
-     *  - shader_model.vert for the model vertex shader
+     *  - shader_model.vert for the vertex shader of the mesh models
+     *  - shader_model.frag for the fragment shader of the mesh models
      *
-     *  - shader_model.frag for the model fragment shader
+     *  - shader_frame.vert for the vertex shader of the reference frames
+     *  - shader_frame.frag for the fragment shader of the reference frames
      *
-     *  - shader_background.vert for the background vertex shader
+     *  - shader_background.vert for the vertex shader of the background
+     *  - shader_background.frag for the fragment shader of the background
      *
-     *  - shader_background.frag for the background fragment shader
+     * The folder where the shaders are stored can be specified in `shader_folder`.
      *
-     * @param objfile_map a (tag, path) container to associate a 'tag' to the mesh file specified in 'path'.
-     * @param cam_width camera or image width.
-     * @param cam_height camera or image height.
-     * @param cam_fx focal length along the x axis in pixels.
-     * @param cam_fy focal length along the y axis in pixels.
-     * @param num_images number of images (i.e. viewports) rendered in the same GL context.
-     * @param ogl_to_cam a 7-component pose vector, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, defining a camera rotation applied to the OpenGL camera.
-     * @param shader_folder folder path containing four shaders, two for the background and two for the mesh.
-     * @param window_visible true to show the rendering window, false to perform off-screen rendering.
+     * Up to `num_images` images will be rendered in the same OpenGL context and the result of
+     * the process will be tiled up in a regular grid. This implies that the total number
+     * of rendered images may be less than or equal to the required `num_images`. The total
+     * number of rendered images is chosen to optimize performance and accessibility and can be
+     * accessed through SICAD::getTilesNumber().
+     *
+     * The reference frame of the OpenGL virtual camera is the standard right-handed system and can be
+     * changed by means of `ogl_to_cam`.
+     *
+     * @param objfile_map A (tag, path) container to associate a 'tag' to the mesh file specified in 'path'.
+     * @param cam_width Camera or image width.
+     * @param cam_height Camera or image height.
+     * @param cam_fx focal Length along the x axis in pixels.
+     * @param cam_fy focal Length along the y axis in pixels.
+     * @param num_images Number of images (i.e. viewports) rendered in the same GL context.
+     * @param shader_folder Path to the folder containing the above-mentioned required shaders.
+     * @param ogl_to_cam A 7-component pose vector, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, defining a camera rotation applied to the OpenGL camera.
      */
     SICAD(const ModelPathContainer& objfile_map,
           const GLsizei cam_width, const GLsizei cam_height,
