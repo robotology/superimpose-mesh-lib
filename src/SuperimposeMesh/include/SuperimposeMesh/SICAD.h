@@ -81,7 +81,7 @@ public:
      * the process will be tiled up in a regular grid. This implies that the total number
      * of rendered images may be less than or equal to the required `num_images`. The total
      * number of rendered images is chosen to optimize performance and accessibility and can be
-     * accessed through SICAD::getTilesNumber().
+     * accessed through `SICAD::getTilesNumber()`.
      *
      * The reference frame of the OpenGL virtual camera is the standard right-handed system.
      *
@@ -117,7 +117,7 @@ public:
      * the process will be tiled up in a regular grid. This implies that the total number
      * of rendered images may be less than or equal to the required `num_images`. The total
      * number of rendered images is chosen to optimize performance and accessibility and can be
-     * accessed through SICAD::getTilesNumber().
+     * accessed through `SICAD::getTilesNumber()`.
      *
      * The reference frame of the OpenGL virtual camera is the standard right-handed system.
      *
@@ -155,7 +155,7 @@ public:
      * the process will be tiled up in a regular grid. This implies that the total number
      * of rendered images may be less than or equal to the required `num_images`. The total
      * number of rendered images is chosen to optimize performance and accessibility and can be
-     * accessed through SICAD::getTilesNumber().
+     * accessed through `SICAD::getTilesNumber()`.
      *
      * The reference frame of the OpenGL virtual camera is the standard right-handed system and can be
      * changed by means of `ogl_to_cam`.
@@ -264,6 +264,10 @@ public:
      * different viewport. Each viewport reports the mesh models as they are seen by the virtual camera.
      * The method then stores the pixels of the viewports in the `pbo_index`-th Pixel Buffer Object (PBO) by tiling them in a regular grid.
      *
+     * @note By invoking this command rendered pixels are stored in the `pbo_index`-th PBO and, in order to use it, the OpenGL context must remain current.
+     * As a consequence, once you are done working with the `pbo_index`-th PBO (can be accessed by means of `SICAD::getPBO(pbo_index)`) and before invoking again
+     * any other `SICAD::superimpose()` function, you must invoke `SICAD::releaseContext()`.
+     *
      * @note The size of the grid representing the tiled viewports can be accessed through `getTilesRows()` and `getTilesCols()`.
      *
      * @param objpos_map A (tag, pose) container to associate a 7-component `pose`, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, to a mesh with tag 'tag'.
@@ -299,7 +303,9 @@ public:
     /**
      * Make the current thread OpenGL context not current.
      *
-     * 
+     * @note This method must be called only when invoking `SICAD::superimpose()` working on Pixel Buffer Objects (PBO),
+     * before invoking again any `SICAD::superimpose()` methods (either the ones using PBOs or not), but after
+     * having used the PBO that otherwise cannot be accessed as they are bound to the current thread context.
      */
     virtual void releaseContext() const;
 
