@@ -312,16 +312,20 @@ public:
     /**
      * Returns the Pixel Buffer Object (PBO) vector and its size.
      *
-     * @note SICAD class retains the ownership of the PBO.
+     * @note Rendered pixels are stored in the `pbo_index`-th PBO and, in order to use it, the OpenGL context must remain current.
+     * As a consequence, once you are done working with the `pbo_index`-th PBO and before invoking again
+     * any other `SICAD::superimpose()` function, you must invoke `SICAD::releaseContext()`.
      *
      * @return (PBO base array address, number of PBOs)
      */
     std::pair<const GLuint*, size_t> getPBOs() const;
 
     /**
-     * Returns `pbo_index`-th Pixel Buffer Object (PBO).
+     * Returns `pbo_index`-th Pixel Buffer Object (PBO) value.
      *
-     * @note SICAD class retains the ownership of the PBO.
+     * @note Rendered pixels are stored in the `pbo_index`-th PBO and, in order to use it, the OpenGL context must remain current.
+     * As a consequence, once you are done working with the `pbo_index`-th PBO and before invoking again
+     * any other `SICAD::superimpose()` function, you must invoke `SICAD::releaseContext()`.
      *
      * @return (true, PBO) if `pbo_index` exists, (false, 0) otherwise.
      */

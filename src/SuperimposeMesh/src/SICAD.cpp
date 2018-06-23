@@ -1004,6 +1004,8 @@ void SICAD::releaseContext() const
 
 std::pair<const GLuint*, size_t> SICAD::getPBOs() const
 {
+    glfwMakeContextCurrent(window_);
+
     return std::make_pair(pbo_, pbo_number_);
 }
 
@@ -1011,7 +1013,11 @@ std::pair<const GLuint*, size_t> SICAD::getPBOs() const
 std::pair<bool, GLuint> SICAD::getPBO(const size_t pbo_index) const
 {
     if (pbo_index < pbo_number_)
+    {
+        glfwMakeContextCurrent(window_);
+
         return std::make_pair(true, pbo_[pbo_index]);
+    }
 
     return std::make_pair(false, 0);
 }
