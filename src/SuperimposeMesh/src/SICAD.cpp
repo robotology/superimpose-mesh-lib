@@ -423,12 +423,6 @@ void SICAD::setOglWindowShouldClose(bool should_close)
 
 bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
-    if (!has_proj_matrix_)
-    {
-        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
-        return false;
-    }
-
     glfwMakeContextCurrent(window_);
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
@@ -517,13 +511,6 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
 bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img)
 {
-    if (!has_proj_matrix_)
-    {
-        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
-        return false;
-    }
-
-
     /* Model transformation matrix. */
     const int objpos_num = objpos_multimap.size();
     if (objpos_num != tiles_num_) return false;
@@ -651,11 +638,6 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
         return false;
     }
 
-    if (!has_proj_matrix_)
-    {
-        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
-        return false;
-    }
 
     glfwMakeContextCurrent(window_);
 
@@ -739,11 +721,6 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
         return false;
     }
 
-    if (!has_proj_matrix_)
-    {
-        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
-        return false;
-    }
 
     glfwMakeContextCurrent(window_);
 
@@ -828,12 +805,6 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
     if (!(pbo_index < pbo_number_))
     {
         std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD PBO index out of bound." << std::endl;
-        return false;
-    }
-
-    if (!has_proj_matrix_)
-    {
-        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
         return false;
     }
 
@@ -930,12 +901,6 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
     if (!(pbo_index < pbo_number_))
     {
         std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD PBO index out of bound." << std::endl;
-        return false;
-    }
-
-    if (!has_proj_matrix_)
-    {
-        std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD projection matrix not set." << std::endl;
         return false;
     }
 
@@ -1093,8 +1058,6 @@ bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_heigh
 
     glfwSwapBuffers(window_);
     glfwMakeContextCurrent(nullptr);
-
-    has_proj_matrix_ = true;
 
     return true;
 }

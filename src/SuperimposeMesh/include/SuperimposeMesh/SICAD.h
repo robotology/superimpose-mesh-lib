@@ -348,9 +348,6 @@ public:
     int getTilesCols() const;
 
 private:
-    bool has_proj_matrix_ = false;
-
-
     static int class_counter_;
     static GLsizei renderbuffer_size_;
 
