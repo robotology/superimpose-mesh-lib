@@ -645,7 +645,7 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 
 bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const size_t pbo_index)
 {
-    if (pbo_index < pbo_number_)
+    if (!(pbo_index < pbo_number_))
     {
         std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD PBO index out of bound." << std::endl;
         return false;
@@ -733,7 +733,7 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
 bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img)
 {
-    if (pbo_index < pbo_number_)
+    if (!(pbo_index < pbo_number_))
     {
         std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD PBO index out of bound." << std::endl;
         return false;
@@ -825,7 +825,7 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 
 bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index)
 {
-    if (pbo_index < pbo_number_)
+    if (!(pbo_index < pbo_number_))
     {
         std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD PBO index out of bound." << std::endl;
         return false;
@@ -927,7 +927,7 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 
 bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img)
 {
-    if (pbo_index < pbo_number_)
+    if (!(pbo_index < pbo_number_))
     {
         std::cerr << "ERROR::SICAD::SUPERIMPOSE\nERROR:\n\tSICAD PBO index out of bound." << std::endl;
         return false;
