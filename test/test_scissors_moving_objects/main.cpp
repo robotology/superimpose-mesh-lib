@@ -22,16 +22,16 @@ int main()
     SICAD::ModelPathContainer obj;
     obj.emplace("alien", "./Space_Invader.obj");
 
-    const unsigned int cam_width_  = 320;
-    const unsigned int cam_height_ = 240;
-    const float        cam_fx_     = 257.34;
-    const float        cam_cx_     = 160;
-    const float        cam_fy_     = 257.34;
-    const float        cam_cy_     = 120;
+    const unsigned int cam_width  = 320;
+    const unsigned int cam_height = 240;
+    const float        cam_fx     = 257.34;
+    const float        cam_cx     = 160;
+    const float        cam_fy     = 257.34;
+    const float        cam_cy     = 120;
 
     SICAD si_cad(obj,
-                 cam_width_, cam_height_,
-                 cam_fx_, cam_fy_, cam_cx_, cam_cy_,
+                 cam_width, cam_height,
+                 cam_fx, cam_fy, cam_cx, cam_cy,
                  2,
                  ".");
 
@@ -47,8 +47,8 @@ int main()
     Superimpose::ModelPoseContainer objpose_map;
     std::vector<Superimpose::ModelPoseContainer> objposes;
 
-    double cam_x[] = {  0, 0, 0};
-    double cam_o[] = {1.0, 0, 0, 0};
+    double cam_x[] = {  0, 0, 0 };
+    double cam_o[] = { 1.0, 0, 0, 0 };
 
     for (double ang = 0; ang <= 2*M_PI; ang += 0.082)
     {
