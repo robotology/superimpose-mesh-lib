@@ -336,10 +336,21 @@ SICAD::SICAD
     /* Load models. */
     for (const ModelPathElement& pair : objfile_map)
     {
-        std::cout << log_ID_ << "Loading OpenGL " + pair.first + " model." << std::endl;
-        model_obj_[pair.first] = new (std::nothrow) Model(pair.second.c_str());
-        if (model_obj_[pair.first] == nullptr)
-            throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\tFile " + pair.second + " not found!");
+        auto search = model_obj_.find(pair.first);
+        if(search == model_obj_.end())
+        {
+            std::cout << log_ID_ << "Loading " + pair.first + " model for OpenGL rendering from" << pair.second << "." << std::endl;
+
+            model_obj_[pair.first] = new (std::nothrow) Model(pair.second.c_str());
+
+            if (model_obj_[pair.first] == nullptr)
+                throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\t" + pair.first + " model file from" + pair.second + " not found!");
+        }
+        else
+        {
+            std::cout << log_ID_ << "Skipping " + pair.first + " model for OpenGL rendering. Object name already exists." << std::endl;
+            std::cout << log_ID_ << "If you want to update " + pair.first + " model for OpenGL rendering, use the updateModel function." << std::endl;
+        }
     }
 
     back_proj_ = glm::ortho(-1.001f, 1.001f, -1.001f, 1.001f, 0.0f, far_*100.f);
