@@ -1,8 +1,8 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "Shader.h"
-#include "Mesh.h"
+#include <SuperimposeMesh/Shader.h>
+#include <SuperimposeMesh/Mesh.h>
 
 #include <vector>
 #include <string>
@@ -21,9 +21,11 @@ public:
 
 private:
     /* Model Data */
-    std::vector<Mesh>    meshes;
-    std::string          directory;
-    std::vector<Texture> textures_loaded;
+    std::vector<Mesh> meshes;
+
+    std::string directory;
+
+    std::vector<Mesh::Texture> textures_loaded;
 
     /* Functions */
     void loadModel(std::string path);

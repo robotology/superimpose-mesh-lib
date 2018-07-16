@@ -1,7 +1,7 @@
 #ifndef SUPERIMPOSECAD_H
 #define SUPERIMPOSECAD_H
 
-#include "Superimpose.h"
+#include <SuperimposeMesh/Superimpose.h>
 
 #include "Model.h"
 #include "Shader.h"
@@ -23,12 +23,18 @@ class SICAD : public Superimpose
 {
 public:
     typedef typename std::unordered_map<std::string, std::string> ModelPathContainer;
-    typedef typename std::pair<std::string, std::string>          ModelPathElement;
 
-    typedef typename std::unordered_map<std::string, Model*>      ModelContainer;
-    typedef typename std::pair<std::string, Model*>               ModelElement;
+    typedef typename std::pair<std::string, std::string> ModelPathElement;
 
-    enum class MIPMaps { nearest, linear };
+    typedef typename std::unordered_map<std::string, Model*> ModelContainer;
+
+    typedef typename std::pair<std::string, Model*> ModelElement;
+
+    enum class MIPMaps
+    {
+        nearest,
+        linear
+    };
 
     /**
      * Create a SICAD object with a dedicated OpenGL window and context.
@@ -178,8 +184,8 @@ public:
 
     virtual ~SICAD();
 
-
     bool getOglWindowShouldClose();
+
     void setOglWindowShouldClose(bool should_close);
 
     /**
@@ -353,50 +359,80 @@ public:
 
 private:
     static int class_counter_;
+
     static GLsizei renderbuffer_size_;
 
+    const std::string log_ID_ = "[SI-CAD]";
 
-    const std::string log_ID_             = "[SI-CAD]";
+    GLFWwindow*   window_ = nullptr;
 
-    GLFWwindow*   window_             = nullptr;
-    GLint         tiles_num_          = 0;
-    GLsizei       tiles_cols_         = 0;
-    GLsizei       tiles_rows_         = 0;
-    GLsizei       image_width_        = 0;
-    GLsizei       image_height_       = 0;
-    glm::mat3     ogl_to_cam_         = glm::mat3(1.0f);
-    GLsizei       framebuffer_width_  = 0;
-    GLsizei       framebuffer_height_ = 0;
-    GLsizei       tile_img_width_     = 0;
-    GLsizei       tile_img_height_    = 0;
-    const GLfloat near_               = 0.001f;
-    const GLfloat far_                = 1000.0f;
+    GLint tiles_num_ = 0;
+
+    GLsizei tiles_cols_ = 0;
+
+    GLsizei tiles_rows_ = 0;
+
+    GLsizei image_width_ = 0;
+
+    GLsizei image_height_ = 0;
+
+    glm::mat3 ogl_to_cam_ = glm::mat3(1.0f);
+
+    GLsizei framebuffer_width_ = 0;
+
+    GLsizei framebuffer_height_ = 0;
+
+    GLsizei tile_img_width_ = 0;
+
+    GLsizei tile_img_height_ = 0;
+
+    const GLfloat near_ = 0.001f;
+
+    const GLfloat far_ = 1000.0f;
 
     std::thread::id main_thread_id_;
 
-    bool           show_background_    = false;
-    GLenum         show_mesh_mode_     = GL_FILL;
-    MIPMaps        mesh_mmaps_         = MIPMaps::nearest;
-    Shader*        shader_background_  = nullptr;
-    Shader*        shader_cad_         = nullptr;
-    Shader*        shader_frame_       = nullptr;
+    bool show_background_ = false;
+
+    GLenum  show_mesh_mode_ = GL_FILL;
+
+    MIPMaps mesh_mmaps_ = MIPMaps::nearest;
+
+    Shader* shader_background_ = nullptr;
+
+    Shader* shader_cad_ = nullptr;
+
+    Shader* shader_frame_ = nullptr;
+
     ModelContainer model_obj_;
-    GLuint         fbo_;
-    GLuint         texture_color_buffer_;
-    GLuint         texture_depth_buffer_;
-    GLuint         texture_background_;
-    GLuint         vao_background_;
-    GLuint         ebo_background_;
-    GLuint         vbo_background_;
-    GLuint         vao_frame_;
-    GLuint         vbo_frame_;
-    size_t         pbo_number_ = 2;
-    GLuint         pbo_[2];
-    glm::mat4      back_proj_;
-    glm::mat4      projection_;
+
+    GLuint fbo_;
+
+    GLuint texture_color_buffer_;
+
+    GLuint texture_depth_buffer_;
+
+    GLuint texture_background_;
+
+    GLuint vao_background_;
+
+    GLuint ebo_background_;
+
+    GLuint vbo_background_;
+
+    GLuint vao_frame_;
+
+    GLuint vbo_frame_;
+
+    size_t pbo_number_ = 2;
+
+    GLuint pbo_[2];
+
+    glm::mat4 back_proj_;
+
+    glm::mat4 projection_;
 
     glm::mat4 getViewTransformationMatrix(const double* cam_x, const double* cam_o);
-
 
     void pollOrPostEvent();
 

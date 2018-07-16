@@ -14,7 +14,9 @@ class Superimpose
 {
 public:
     typedef typename std::vector<double>                   ModelPose;
+
     typedef typename std::multimap<std::string, ModelPose> ModelPoseContainer;
+
     typedef typename std::pair<std::string, ModelPose>     ModelPoseContainerElement;
 
     virtual ~Superimpose() { };
