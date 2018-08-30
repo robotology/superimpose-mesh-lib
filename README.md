@@ -63,7 +63,7 @@ $ cmake --build . --target INSTALL --config Release
 ```
 
 ### Link
-Once the library is installed, you can link it using `CMake` with as little effort as writing the following line of code in your poject `CMakeLists.txt`:
+Once the library is installed, you can link it using `CMake` with as little effort as writing the following line of code in your project's `CMakeLists.txt`:
 ```cmake
 ...
 find_package(SuperimposeMesh 0.MINOR.PATCH EXACT REQUIRED)
