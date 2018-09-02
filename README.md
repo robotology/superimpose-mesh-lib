@@ -83,7 +83,7 @@ to run all the tests.
 Tests are also a nice **starting points** to learn how to use the library and how to implement your own filters! _Just have a look at them!_
 
 
-# 📝 API documentaion and example code
+# 📝 API documentation and example code
 Doxygen-generated documentation is available [here](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html).
 
 
