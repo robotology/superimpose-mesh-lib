@@ -11,7 +11,7 @@ A modern C++ augmented-reality library to superimpose 3D objects on images.
 - [🎛 Dependencies](#-dependencies)
 - [🔨 Build and link the library](#-build-and-link-the-library)
 - [🔬 Test the library](#-test-the-library)
-- [📝 API documentation and example code](#-api-documentaion-and-example-code)
+- [📝 API documentation and example code](#-api-documentation-and-example-code)
 
 
 # ⚠️ About versioning
