@@ -1,50 +1,55 @@
 version: appvayor.{build}
 
-os:
-    - Visual Studio 2015
-    - Visual Studio 2017
-
-configuration:
-    - Release
-    - Debug
-
 clone_folder: c:\dev\superimpose-mesh-lib
 
-shallow_clone: true
-
-clone_depth: 5
-
 cache:
-    - 'C:\Tools\vcpkg\installed'
-    - 'C:\Tools\vcpkg\packages'
+  - 'C:\Tools\vcpkg\installed\'
+
+environment:
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      CMAKE_GENERATOR: "Visual Studio 14 2015"
+      VCPKG_TRIPLET_NAME: "x86-windows"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
+      VCPKG_TRIPLET_NAME: "x64-windows"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GENERATOR: "Visual Studio 15 2017"
+      VCPKG_TRIPLET_NAME: "x86-windows"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
+      VCPKG_TRIPLET_NAME: "x64-windows"
+
+configuration:
+  - Release
+  - Debug
 
 init:
-    - ps: git config --global core.autocrlf input
-    - ps: if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2015") {$env:CMAKE_GENERATOR="Visual Studio 14 2015 Win64"}
-    - ps: if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017") {$env:CMAKE_GENERATOR="Visual Studio 15 2017 Win64"}
-    - ps: echo CMAKE_GENERATOR=$env:CMAKE_GENERATOR
-    - ps: $env:VCPKG_DEFAULT_TRIPLET="x64-windows"
-    - ps: echo VCPKG_DEFAULT_TRIPLET=$env:VCPKG_DEFAULT_TRIPLET
-    - ps: echo CONFIGURATION=$env:CONFIGURATION
+  # Print some more system information after installing all build tools
+  - ps: echo "-------------------- BEGIN SYSTEM INFORMATION --------------------"
+  - ps: echo CMAKE_GENERATOR=$env:CMAKE_GENERATOR
+  - ps: echo VCPKG_TRIPLET_NAME=$env:VCPKG_TRIPLET_NAME
+  - ps: cmake --version
+  - ps: git config --global core.autocrlf input
+  - ps: echo CONFIGURATION=$env:CONFIGURATION
+  - ps: echo "--------------------  END SYSTEM INFORMATION  --------------------"
 
 install:
-    - ps: vcpkg update
-    - ps: vcpkg install assimp
-    - ps: vcpkg install glfw3
-    - ps: vcpkg install glew
-    - ps: vcpkg install glm
-    - ps: vcpkg install opencv
+  - ps: vcpkg install assimp:$env:VCPKG_TRIPLET_NAME
+  - ps: vcpkg install glfw3:$env:VCPKG_TRIPLET_NAME
+  - ps: vcpkg install glew:$env:VCPKG_TRIPLET_NAME
+  - ps: vcpkg install glm:$env:VCPKG_TRIPLET_NAME
+  - ps: vcpkg install opencv:$env:VCPKG_TRIPLET_NAME
 
 build:
 
 build_script:
-    - ps: cd c:\dev\superimpose-mesh-lib
-    - ps: mkdir build
-    - ps: cd build
-    - ps: cmake -G "$env:CMAKE_GENERATOR" -DCMAKE_TOOLCHAIN_FILE=c:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_TESTING:BOOL=ON ..
-    - ps: cmake --build . --config $env:CONFIGURATION --target ALL_BUILD
+  - ps: cd c:\dev\superimpose-mesh-lib
+  - ps: mkdir build
+  - ps: cd build
+  - ps: cmake -G "$env:CMAKE_GENERATOR" -DCMAKE_TOOLCHAIN_FILE=c:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_TESTING:BOOL=ON ..
+  - ps: cmake --build . --config $env:CONFIGURATION --target ALL_BUILD
 
 after_build:
-    - ps: cmake --build . --config $env:CONFIGURATION --target INSTALL
 
 test_script:
