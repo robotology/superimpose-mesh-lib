@@ -8,14 +8,16 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
-SISkeleton::SISkeleton() :
-    hand_part_({ "palm", "thumb", "index", "medium" })
-{
-    std::cout << log_ID_ << "Initialization completed!" << std::endl;
-}
 
-SISkeleton::SISkeleton(const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy) :
-    SISkeleton()
+SISkeleton::SISkeleton
+(
+    const std::list<std::string>& skeleton_part,
+    const float cam_fx,
+    const float cam_fy,
+    const float cam_cx,
+    const float cam_cy
+ ) :
+    skeleton_part_(skeleton_part)
 {
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
 

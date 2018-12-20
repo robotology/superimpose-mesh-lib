@@ -12,9 +12,7 @@
 class SISkeleton : public Superimpose
 {
 public:
-    SISkeleton();
-
-    SISkeleton(const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
+    SISkeleton(const std::list<std::string>& skeleton_part, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
 
     ~SISkeleton();
 
@@ -28,7 +26,7 @@ protected:
 private:
     const std::string log_ID_ = "[SI-Skeleton]";
 
-    std::list<std::string> hand_part_;
+    std::list<std::string> skeleton_part_;
 
     glm::mat3 projection_;
 
