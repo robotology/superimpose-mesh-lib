@@ -13,72 +13,64 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 
-int     SICAD::class_counter_     = 0;
+int SICAD::class_counter_ = 0;
 GLsizei SICAD::renderbuffer_size_ = 0;
 
 
 SICAD::SICAD
 (
     const ModelPathContainer& objfile_map,
-    const GLsizei cam_width, const GLsizei cam_height,
-    const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy
+    const GLsizei cam_width,
+    const GLsizei cam_height,
+    const GLfloat cam_fx,
+    const GLfloat cam_fy,
+    const GLfloat cam_cx,
+    const GLfloat cam_cy
 ) :
-    SICAD
-    (
-        objfile_map,
-        cam_width, cam_height,
-        cam_fx, cam_fy, cam_cx, cam_cy,
-        1,
-        ".",
-        { 1.0f, 0.0f, 0.0f, 0.0f }
-    )
+    SICAD(objfile_map, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, 1, ".", { 1.0f, 0.0f, 0.0f, 0.0f })
 { }
 
 
 SICAD::SICAD
 (
     const ModelPathContainer& objfile_map,
-    const GLsizei cam_width, const GLsizei cam_height,
-    const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
+    const GLsizei cam_width,
+    const GLsizei cam_height,
+    const GLfloat cam_fx,
+    const GLfloat cam_fy,
+    const GLfloat cam_cx,
+    const GLfloat cam_cy,
     const GLint num_images
 ) :
-    SICAD
-    (
-        objfile_map,
-        cam_width, cam_height,
-        cam_fx, cam_fy, cam_cx, cam_cy,
-        num_images,
-        ".",
-        { 1.0f, 0.0f, 0.0f, 0.0f }
-    )
+    SICAD(objfile_map, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, num_images, ".", { 1.0f, 0.0f, 0.0f, 0.0f })
 { }
 
 
 SICAD::SICAD
 (
     const ModelPathContainer& objfile_map,
-    const GLsizei cam_width, const GLsizei cam_height,
-    const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
+    const GLsizei cam_width,
+    const GLsizei cam_height,
+    const GLfloat cam_fx,
+    const GLfloat cam_fy,
+    const GLfloat cam_cx,
+    const GLfloat cam_cy,
     const GLint num_images,
     const std::string& shader_folder
 ) :
-    SICAD
-    (
-        objfile_map,
-        cam_width, cam_height,
-        cam_fx, cam_fy, cam_cx, cam_cy,
-        num_images,
-        shader_folder,
-        { 1.0f, 0.0f, 0.0f, 0.0f }
-    )
+    SICAD(objfile_map, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, num_images, shader_folder, { 1.0f, 0.0f, 0.0f, 0.0f })
 { }
 
 
 SICAD::SICAD
 (
     const ModelPathContainer& objfile_map,
-    const GLsizei cam_width, const GLsizei cam_height,
-    const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
+    const GLsizei cam_width,
+    const GLsizei cam_height,
+    const GLfloat cam_fx,
+    const GLfloat cam_fy,
+    const GLfloat cam_cx,
+    const GLfloat cam_cy,
     const GLint num_images,
     const std::string& shader_folder,
     const std::vector<float>& ogl_to_cam
@@ -432,7 +424,13 @@ void SICAD::setOglWindowShouldClose(bool should_close)
 }
 
 
-bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
+bool SICAD::superimpose
+(
+    const ModelPoseContainer& objpos_map,
+    const double* cam_x,
+    const double* cam_o,
+    cv::Mat& img
+)
 {
     glfwMakeContextCurrent(window_);
 
@@ -520,7 +518,13 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 }
 
 
-bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img)
+bool SICAD::superimpose
+(
+    const std::vector<ModelPoseContainer>& objpos_multimap,
+    const double* cam_x,
+    const double* cam_o,
+    cv::Mat& img
+)
 {
     /* Model transformation matrix. */
     const int objpos_num = objpos_multimap.size();
@@ -621,8 +625,19 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 }
 
 
-bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
-                        const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
+bool SICAD::superimpose
+(
+    const ModelPoseContainer& objpos_map,
+    const double* cam_x,
+    const double* cam_o,
+    cv::Mat& img,
+    const GLsizei cam_width,
+    const GLsizei cam_height,
+    const GLfloat cam_fx,
+    const GLfloat cam_fy,
+    const GLfloat cam_cx,
+    const GLfloat cam_cy
+)
 {
     if (!setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy))
         return false;
@@ -631,8 +646,19 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 }
 
 
-bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img,
-                        const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
+bool SICAD::superimpose
+(
+    const std::vector<ModelPoseContainer>& objpos_multimap,
+    const double* cam_x,
+    const double* cam_o,
+    cv::Mat& img,
+    const GLsizei cam_width,
+    const GLsizei cam_height,
+    const GLfloat cam_fx,
+    const GLfloat cam_fy,
+    const GLfloat cam_cx,
+    const GLfloat cam_cy
+)
 {
     if (!setProjectionMatrix(cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy))
         return false;
@@ -641,7 +667,13 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 }
 
 
-bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const size_t pbo_index)
+bool SICAD::superimpose
+(
+    const ModelPoseContainer& objpos_map,
+    const double* cam_x,
+    const double* cam_o,
+    const size_t pbo_index
+)
 {
     if (!(pbo_index < pbo_number_))
     {
@@ -724,7 +756,14 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 }
 
 
-bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img)
+bool SICAD::superimpose
+(
+    const ModelPoseContainer& objpos_map,
+    const double* cam_x,
+    const double* cam_o,
+    const size_t pbo_index,
+    const cv::Mat& img
+)
 {
     if (!(pbo_index < pbo_number_))
     {
@@ -811,7 +850,13 @@ bool SICAD::superimpose(const ModelPoseContainer& objpos_map, const double* cam_
 }
 
 
-bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index)
+bool SICAD::superimpose
+(
+    const std::vector<ModelPoseContainer>& objpos_multimap,
+    const double* cam_x,
+    const double* cam_o,
+    const size_t pbo_index
+)
 {
     if (!(pbo_index < pbo_number_))
     {
@@ -907,7 +952,14 @@ bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, 
 }
 
 
-bool SICAD::superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, const size_t pbo_index, const cv::Mat& img)
+bool SICAD::superimpose
+(
+    const std::vector<ModelPoseContainer>& objpos_multimap,
+    const double* cam_x,
+    const double* cam_o,
+    const size_t pbo_index,
+    const cv::Mat& img
+)
 {
     if (!(pbo_index < pbo_number_))
     {
@@ -1034,7 +1086,15 @@ std::pair<bool, GLuint> SICAD::getPBO(const size_t pbo_index) const
 }
 
 
-bool SICAD::setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy)
+bool SICAD::setProjectionMatrix
+(
+    const GLsizei cam_width,
+    const GLsizei cam_height,
+    const GLfloat cam_fx,
+    const GLfloat cam_fy,
+    const GLfloat cam_cx,
+    const GLfloat cam_cy
+)
 {
     glfwMakeContextCurrent(window_);
 
@@ -1135,7 +1195,7 @@ int SICAD::getTilesCols() const
 }
 
 
-glm::mat4 SICAD::getViewTransformationMatrix( const double* cam_x, const double* cam_o)
+glm::mat4 SICAD::getViewTransformationMatrix(const double* cam_x, const double* cam_o)
 {
     glm::mat4 root_cam_t  = glm::translate(glm::mat4(1.0f),
                                            glm::vec3(static_cast<float>(cam_x[0]), static_cast<float>(cam_x[1]), static_cast<float>(cam_x[2])));
@@ -1200,7 +1260,14 @@ void SICAD::setWireframe(GLenum mode)
 }
 
 
-void SICAD::factorize_int(const GLsizei area, const GLsizei width_limit, const GLsizei height_limit, GLsizei& width, GLsizei& height)
+void SICAD::factorize_int
+(
+    const GLsizei area,
+    const GLsizei width_limit,
+    const GLsizei height_limit,
+    GLsizei& width,
+    GLsizei& height
+)
 {
     double sqrt_area = std::floor(std::sqrt(static_cast<double>(area)));
     height = std::min(static_cast<int>(sqrt_area), height_limit);
