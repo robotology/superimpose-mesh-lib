@@ -28,11 +28,35 @@ find_package(OpenGL REQUIRED)
 # Workaround for flawed assimp package on Ubuntu: remove non-existing paths (like "/usr/lib/include")
 if(UNIX AND assimp_FOUND AND ASSIMP_INCLUDE_DIRS)
     message(AUTHOR_WARNING "Calling ASSIMP workaround to remove non-existing paths")
+
+    # Remove non-existing paths
     foreach(path ${ASSIMP_INCLUDE_DIRS})
         if(NOT EXISTS ${path})
             list(REMOVE_ITEM ASSIMP_INCLUDE_DIRS "${path}")
         endif()
     endforeach()
+
+    # Check if ASSIMP_INCLUDE_DIRS contains at least one valid path
+    set(VALID_ASSIMP_INCLUDE_DIRS False)
+    foreach(path ${ASSIMP_INCLUDE_DIRS})
+        if(EXISTS "${path}/assimp/ai_assert.h")
+            set(VALID_ASSIMP_INCLUDE_DIRS True)
+        endif()
+    endforeach()
+
+    # Find a valid include directory if necessary
+    if(NOT ${VALID_ASSIMP_INCLUDE_DIRS})
+        find_file(ASSIMP_HEADER_FILE "/assimp/ai_assert.h" PATHS "/usr/include")
+        mark_as_advanced(ASSIMP_HEADER_FILE)
+        if(EXISTS ${ASSIMP_HEADER_FILE})
+            get_filename_component(ASSIMP_HEADERS_DIR ${ASSIMP_HEADER_FILE} DIRECTORY)
+            get_filename_component(ASSIMP_FIXED_INCLUDE_DIR ${ASSIMP_HEADERS_DIR} DIRECTORY)
+            list(APPEND ASSIMP_INCLUDE_DIRS "${ASSIMP_FIXED_INCLUDE_DIR}")
+        else()
+            message(FATAL_ERROR "Could not find valid ASSIMP include directory, try to set ASSIMP_HEADER_FILE to a valid path to an ASSIMP header file")
+        endif()
+    endif()
+
     message(STATUS "ASSIMP_INCLUDE_DIRS after workaround: " ${ASSIMP_INCLUDE_DIRS})
 endif()
 
