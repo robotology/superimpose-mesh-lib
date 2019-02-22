@@ -25,6 +25,39 @@ find_package(glm    REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 
+# Workaround for flawed assimp package on Ubuntu: remove non-existing paths (like "/usr/lib/include")
+if(UNIX AND assimp_FOUND AND ASSIMP_INCLUDE_DIRS)
+    message(AUTHOR_WARNING "Calling ASSIMP workaround to remove non-existing paths")
+
+    # Remove non-existing paths
+    foreach(path ${ASSIMP_INCLUDE_DIRS})
+        if(NOT EXISTS ${path})
+            list(REMOVE_ITEM ASSIMP_INCLUDE_DIRS "${path}")
+        endif()
+    endforeach()
+
+    # Check if ASSIMP_INCLUDE_DIRS contains at least one valid path
+    set(VALID_ASSIMP_INCLUDE_DIRS False)
+    foreach(path ${ASSIMP_INCLUDE_DIRS})
+        if(EXISTS "${path}/assimp/ai_assert.h")
+            set(VALID_ASSIMP_INCLUDE_DIRS True)
+        endif()
+    endforeach()
+
+    # Find a valid include directory if necessary
+    if(NOT ${VALID_ASSIMP_INCLUDE_DIRS})
+        find_path(ASSIMP_FIXED_INCLUDE_DIR "assimp/ai_assert.h" PATHS "/usr/include")
+        mark_as_advanced(ASSIMP_FIXED_INCLUDE_DIR)
+        if(EXISTS ${ASSIMP_FIXED_INCLUDE_DIR})
+            list(APPEND ASSIMP_INCLUDE_DIRS "${ASSIMP_FIXED_INCLUDE_DIR}")
+        else()
+            message(FATAL_ERROR "Could not find valid ASSIMP include directory, try to set ASSIMP_FIXED_INCLUDE_DIR to a valid path containing the ASSIMP header folder")
+        endif()
+    endif()
+
+    message(STATUS "ASSIMP_INCLUDE_DIRS after workaround: " ${ASSIMP_INCLUDE_DIRS})
+endif()
+
 if(APPLE)
     message(AUTHOR_WARNING "Calling ASSIMP workaround for macOS until assimp/assimp#1517 (https://github.com/assimp/assimp/issues/1517) is not fixed.")
     message(STATUS "ASSIMP_LIBRARIES before workaround: " ${ASSIMP_LIBRARIES})
