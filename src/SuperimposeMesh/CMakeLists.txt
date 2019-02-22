@@ -46,14 +46,12 @@ if(UNIX AND assimp_FOUND AND ASSIMP_INCLUDE_DIRS)
 
     # Find a valid include directory if necessary
     if(NOT ${VALID_ASSIMP_INCLUDE_DIRS})
-        find_file(ASSIMP_HEADER_FILE "/assimp/ai_assert.h" PATHS "/usr/include")
-        mark_as_advanced(ASSIMP_HEADER_FILE)
-        if(EXISTS ${ASSIMP_HEADER_FILE})
-            get_filename_component(ASSIMP_HEADERS_DIR ${ASSIMP_HEADER_FILE} DIRECTORY)
-            get_filename_component(ASSIMP_FIXED_INCLUDE_DIR ${ASSIMP_HEADERS_DIR} DIRECTORY)
+        find_path(ASSIMP_FIXED_INCLUDE_DIR "assimp/ai_assert.h" PATHS "/usr/include")
+        mark_as_advanced(ASSIMP_FIXED_INCLUDE_DIR)
+        if(EXISTS ${ASSIMP_FIXED_INCLUDE_DIR})
             list(APPEND ASSIMP_INCLUDE_DIRS "${ASSIMP_FIXED_INCLUDE_DIR}")
         else()
-            message(FATAL_ERROR "Could not find valid ASSIMP include directory, try to set ASSIMP_HEADER_FILE to a valid path to an ASSIMP header file")
+            message(FATAL_ERROR "Could not find valid ASSIMP include directory, try to set ASSIMP_FIXED_INCLUDE_DIR to a valid path containing the ASSIMP header folder")
         endif()
     endif()
 
