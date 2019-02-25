@@ -81,7 +81,6 @@ include(InstallBasicPackageFiles)
 install_basic_package_files(${PROJECT_NAME}
                             VERSION ${${PROJECT_NAME}_VERSION}
                             COMPATIBILITY ExactVersion
-                            TARGETS_PROPERTY ${PROJECT_NAME}_TARGETS
                             NO_SET_AND_CHECK_MACRO
                             VARS_PREFIX ${PROJECT_NAME}
                             NO_CHECK_REQUIRED_COMPONENTS_MACRO

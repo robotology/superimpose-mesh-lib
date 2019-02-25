@@ -11,6 +11,7 @@
  - Use CONFIG mode for Assimp, fix inclusion of headers and linking to Assimp.
  - Use CONFIG mode for glfw3.
  - Update AddInstallRPATHSupport.cmake from YCM v0.9.1.
+ - Update InstallBasicPackageFiles.cmake from YCM v0.9.1.
 
 ##### `Feature`
   - Add SICAD::superimpose() methods to render images to Pixel Buffer Objects (PBO).

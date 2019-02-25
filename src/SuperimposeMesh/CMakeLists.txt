@@ -105,8 +105,6 @@ set_target_properties(${LIBRARY_TARGET_NAME}
                       PUBLIC_HEADER
                           "${${LIBRARY_TARGET_NAME}_HDR}")
 
-set_property(GLOBAL APPEND PROPERTY ${PROJECT_NAME}_TARGETS ${LIBRARY_TARGET_NAME})
-
 install(TARGETS ${LIBRARY_TARGET_NAME}
         EXPORT  ${PROJECT_NAME}
         LIBRARY       DESTINATION "${CMAKE_INSTALL_LIBDIR}"                            COMPONENT shlib
