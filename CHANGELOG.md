@@ -18,6 +18,7 @@
   - Add SICAD::getPBOs() and SICDAD::getPBO(size_t) to access the allow the user to read the PBOs and manipulate the memory on the GPU.
     As an example, the user may map the PBO on a CUDA/OpenCL-enabled GPU and do some processing on the images directly on the GPU, without wasting CPU time and copy on memory overheads.
   - Add SICAD::setMipmapsOpt(SICAD::MIPMaps) public method to change the type of MIPMaps. Can be MIPMaps::nearest or MIPMaps::linear.
+  - Improved tests.
 
 ##### `Dependencies`
  - Minimum required version of Assimp is now `3.3.0`.

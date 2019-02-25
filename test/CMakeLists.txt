@@ -8,9 +8,9 @@
 #===============================================================================
 
 add_subdirectory(test_hdpi)
-add_subdirectory(test_initialization_control)
 add_subdirectory(test_moving_object)
 add_subdirectory(test_multiple_windows_moving_object)
+add_subdirectory(test_public_interface)
 add_subdirectory(test_scissors)
 add_subdirectory(test_scissors_background)
 add_subdirectory(test_scissors_moving_objects)
@@ -18,6 +18,7 @@ add_subdirectory(test_sicad_frame)
 add_subdirectory(test_sicad_model)
 add_subdirectory(test_sicad_model_frame)
 add_subdirectory(test_thread_contexts)
+
 
 set(TEST_SHADER_VERT
         ${CMAKE_CURRENT_SOURCE_DIR}/common/shader_background.vert
@@ -39,10 +40,22 @@ set(TEST_IMG
         ${CMAKE_CURRENT_SOURCE_DIR}/common/space.png
 )
 
+set(TEST_GROUND_TRUTH
+        ${CMAKE_CURRENT_SOURCE_DIR}/common/gt_scissors_background.png
+        ${CMAKE_CURRENT_SOURCE_DIR}/common/gt_scissors.png
+        ${CMAKE_CURRENT_SOURCE_DIR}/common/gt_sicad_alien_frame.png
+        ${CMAKE_CURRENT_SOURCE_DIR}/common/gt_sicad_alien_space.png
+        ${CMAKE_CURRENT_SOURCE_DIR}/common/gt_sicad_alien.png
+        ${CMAKE_CURRENT_SOURCE_DIR}/common/gt_sicad_frame.png
+)
+
+
 add_custom_target(test_files ALL)
 add_custom_command(TARGET test_files POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E make_directory           ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-                   COMMAND ${CMAKE_COMMAND} -E copy ${TEST_SHADER_VERT} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-                   COMMAND ${CMAKE_COMMAND} -E copy ${TEST_SHADER_FRAG} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-                   COMMAND ${CMAKE_COMMAND} -E copy ${TEST_MESH}        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-                   COMMAND ${CMAKE_COMMAND} -E copy ${TEST_IMG}         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+                   COMMAND ${CMAKE_COMMAND} -E make_directory            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+                   COMMAND ${CMAKE_COMMAND} -E copy ${TEST_SHADER_VERT}  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+                   COMMAND ${CMAKE_COMMAND} -E copy ${TEST_SHADER_FRAG}  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+                   COMMAND ${CMAKE_COMMAND} -E copy ${TEST_MESH}         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+                   COMMAND ${CMAKE_COMMAND} -E copy ${TEST_IMG}          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+                   COMMAND ${CMAKE_COMMAND} -E copy ${TEST_GROUND_TRUTH} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)

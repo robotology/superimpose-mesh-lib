@@ -81,6 +81,7 @@ endif()
 
 # Library main
 add_library(${LIBRARY_TARGET_NAME} ${${LIBRARY_TARGET_NAME}_SRC} ${${LIBRARY_TARGET_NAME}_HDR})
+add_library(${PROJECT_NAME}::${LIBRARY_TARGET_NAME} ALIAS ${LIBRARY_TARGET_NAME})
 
 target_include_directories(${LIBRARY_TARGET_NAME}
                            PUBLIC

@@ -5,6 +5,8 @@
  * BSD 3-Clause license. See the accompanying LICENSE file for details.
  */
 
+#include <utils.h>
+
 #include <cmath>
 #include <exception>
 #include <iostream>
@@ -22,8 +24,8 @@
 int main()
 {
     std::string log_ID = "[Test - Scissors - Background]";
-    std::cout << log_ID << "This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
-    std::cout << log_ID << "The same mesh will be rendered on 2 different viewports with a background texture." << std::endl;
+    std::cout << log_ID << " This test checks whether the present machine supports GL_SCISSOR_TEST." << std::endl;
+    std::cout << log_ID << " The same mesh will be rendered on 2 different viewports with a background texture." << std::endl;
 
     SICAD::ModelPathContainer obj;
     obj.emplace("alien", "./Space_Invader.obj");
@@ -60,10 +62,22 @@ int main()
     double cam_x[] = { 0, 0, 0 };
     double cam_o[] = { 1.0, 0, 0, 0 };
 
-    cv::Mat img = cv::imread("./space.png");
+    cv::Mat img_rendered = cv::imread("./space.png");
+
     si_cad.setBackgroundOpt(true);
-    si_cad.superimpose(objposes, cam_x, cam_o, img);
-    cv::imwrite("./test_scissors_background_Space_Invader.jpg", img);
+    si_cad.superimpose(objposes, cam_x, cam_o, img_rendered);
+
+    cv::Mat img_ground_truth = cv::imread("./gt_scissors_background.png");
+
+    if (!utils::compareImages(img_rendered, img_ground_truth))
+    {
+        std::cerr << log_ID << " Rendered and ground truth images are different." << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
+    std::cout << log_ID << " Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
+    cv::imwrite("./rendered_scissors_background.png", img_rendered);
 
     return EXIT_SUCCESS;
 }

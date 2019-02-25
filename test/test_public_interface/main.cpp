@@ -21,7 +21,7 @@
 
 int main()
 {
-    std::string log_ID = "[Test - Public interfaces]";
+    std::string log_ID = "[Test - Public interface]";
     std::cout << log_ID << "This test checks whether SICAD public methods behave as expected." << std::endl;
     std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
 

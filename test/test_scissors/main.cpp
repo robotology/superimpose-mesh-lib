@@ -5,6 +5,8 @@
  * BSD 3-Clause license. See the accompanying LICENSE file for details.
  */
 
+#include <utils.h>
+
 #include <cmath>
 #include <exception>
 #include <iostream>
@@ -60,9 +62,21 @@ int main()
     double cam_x[] = { 0, 0, 0 };
     double cam_o[] = { 1.0, 0, 0, 0 };
 
-    cv::Mat img;
-    si_cad.superimpose(objposes, cam_x, cam_o, img);
-    cv::imwrite("./test_scissors_Space_Invader.jpg", img);
+    cv::Mat img_rendered;
+
+    si_cad.superimpose(objposes, cam_x, cam_o, img_rendered);
+
+    cv::Mat img_ground_truth = cv::imread("./gt_scissors.png");
+
+    if (!utils::compareImages(img_rendered, img_ground_truth))
+    {
+        std::cerr << log_ID << " Rendered and ground truth images are different." << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
+    std::cout << log_ID << " Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
+    cv::imwrite("./test_scissors.png", img_rendered);
 
     return EXIT_SUCCESS;
 }

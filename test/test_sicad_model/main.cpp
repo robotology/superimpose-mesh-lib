@@ -5,6 +5,8 @@
  * BSD 3-Clause license. See the accompanying LICENSE file for details.
  */
 
+#include <utils.h>
+
 #include <cmath>
 #include <exception>
 #include <iostream>
@@ -55,14 +57,41 @@ int main()
     double cam_x[] = { 0, 0, 0 };
     double cam_o[] = { 1.0, 0, 0, 0 };
 
-    cv::Mat img_1;
-    si_cad.superimpose(objpose_map, cam_x, cam_o, img_1);
-    cv::imwrite("./test_sicad_1_Space_Invader.jpg", img_1);
 
-    cv::Mat img_2 = cv::imread("./space.png");
+    cv::Mat img_rendered_1;
+
+    si_cad.superimpose(objpose_map, cam_x, cam_o, img_rendered_1);
+
+    cv::Mat img_ground_truth_1 = cv::imread("./gt_sicad_alien.png");
+
+    if (!utils::compareImages(img_rendered_1, img_ground_truth_1))
+    {
+        std::cerr << log_ID << " Rendered and ground truth images are different." << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
+    std::cout << log_ID << " Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
+    cv::imwrite("./test_sicad_alien.png", img_rendered_1);
+
+
+    cv::Mat img_rendered_2 = cv::imread("./space.png");
+
     si_cad.setBackgroundOpt(true);
-    si_cad.superimpose(objpose_map, cam_x, cam_o, img_2);
-    cv::imwrite("./test_sicad_2_Space_Invader.jpg", img_2);
+    si_cad.superimpose(objpose_map, cam_x, cam_o, img_rendered_2);
+
+    cv::Mat img_ground_truth_2 = cv::imread("./gt_sicad_alien_space.png");
+
+    if (!utils::compareImages(img_rendered_2, img_ground_truth_2))
+    {
+        std::cerr << log_ID << " Rendered and ground truth images are different." << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
+    std::cout << log_ID << " Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
+
+    cv::imwrite("./test_sicad_alien_space.png", img_rendered_2);
 
     return EXIT_SUCCESS;
 }
