@@ -10,8 +10,9 @@
  - Devel branch will now have +100 on the patch number to differentiate from master branch.
  - Use CONFIG mode for Assimp, fix inclusion of headers and linking to Assimp.
  - Use CONFIG mode for glfw3.
- - Update AddInstallRPATHSupport.cmake from YCM v0.9.1.
- - Update InstallBasicPackageFiles.cmake from YCM v0.9.1.
+ - Update AddInstallRPATHSupport.cmake from robotology/YCM v0.9.1.
+ - Update InstallBasicPackageFiles.cmake from robotology/YCM v0.9.1.
+ - Import AddDependenciesPrintUtils from robotology/YARP - robotology/visual-tracking-control to visualize the status of dependencies.
 
 ##### `Feature`
   - Add SICAD::superimpose() methods to render images to Pixel Buffer Objects (PBO).

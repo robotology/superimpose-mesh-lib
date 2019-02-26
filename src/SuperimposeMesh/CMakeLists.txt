@@ -9,6 +9,9 @@
 
 set(LIBRARY_TARGET_NAME SuperimposeMesh)
 
+include(AddDependenciesPrintUtils)
+
+
 # List of CPP (source) library files
 set(${LIBRARY_TARGET_NAME}_SRC
         src/Mesh.cpp
@@ -33,6 +36,13 @@ find_package(glfw3  REQUIRED CONFIG)
 find_package(glm    REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
+
+print_dependency(assimp)
+print_dependency(glew)
+print_dependency(glfw3)
+print_dependency(glm)
+print_dependency(OpenCV)
+print_dependency(OpenGL)
 
 # Workaround for flawed assimp package on Ubuntu: remove non-existing paths (like "/usr/lib/include")
 if(UNIX AND assimp_FOUND AND ASSIMP_INCLUDE_DIRS)
