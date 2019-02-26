@@ -31,7 +31,7 @@ set(${LIBRARY_TARGET_NAME}_HDR
 
 # Depndencies
 find_package(assimp REQUIRED CONFIG)
-find_package(glew   REQUIRED CONFIG)
+find_package(glew   REQUIRED)
 find_package(glfw3  REQUIRED CONFIG)
 find_package(glm    REQUIRED)
 find_package(OpenCV REQUIRED)
@@ -103,7 +103,7 @@ target_include_directories(${LIBRARY_TARGET_NAME}
 target_link_libraries(${LIBRARY_TARGET_NAME}
                       PUBLIC
                           ${ASSIMP_LIBRARIES}
-                          GLEW::GLEW
+                          GLEW::glew
                           glfw
                           ${OpenCV_LIBS}
                       PRIVATE
