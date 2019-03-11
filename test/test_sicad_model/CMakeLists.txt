@@ -20,7 +20,7 @@ set(${TEST_TARGET_NAME}_SRC
 
 add_executable(${TEST_TARGET_NAME} ${${TEST_TARGET_NAME}_HDR} ${${TEST_TARGET_NAME}_SRC})
 
-target_link_libraries(${TEST_TARGET_NAME} SuperimposeMesh::SuperimposeMesh)
+target_link_libraries(${TEST_TARGET_NAME} SI::SuperimposeMesh)
 
 target_include_directories(${TEST_TARGET_NAME}
                            PRIVATE

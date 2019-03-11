@@ -13,13 +13,19 @@ else()
     cmake_minimum_required(VERSION 3.0)
 endif()
 
+
+### Define the project
 project(SuperimposeMesh
         LANGUAGES CXX
         VERSION 0.10.100)
 
+
+### Define project specific options
 set(CMAKE_CXX_STANDARD 11)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(GNUInstallDirs)
+include(AddDependenciesPrintUtils)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
@@ -32,8 +38,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
 if(WIN32)
     add_definitions(-D_USE_MATH_DEFINES)
     if(MSVC)
@@ -43,7 +47,15 @@ if(WIN32)
     endif()
 endif()
 
-### Options
+
+### Use YCM to improve and simplify CMake maintenence
+set(YCM_USE_CMAKE_NEXT ON CACHE BOOL "" FORCE)
+set(YCM_USE_CMAKE_PROPOSED ON CACHE BOOL "" FORCE)
+find_package(YCM REQUIRED)
+print_dependency(YCM)
+
+
+### Configure project
 # Is macOS?
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     add_definitions(-D GLFW_MAC)
@@ -73,6 +85,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     endif()
 endif()
 
+
 ### Compile- and install-related commands
 add_subdirectory(src)
 
@@ -80,16 +93,20 @@ add_subdirectory(src)
 include(InstallBasicPackageFiles)
 install_basic_package_files(${PROJECT_NAME}
                             VERSION ${${PROJECT_NAME}_VERSION}
+                            FIRST_TARGET SuperimposeMesh
                             COMPATIBILITY ExactVersion
+                            NAMESPACE SI::
                             NO_SET_AND_CHECK_MACRO
                             VARS_PREFIX ${PROJECT_NAME}
                             NO_CHECK_REQUIRED_COMPONENTS_MACRO
-                            DEPENDENCIES "assimp CONFIG" "glew CONFIG" "glfw3 CONFIG" OpenCV)
+                            UPPERCASE_FILENAMES
+                            DEPENDENCIES YCM "assimp CONFIG" GLEW "glfw3 CONFIG" OpenCV)
 
 # Add the uninstall target
 include(AddUninstallTarget)
 
-# Add integration tests (unit tests for each library should be in each sublibrary directory)
+
+### Add integration tests (unit tests for each library should be in each sublibrary directory)
 if(BUILD_TESTING)
     add_subdirectory(test)
 endif()

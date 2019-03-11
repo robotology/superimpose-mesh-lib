@@ -9,8 +9,6 @@
 
 set(LIBRARY_TARGET_NAME SuperimposeMesh)
 
-include(AddDependenciesPrintUtils)
-
 
 # List of CPP (source) library files
 set(${LIBRARY_TARGET_NAME}_SRC
@@ -29,20 +27,26 @@ set(${LIBRARY_TARGET_NAME}_HDR
         include/SuperimposeMesh/SISkeleton.h
         include/SuperimposeMesh/Superimpose.h)
 
+
 # Depndencies
 find_package(assimp REQUIRED CONFIG)
-find_package(glew   REQUIRED)
-find_package(glfw3  REQUIRED CONFIG)
-find_package(glm    REQUIRED)
-find_package(OpenCV REQUIRED)
-find_package(OpenGL REQUIRED)
-
 print_dependency(assimp)
-print_dependency(glew)
+
+find_package(GLEW REQUIRED)
+print_dependency(GLEW)
+
+find_package(glfw3 REQUIRED CONFIG)
 print_dependency(glfw3)
+
+find_package(glm REQUIRED)
 print_dependency(glm)
+
+find_package(OpenCV REQUIRED)
 print_dependency(OpenCV)
+
+find_package(OpenGL REQUIRED)
 print_dependency(OpenGL)
+
 
 # Workaround for flawed assimp package on Ubuntu: remove non-existing paths (like "/usr/lib/include")
 if(UNIX AND assimp_FOUND AND ASSIMP_INCLUDE_DIRS)
@@ -91,7 +95,7 @@ endif()
 
 # Library main
 add_library(${LIBRARY_TARGET_NAME} ${${LIBRARY_TARGET_NAME}_SRC} ${${LIBRARY_TARGET_NAME}_HDR})
-add_library(${PROJECT_NAME}::${LIBRARY_TARGET_NAME} ALIAS ${LIBRARY_TARGET_NAME})
+add_library(SI::${LIBRARY_TARGET_NAME} ALIAS ${LIBRARY_TARGET_NAME})
 
 target_include_directories(${LIBRARY_TARGET_NAME}
                            PUBLIC
