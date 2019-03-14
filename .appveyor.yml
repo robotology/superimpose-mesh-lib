@@ -35,11 +35,23 @@ init:
   - ps: echo "--------------------  END SYSTEM INFORMATION  --------------------"
 
 install:
+  - ps: cd c:\dev
+  - git clone https://github.com/robotology/ycm.git
+  - ps: cd ycm
+  - git fetch origin pull/214/head:findglew
+  - git checkout findglew
+  - ps: mkdir build
+  - ps: cd build
+  - ps: cmake -G "$env:CMAKE_GENERATOR" -DCMAKE_INSTALL_PREFIX:PATH=c:\dev\install ..
+  - ps: cmake --build . --target INSTALL --config $env:CONFIGURATION
+  - ps: $env:YCM_DIR="c:\dev\install\share\YCM\cmake"
+  - ps: cd c:\dev
   - ps: vcpkg install assimp:$env:VCPKG_TRIPLET_NAME
   - ps: vcpkg install glfw3:$env:VCPKG_TRIPLET_NAME
   - ps: vcpkg install glew:$env:VCPKG_TRIPLET_NAME
   - ps: vcpkg install glm:$env:VCPKG_TRIPLET_NAME
   - ps: vcpkg install opencv:$env:VCPKG_TRIPLET_NAME
+  - ps: vcpkg list
 
 build:
 
@@ -48,8 +60,10 @@ build_script:
   - ps: mkdir build
   - ps: cd build
   - ps: cmake -G "$env:CMAKE_GENERATOR" -DCMAKE_TOOLCHAIN_FILE=c:/Tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBUILD_TESTING:BOOL=ON ..
-  - ps: cmake --build . --config $env:CONFIGURATION --target ALL_BUILD
+  - ps: cmake --build . --target ALL_BUILD --config $env:CONFIGURATION
 
 after_build:
 
 test_script:
+  - ps: cd c:\dev\superimpose-mesh-lib\build
+  - ps: ctest -N
