@@ -29,22 +29,22 @@ set(${LIBRARY_TARGET_NAME}_HDR
 
 
 # Depndencies
-find_package(assimp REQUIRED CONFIG)
+find_package(assimp REQUIRED CONFIG QUIET)
 print_dependency(assimp)
 
-find_package(GLEW REQUIRED)
+find_package(GLEW REQUIRED QUIET)
 print_dependency(GLEW)
 
-find_package(glfw3 REQUIRED CONFIG)
+find_package(glfw3 REQUIRED CONFIG QUIET)
 print_dependency(glfw3)
 
-find_package(glm REQUIRED)
+find_package(glm REQUIRED QUIET)
 print_dependency(glm)
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED QUIET)
 print_dependency(OpenCV)
 
-find_package(OpenGL REQUIRED)
+find_package(OpenGL REQUIRED QUIET)
 print_dependency(OpenGL)
 
 
@@ -107,7 +107,7 @@ target_include_directories(${LIBRARY_TARGET_NAME}
 target_link_libraries(${LIBRARY_TARGET_NAME}
                       PUBLIC
                           ${ASSIMP_LIBRARIES}
-                          GLEW::glew
+                          GLEW::GLEW
                           glfw
                           ${OpenCV_LIBS}
                       PRIVATE
