@@ -24,6 +24,7 @@
 
 ##### `Dependencies`
  - Minimum required version of Assimp is now `3.3.0`.
+ - Minimum required version of OpenCV is now `2.4.9`.
 
 
 ## 🔖 Version 0.9.4.0

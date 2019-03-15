@@ -34,7 +34,7 @@ SuperimposeMesh library depends on
 - [GLFW](http://www.glfw.org) - `version >= 3.1`
 - [Open Asset Import Library, ASSIMP](http://assimp.org) - `version >= 3.3.0`
 - [OpenGL Extension Wrangler, GLEW](http://glew.sourceforge.net) - `version >= 2.0`
-- [OpenCV](http://opencv.org) - `version >= 3.0`
+- [OpenCV](http://opencv.org) - `version >= 2.4.9`
 - [OpenGL Mathematics, GLM](http://glm.g-truc.net) - `version >= 0.9`
 
 
