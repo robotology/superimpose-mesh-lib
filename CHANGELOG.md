@@ -14,6 +14,7 @@
  - Update InstallBasicPackageFiles.cmake from robotology/YCM v0.9.1.
  - Import AddDependenciesPrintUtils from robotology/YARP - robotology/visual-tracking-control to visualize the status of dependencies.
  - Removed explicit dependency to OpenGL.
+ - Tests are now correctly generated for Visual Studio generator.
 
 ##### `Feature`
   - Add SICAD::superimpose() methods to render images to Pixel Buffer Objects (PBO).
