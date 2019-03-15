@@ -10,7 +10,7 @@
 set(TEST_TARGET_NAME test_thread_contexts)
 
 set(${TEST_TARGET_NAME}_SRC
-        main.cpp
+      main.cpp
 )
 
 add_executable(${TEST_TARGET_NAME} ${${TEST_TARGET_NAME}_SRC})
@@ -18,9 +18,9 @@ add_executable(${TEST_TARGET_NAME} ${${TEST_TARGET_NAME}_SRC})
 target_link_libraries(${TEST_TARGET_NAME} SI::SuperimposeMesh)
 
 if(UNIX AND NOT APPLE)
-    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-    find_package(Threads REQUIRED)
+  set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+  set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+  find_package(Threads REQUIRED)
 
 	target_link_libraries(${TEST_TARGET_NAME} Threads::Threads)
 endif()

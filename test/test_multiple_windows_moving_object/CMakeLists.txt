@@ -10,7 +10,7 @@
 set(TEST_TARGET_NAME test_multiple_windows_moving_object)
 
 set(${TEST_TARGET_NAME}_SRC
-        main.cpp
+      main.cpp
 )
 
 add_executable(${TEST_TARGET_NAME} ${${TEST_TARGET_NAME}_SRC})

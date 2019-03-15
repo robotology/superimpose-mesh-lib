@@ -8,16 +8,16 @@
 #===============================================================================
 
 if(WIN32)
-    cmake_minimum_required(VERSION 3.4)
+  cmake_minimum_required(VERSION 3.4)
 else()
-    cmake_minimum_required(VERSION 3.0)
+  cmake_minimum_required(VERSION 3.0)
 endif()
 
 
 ### Define the project
 project(SuperimposeMesh
-        LANGUAGES CXX
-        VERSION 0.10.100)
+  LANGUAGES CXX
+VERSION 0.10.100)
 
 
 ### Define project specific options
@@ -39,12 +39,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 if(WIN32)
-    add_definitions(-D_USE_MATH_DEFINES)
-    if(MSVC)
-        set(CMAKE_DEBUG_POSTFIX "d")
-        set(CMAKE_CXX_FLAGS "/MP /EHsc")
-        set(CMAKE_C_FLAGS "/MP /EHsc")
-    endif()
+  add_definitions(-D_USE_MATH_DEFINES)
+  if(MSVC)
+    set(CMAKE_DEBUG_POSTFIX "d")
+    set(CMAKE_CXX_FLAGS "/MP /EHsc")
+    set(CMAKE_C_FLAGS "/MP /EHsc")
+  endif()
 endif()
 
 
@@ -58,7 +58,7 @@ print_dependency(YCM)
 ### Configure project
 # Is macOS?
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    add_definitions(-D GLFW_MAC)
+  add_definitions(-D GLFW_MAC)
 endif()
 
 # Shared/Dynamic or Static library?
@@ -67,7 +67,7 @@ option(BUILD_SHARED_LIBS "Build libraries as shared as opposed to static" ON)
 # Build test related commands?
 option(BUILD_TESTING "Create tests using CMake" OFF)
 if(BUILD_TESTING)
-    enable_testing()
+  enable_testing()
 endif()
 
 # Enable RPATH support for installed binaries and libraries
@@ -79,10 +79,10 @@ add_install_rpath_support(BIN_DIRS "${CMAKE_INSTALL_FULL_BINDIR}"
 
 # Default Build type to Release
 if(NOT CMAKE_CONFIGURATION_TYPES)
-    if(NOT CMAKE_BUILD_TYPE)
-        message(STATUS "Setting build type to 'Release' as none was specified.")
-        set_property(CACHE CMAKE_BUILD_TYPE PROPERTY VALUE "Release")
-    endif()
+  if(NOT CMAKE_BUILD_TYPE)
+    message(STATUS "Setting build type to 'Release' as none was specified.")
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY VALUE "Release")
+  endif()
 endif()
 
 
@@ -108,5 +108,5 @@ include(AddUninstallTarget)
 
 ### Add integration tests (unit tests for each library should be in each sublibrary directory)
 if(BUILD_TESTING)
-    add_subdirectory(test)
+  add_subdirectory(test)
 endif()
