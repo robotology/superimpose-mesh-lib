@@ -44,9 +44,6 @@ print_dependency(glm)
 find_package(OpenCV REQUIRED QUIET)
 print_dependency(OpenCV)
 
-find_package(OpenGL REQUIRED QUIET)
-print_dependency(OpenGL)
-
 
 # Workaround for flawed assimp package on Ubuntu: remove non-existing paths (like "/usr/lib/include")
 if(UNIX AND assimp_FOUND AND ASSIMP_INCLUDE_DIRS)
@@ -109,9 +106,7 @@ target_link_libraries(${LIBRARY_TARGET_NAME}
                         ${ASSIMP_LIBRARIES}
                         GLEW::GLEW
                         glfw
-                        ${OpenCV_LIBS}
-                      PRIVATE
-                        ${OPENGL_gl_LIBRARY})
+                        ${OpenCV_LIBS})
 
 set_target_properties(${LIBRARY_TARGET_NAME}
                       PROPERTIES
