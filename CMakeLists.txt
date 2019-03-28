@@ -49,8 +49,6 @@ endif()
 
 
 ### Use YCM to improve and simplify CMake maintenence
-set(YCM_USE_CMAKE_NEXT ON CACHE BOOL "" FORCE)
-set(YCM_USE_CMAKE_PROPOSED ON CACHE BOOL "" FORCE)
 find_package(YCM REQUIRED)
 print_dependency(YCM)
 
