@@ -38,8 +38,9 @@ print_dependency(GLEW)
 find_package(glfw3 REQUIRED CONFIG QUIET)
 print_dependency(glfw3)
 
-find_package(glm REQUIRED QUIET)
-print_dependency(glm)
+set(GLM_VERBOSE 1)
+find_package(GLM REQUIRED QUIET)
+print_dependency(GLM)
 
 find_package(OpenCV REQUIRED QUIET)
 print_dependency(OpenCV)
@@ -52,14 +53,14 @@ add_library(SI::${LIBRARY_TARGET_NAME} ALIAS ${LIBRARY_TARGET_NAME})
 target_include_directories(${LIBRARY_TARGET_NAME}
                            PUBLIC
                              "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-                             "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>"
-                             ${GLM_INCLUDE_DIRS})
+                             "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 
 target_link_libraries(${LIBRARY_TARGET_NAME}
                       PUBLIC
                         assimp::assimp
                         GLEW::GLEW
                         glfw
+                        glm
                         ${OpenCV_LIBS})
 
 set_target_properties(${LIBRARY_TARGET_NAME}
