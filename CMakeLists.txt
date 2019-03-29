@@ -91,14 +91,13 @@ add_subdirectory(src)
 include(InstallBasicPackageFiles)
 install_basic_package_files(${PROJECT_NAME}
                             VERSION ${${PROJECT_NAME}_VERSION}
-                            FIRST_TARGET SuperimposeMesh
                             COMPATIBILITY ExactVersion
                             NAMESPACE SI::
                             NO_SET_AND_CHECK_MACRO
                             VARS_PREFIX ${PROJECT_NAME}
                             NO_CHECK_REQUIRED_COMPONENTS_MACRO
                             UPPERCASE_FILENAMES
-                            DEPENDENCIES YCM "assimp CONFIG" GLEW "glfw3 CONFIG" OpenCV)
+                            DEPENDENCIES YCM assimp GLEW "glfw3 CONFIG" OpenCV)
 
 # Add the uninstall target
 include(AddUninstallTarget)
