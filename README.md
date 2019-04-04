@@ -11,7 +11,7 @@ A modern C++ augmented-reality library to superimpose 3D objects on images.
 - [🎛 Dependencies](#-dependencies)
 - [🔨 Build and link the library](#-build-and-link-the-library)
 - [🔬 Test the library](#-test-the-library)
-- [📝 API documentation and example code](#-api-documentaion-and-example-code)
+- [📝 API documentation and example code](#-api-documentation-and-example-code)
 
 
 # ⚠️ About versioning
@@ -63,7 +63,7 @@ $ cmake --build . --target INSTALL --config Release
 ```
 
 ### Link
-Once the library is installed, you can link it using `CMake` with as little effort as writing the following line of code in your poject `CMakeLists.txt`:
+Once the library is installed, you can link it using `CMake` with as little effort as writing the following line of code in your project's `CMakeLists.txt`:
 ```cmake
 ...
 find_package(SuperimposeMesh 0.MINOR.PATCH EXACT REQUIRED)
@@ -83,7 +83,7 @@ to run all the tests.
 Tests are also a nice **starting points** to learn how to use the library and how to implement your own filters! _Just have a look at them!_
 
 
-# 📝 API documentaion and example code
+# 📝 API documentation and example code
 Doxygen-generated documentation is available [here](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html).
 
 
