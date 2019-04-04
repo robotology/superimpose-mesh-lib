@@ -38,8 +38,7 @@ install:
   - ps: cd c:\dev
   - git clone https://github.com/robotology/ycm.git
   - ps: cd ycm
-  - git fetch origin pull/214/head:findglew
-  - git checkout findglew
+  - git checkout devel
   - ps: mkdir build
   - ps: cd build
   - ps: cmake -G "$env:CMAKE_GENERATOR" -DCMAKE_INSTALL_PREFIX:PATH=c:\dev\install ..
