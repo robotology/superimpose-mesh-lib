@@ -16,8 +16,8 @@ endif()
 
 ### Define the project
 project(SuperimposeMesh
-  LANGUAGES CXX
-VERSION 0.10.100)
+        LANGUAGES CXX
+        VERSION 0.10.100)
 
 
 ### Define project specific options
@@ -49,7 +49,7 @@ endif()
 
 
 ### Use YCM to improve and simplify CMake maintenence
-find_package(YCM REQUIRED)
+find_package(YCM 0.10.20190405.2 REQUIRED QUIET)
 print_dependency(YCM)
 
 
