@@ -379,7 +379,9 @@ SICAD::~SICAD()
 {
     std::cout << log_ID_ << "Deallocating OpenGL resources..." << std::endl;
 
+
     glfwMakeContextCurrent(window_);
+
 
     for (const ModelElement& pair : model_obj_)
     {
@@ -387,24 +389,29 @@ SICAD::~SICAD()
         delete pair.second;
     }
 
-    glDeleteTextures    (1, &texture_color_buffer_);
-    glDeleteTextures    (1, &texture_depth_buffer_);
+
+    glDeleteTextures(1, &texture_color_buffer_);
+    glDeleteTextures(1, &texture_depth_buffer_);
     glDeleteFramebuffers(1, &fbo_);
     glDeleteVertexArrays(1, &vao_background_);
-    glDeleteBuffers     (1, &ebo_background_);
-    glDeleteBuffers     (1, &vbo_background_);
+    glDeleteBuffers(1, &ebo_background_);
+    glDeleteBuffers(1, &vbo_background_);
     glDeleteVertexArrays(1, &vao_frame_);
-    glDeleteBuffers     (1, &vbo_frame_);
-    glDeleteTextures    (1, &texture_background_);
-    glDeleteBuffers     (2, pbo_);
+    glDeleteBuffers(1, &vbo_frame_);
+    glDeleteTextures(1, &texture_background_);
+    glDeleteBuffers(2, pbo_);
+
 
     std::cout << log_ID_ << "Deleting OpenGL shaders." << std::endl;
     delete shader_background_;
     delete shader_cad_;
+    delete shader_frame_;
+
 
     std::cout << log_ID_ << "Closing OpenGL window/context." << std::endl;
     glfwSetWindowShouldClose(window_, GL_TRUE);
     glfwMakeContextCurrent(nullptr);
+
 
     class_counter_--;
     if (class_counter_ == 0)
@@ -412,6 +419,7 @@ SICAD::~SICAD()
         std::cout << log_ID_ << "Terminating GLFW." << std::endl;
         glfwTerminate();
     }
+
 
     std::cout << log_ID_ << "OpenGL resource deallocation completed!" << std::endl;
 }
