@@ -27,36 +27,29 @@ public:
         glm::vec2 TexCoords;
     };
 
-
     struct Texture
     {
-        GLuint      id;
+        GLuint id;
         std::string type;
-        aiString    path;
+        aiString path;
     };
 
-    /* Functions */
     Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
 
     void Draw(Shader shader);
 
-    /* Mesh Data */
-    std::vector<Vertex>  vertices;
-
-    std::vector<GLuint>  indices;
-
-    std::vector<Texture> textures;
-
 private:
-    /* Render data */
-    GLuint VAO;
+    GLuint VAO_;
 
-    GLuint VBO;
+    GLuint VBO_;
 
-    GLuint EBO;
+    GLuint EBO_;
 
-    /* Functions */
-    void setupMesh();
+    std::vector<Vertex> vertices_;
+
+    std::vector<GLuint> indices_;
+
+    std::vector<Texture> textures_;
 };
 
 #endif /* MESH_H */

@@ -21,29 +21,29 @@
 class Model
 {
 public:
-    /* Functions */
     Model(const GLchar* path);
 
     void Draw(Shader shader);
 
-private:
-    /* Model Data */
-    std::vector<Mesh> meshes;
+    bool has_texture();
 
-    std::string directory;
-
-    std::vector<Mesh::Texture> textures_loaded;
-
-    /* Functions */
+protected:
     void loadModel(std::string path);
 
     void processNode(aiNode* node, const aiScene* scene);
 
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 
-//    GLint TextureFromFile(const char* path, std::string directory);
+    GLint TextureFromFile(const char* path, std::string directory);
 
-//    std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+    std::vector<Mesh::Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+
+private:
+    std::vector<Mesh> meshes_;
+
+    std::string directory_;
+
+    std::vector<Mesh::Texture> textures_loaded_;
 };
 
 #endif /* MODEL_H */

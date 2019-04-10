@@ -193,7 +193,7 @@ SICAD::SICAD
 
     /* Check whether the framebuffer has been completely created or not. */
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        throw std::runtime_error("ERROR::SICAD::CTOR::\nERROR:\n\tCustom framebuffer could not be completed.");
+        throw std::runtime_error("ERROR::SICAD::CTOR::\nERROR:\n\tCustom framebuffer could not be created.");
 
 
     /* Enable depth and scissor test. */
@@ -268,7 +268,7 @@ SICAD::SICAD
     glBindVertexArray(0);
 
 
-    /* Crate the Pixel Buffer Objects for reading rendered images and maniuplate data directly on GPU. */
+    /* Crate the Pixel Buffer Objects for reading rendered images and manipulate data directly on GPU. */
     glGenBuffers(2, pbo_);
     unsigned int number_of_channel = 3;
 
@@ -280,7 +280,12 @@ SICAD::SICAD
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-
+    /* FIXME
+     * Delete std::nothrow and change try-catch logic.
+     */
+    /* FIXME
+     * Add std::make_unique in an utility header.
+     */
     /* Crate background shader program. */
     std::cout << log_ID_ << "Setting up background shader." << std::endl;
 
@@ -298,8 +303,8 @@ SICAD::SICAD
     std::cout << log_ID_ << "Background shader succesfully set up!" << std::endl;
 
 
-    /* Crate model shader program. */
-    std::cout << log_ID_ << "Setting up model shader." << std::endl;
+    /* Crate shader program for mesh model. */
+    std::cout << log_ID_ << "Setting up shader for mesh models." << std::endl;
 
     try
     {
@@ -312,7 +317,22 @@ SICAD::SICAD
     if (shader_cad_ == nullptr)
         throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\t3D model shader source file not found!");
 
-    std::cout << log_ID_ << "Model shader succesfully set up!" << std::endl;
+    std::cout << log_ID_ << "Shader for mesh models succesfully set up!" << std::endl;
+
+
+    /* Crate shader program for textured model. */
+    std::cout << log_ID_ << "Setting up shader for textured mesh model." << std::endl;
+
+    try
+    {
+        shader_mesh_texture_ = std::unique_ptr<Shader>(new Shader((shader_folder + "/shader_model.vert").c_str(), (shader_folder + "/shader_model_texture.frag").c_str()));
+    }
+    catch (const std::runtime_error& e)
+    {
+        throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\t3D model shader source file not found!\n" + std::string(e.what()));
+    }
+
+    std::cout << log_ID_ << "Shader for textured mesh models succesfully set up!" << std::endl;
 
 
     /* Crate axis frame shader program. */
@@ -338,12 +358,12 @@ SICAD::SICAD
         auto search = model_obj_.find(pair.first);
         if(search == model_obj_.end())
         {
-            std::cout << log_ID_ << "Loading " + pair.first + " model for OpenGL rendering from" << pair.second << "." << std::endl;
+            std::cout << log_ID_ << "Loading " + pair.first + " model for OpenGL rendering from " << pair.second << "." << std::endl;
 
             model_obj_[pair.first] = new (std::nothrow) Model(pair.second.c_str());
 
             if (model_obj_[pair.first] == nullptr)
-                throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\t" + pair.first + " model file from" + pair.second + " not found!");
+                throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\t" + pair.first + " model file from " + pair.second + " not found!");
         }
         else
         {
@@ -473,11 +493,15 @@ bool SICAD::superimpose
 
     /* Install/Use the program specified by the shader. */
     shader_cad_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_cad_->uninstall();
 
+    shader_mesh_texture_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_mesh_texture_->uninstall();
+
     shader_frame_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_frame_->uninstall();
 
     /* Model transformation matrix. */
@@ -493,15 +517,29 @@ bool SICAD::superimpose
         auto iter_model = model_obj_.find(pair.first);
         if (iter_model != model_obj_.end())
         {
-            shader_cad_->install();
-            glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-            (iter_model->second)->Draw(*shader_cad_);
-            shader_cad_->uninstall();
+            if ((iter_model->second)->has_texture())
+            {
+                shader_mesh_texture_->install();
+                glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                (iter_model->second)->Draw(*shader_mesh_texture_);
+
+                shader_mesh_texture_->uninstall();
+            }
+            else
+            {
+                shader_cad_->install();
+                glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                (iter_model->second)->Draw(*shader_cad_);
+
+                shader_cad_->uninstall();
+            }
         }
         else if (pair.first == "frame")
         {
             shader_frame_->install();
-            glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
             glBindVertexArray(vao_frame_);
             glDrawArrays(GL_LINES, 0, 6);
             glBindVertexArray(0);
@@ -554,11 +592,15 @@ bool SICAD::superimpose
 
     /* Install/Use the program specified by the shader. */
     shader_cad_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_cad_->uninstall();
 
+    shader_mesh_texture_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_mesh_texture_->uninstall();
+
     shader_frame_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_frame_->uninstall();
 
     for (unsigned int i = 0; i < tiles_rows_; ++i)
@@ -598,15 +640,29 @@ bool SICAD::superimpose
                 auto iter_model = model_obj_.find(pair.first);
                 if (iter_model != model_obj_.end())
                 {
-                    shader_cad_->install();
-                    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-                    (iter_model->second)->Draw(*shader_cad_);
-                    shader_cad_->uninstall();
+                    if ((iter_model->second)->has_texture())
+                    {
+                        shader_mesh_texture_->install();
+                        glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                        (iter_model->second)->Draw(*shader_mesh_texture_);
+
+                        shader_mesh_texture_->uninstall();
+                    }
+                    else
+                    {
+                        shader_cad_->install();
+                        glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                        (iter_model->second)->Draw(*shader_cad_);
+
+                        shader_cad_->uninstall();
+                    }
                 }
                 else if (pair.first == "frame")
                 {
                     shader_frame_->install();
-                    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
                     glBindVertexArray(vao_frame_);
                     glDrawArrays(GL_LINES, 0, 6);
                     glBindVertexArray(0);
@@ -719,11 +775,15 @@ bool SICAD::superimpose
 
     /* Install/Use the program specified by the shader. */
     shader_cad_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_cad_->uninstall();
 
+    shader_mesh_texture_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_mesh_texture_->uninstall();
+
     shader_frame_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_frame_->uninstall();
 
     /* Model transformation matrix. */
@@ -739,15 +799,29 @@ bool SICAD::superimpose
         auto iter_model = model_obj_.find(pair.first);
         if (iter_model != model_obj_.end())
         {
-            shader_cad_->install();
-            glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-            (iter_model->second)->Draw(*shader_cad_);
-            shader_cad_->uninstall();
+            if ((iter_model->second)->has_texture())
+            {
+                shader_mesh_texture_->install();
+                glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                (iter_model->second)->Draw(*shader_mesh_texture_);
+
+                shader_mesh_texture_->uninstall();
+            }
+            else
+            {
+                shader_cad_->install();
+                glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                (iter_model->second)->Draw(*shader_cad_);
+
+                shader_cad_->uninstall();
+            }
         }
         else if (pair.first == "frame")
         {
             shader_frame_->install();
-            glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
             glBindVertexArray(vao_frame_);
             glDrawArrays(GL_LINES, 0, 6);
             glBindVertexArray(0);
@@ -813,11 +887,15 @@ bool SICAD::superimpose
 
     /* Install/Use the program specified by the shader. */
     shader_cad_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_cad_->uninstall();
 
+    shader_mesh_texture_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_mesh_texture_->uninstall();
+
     shader_frame_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_frame_->uninstall();
 
     /* Model transformation matrix. */
@@ -833,15 +911,29 @@ bool SICAD::superimpose
         auto iter_model = model_obj_.find(pair.first);
         if (iter_model != model_obj_.end())
         {
-            shader_cad_->install();
-            glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-            (iter_model->second)->Draw(*shader_cad_);
-            shader_cad_->uninstall();
+            if ((iter_model->second)->has_texture())
+            {
+                shader_mesh_texture_->install();
+                glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                (iter_model->second)->Draw(*shader_mesh_texture_);
+
+                shader_mesh_texture_->uninstall();
+            }
+            else
+            {
+                shader_cad_->install();
+                glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                (iter_model->second)->Draw(*shader_cad_);
+
+                shader_cad_->uninstall();
+            }
         }
         else if (pair.first == "frame")
         {
             shader_frame_->install();
-            glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+            glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
             glBindVertexArray(vao_frame_);
             glDrawArrays(GL_LINES, 0, 6);
             glBindVertexArray(0);
@@ -893,11 +985,15 @@ bool SICAD::superimpose
 
     /* Install/Use the program specified by the shader. */
     shader_cad_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_cad_->uninstall();
 
+    shader_mesh_texture_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_mesh_texture_->uninstall();
+
     shader_frame_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_frame_->uninstall();
 
     for (unsigned int i = 0; i < tiles_rows_; ++i)
@@ -933,15 +1029,29 @@ bool SICAD::superimpose
                 auto iter_model = model_obj_.find(pair.first);
                 if (iter_model != model_obj_.end())
                 {
-                    shader_cad_->install();
-                    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-                    (iter_model->second)->Draw(*shader_cad_);
-                    shader_cad_->uninstall();
+                    if ((iter_model->second)->has_texture())
+                    {
+                        shader_mesh_texture_->install();
+                        glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                        (iter_model->second)->Draw(*shader_mesh_texture_);
+
+                        shader_mesh_texture_->uninstall();
+                    }
+                    else
+                    {
+                        shader_cad_->install();
+                        glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                        (iter_model->second)->Draw(*shader_cad_);
+
+                        shader_cad_->uninstall();
+                    }
                 }
                 else if (pair.first == "frame")
                 {
                     shader_frame_->install();
-                    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
                     glBindVertexArray(vao_frame_);
                     glDrawArrays(GL_LINES, 0, 6);
                     glBindVertexArray(0);
@@ -996,11 +1106,15 @@ bool SICAD::superimpose
 
     /* Install/Use the program specified by the shader. */
     shader_cad_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_cad_->uninstall();
 
+    shader_mesh_texture_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
+    shader_mesh_texture_->uninstall();
+
     shader_frame_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "view"), 1, GL_FALSE, glm::value_ptr(view));
     shader_frame_->uninstall();
 
     for (unsigned int i = 0; i < tiles_rows_; ++i)
@@ -1040,15 +1154,29 @@ bool SICAD::superimpose
                 auto iter_model = model_obj_.find(pair.first);
                 if (iter_model != model_obj_.end())
                 {
-                    shader_cad_->install();
-                    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-                    (iter_model->second)->Draw(*shader_cad_);
-                    shader_cad_->uninstall();
+                    if ((iter_model->second)->has_texture())
+                    {
+                        shader_mesh_texture_->install();
+                        glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                        (iter_model->second)->Draw(*shader_mesh_texture_);
+
+                        shader_mesh_texture_->uninstall();
+                    }
+                    else
+                    {
+                        shader_cad_->install();
+                        glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+                        (iter_model->second)->Draw(*shader_cad_);
+
+                        shader_cad_->uninstall();
+                    }
                 }
                 else if (pair.first == "frame")
                 {
                     shader_frame_->install();
-                    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+                    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "model"), 1, GL_FALSE, glm::value_ptr(model));
                     glBindVertexArray(vao_frame_);
                     glDrawArrays(GL_LINES, 0, 6);
                     glBindVertexArray(0);
@@ -1141,11 +1269,15 @@ bool SICAD::setProjectionMatrix
 
     /* Install/Use the program specified by the shader. */
     shader_cad_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
+    glUniformMatrix4fv(glGetUniformLocation(shader_cad_->get_program(), "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
     shader_cad_->uninstall();
 
+    shader_mesh_texture_->install();
+    glUniformMatrix4fv(glGetUniformLocation(shader_mesh_texture_->get_program(), "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
+    shader_mesh_texture_->uninstall();
+
     shader_frame_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
+    glUniformMatrix4fv(glGetUniformLocation(shader_frame_->get_program(), "projection"), 1, GL_FALSE, glm::value_ptr(projection_));
     shader_frame_->uninstall();
 
     glfwSwapBuffers(window_);
@@ -1258,7 +1390,7 @@ void SICAD::renderBackground(const cv::Mat& img) const
 
     /* Install/Use the program specified by the shader. */
     shader_background_->install();
-    glUniformMatrix4fv(glGetUniformLocation(shader_background_->Program, "projection"), 1, GL_FALSE, glm::value_ptr(back_proj_));
+    glUniformMatrix4fv(glGetUniformLocation(shader_background_->get_program(), "projection"), 1, GL_FALSE, glm::value_ptr(back_proj_));
 
     glBindVertexArray(vao_background_);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

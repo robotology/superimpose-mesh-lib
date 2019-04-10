@@ -16,8 +16,8 @@
 Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 {
     /* Retrieve the vertex/fragment source code from filePath. */
-    std::string   vertexCode;
-    std::string   fragmentCode;
+    std::string vertexCode;
+    std::string fragmentCode;
     std::ifstream vShaderFile;
     std::ifstream fShaderFile;
 
@@ -25,6 +25,9 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
     vShaderFile.exceptions(std::ifstream::badbit);
     fShaderFile.exceptions(std::ifstream::badbit);
 
+    /* FIXME
+     * Change runtime_error messages according to SICAD style.
+     */
     try
     {
         vShaderFile.open(vertexPath);
@@ -83,16 +86,16 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
     };
 
     /* Shader Program. */
-    this->Program = glCreateProgram();
-    glAttachShader(this->Program, vertex);
-    glAttachShader(this->Program, fragment);
-    glLinkProgram(this->Program);
+    shader_program_id_ = glCreateProgram();
+    glAttachShader(shader_program_id_, vertex);
+    glAttachShader(shader_program_id_, fragment);
+    glLinkProgram(shader_program_id_);
 
     /* Print linking errors if any. */
-    glGetProgramiv(this->Program, GL_LINK_STATUS, &success);
+    glGetProgramiv(shader_program_id_, GL_LINK_STATUS, &success);
     if (!success)
     {
-        glGetProgramInfoLog(this->Program, 512, NULL, infoLog);
+        glGetProgramInfoLog(shader_program_id_, 512, NULL, infoLog);
         throw std::runtime_error("ERROR::SHADER::PROGRAM::LINKING_FAILED\n" + std::string(infoLog));
     }
 
@@ -104,7 +107,7 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 
 void Shader::install()
 {
-    glUseProgram(this->Program);
+    glUseProgram(shader_program_id_);
 }
 
 
