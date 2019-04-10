@@ -13,7 +13,7 @@
 #include <assimp/postprocess.h>
 #include <glm/glm.hpp>
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 
 Model::Model(const GLchar* path)
