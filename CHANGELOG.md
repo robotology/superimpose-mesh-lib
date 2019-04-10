@@ -7,7 +7,7 @@
  - SICAD objects now always perform off-screen rendering and the constructor's window_visible parameter has been removed.
 
 ##### `CMake`
- - The CMake target now has namespace SI::.
+ - The CMake target now has namespace SI:: instead of SuperimposeMesh::.
  - Devel branch will now have +100 on the patch number to differentiate from master branch.
  - assimp library is now serched using YCM Findassimp.cmake.
  - glew library is now serched using YCM FindGLEW.cmake.
@@ -24,14 +24,16 @@
     As an example, the user may map the PBO on a CUDA/OpenCL-enabled GPU and do some processing on the images directly on the GPU, without wasting CPU time and copy on memory overheads.
   - Add SICAD::setMipmapsOpt(SICAD::MIPMaps) public method to change the type of MIPMaps. Can be MIPMaps::nearest or MIPMaps::linear.
   - Improved tests.
+  - SICAD will now automatically find mesh textures and select the proper shader program to render them.
 
 ##### `Dependencies`
- - Added mandatory dependency from YCM release `0.10.0` and above.
+ - Added mandatory dependency from YCM release `0.10.1` and above.
  - Minimum required version of Assimp is now `3.3.0`.
  - Minimum required version of OpenCV is now `2.4.9`.
 
 ##### `Test`
   - Fixed both AppVeyor and Travis tests.
+  - Added tests for mesh with textures.
 
 
 ## 🔖 Version 0.9.4.0
