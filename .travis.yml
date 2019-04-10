@@ -22,7 +22,7 @@ addons:
     packages:
       - libassimp-dev
       - libglew-dev
-      - libglfw-dev
+      - libglfw3-dev
       - libglm-dev
       - libopencv-dev
   homebrew:
@@ -31,7 +31,6 @@ addons:
       - eigen
       - assimp
       - glew
-      - glfw
       - glm
       - opencv
 
@@ -39,10 +38,9 @@ addons:
 before_install:
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export PATH="/usr/lib/ccache/bin/:$PATH"; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then export PATH="/usr/local/opt/ccache/libexec:$PATH"; fi
-
   - echo "-------------------- BEGIN SYSTEM INFORMATION --------------------"
   - uname -a
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then lsb_release -a;                     fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then lsb_release -a; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ];   then system_profiler SPSoftwareDataType; fi
   - env
   - which cmake
@@ -58,6 +56,16 @@ before_install:
 
 install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then /usr/bin/yes | pip2 uninstall numpy || true; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install glfw --HEAD; fi
+  - git clone https://github.com/robotology/ycm.git
+  - cd ycm
+  - git checkout devel
+  - mkdir build
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=${TRAVIS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=$(pwd)/../install
+  - make install
+  - export YCM_DIR="$(pwd)/../install/share/YCM/cmake"
+  - cd ../..
 
 before_script:
   - mkdir build
@@ -66,3 +74,4 @@ before_script:
 
 script:
   - make
+  - ctest -N

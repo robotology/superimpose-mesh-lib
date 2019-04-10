@@ -5,6 +5,8 @@
  * BSD 3-Clause license. See the accompanying LICENSE file for details.
  */
 
+#include <utils.h>
+
 #include <cmath>
 #include <exception>
 #include <iostream>
@@ -13,15 +15,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <SuperimposeMesh/SICAD.h>
 
 
 int main()
 {
     std::string log_ID = "[Test - SICAD - Frame]";
-    std::cout << log_ID << "This test checks whether the present machine can render a frame using OpenGL." << std::endl;
+    std::cout << log_ID << "This test checks whether the present machine can render a mesh and a frame using OpenGL." << std::endl;
 
     SICAD::ModelPathContainer objfile_map;
     objfile_map.emplace("alien", "./Space_Invader.obj");
@@ -55,9 +56,22 @@ int main()
     double cam_x[] = { 0, 0, 0 };
     double cam_o[] = { 1.0, 0, 0, 0 };
 
-    cv::Mat img_1;
-    si_cad.superimpose(objpose_map, cam_x, cam_o, img_1);
-    cv::imwrite("./test_sicad_1_Space_Invader_frame.jpg", img_1);
+    cv::Mat img_rendered;
+
+    si_cad.superimpose(objpose_map, cam_x, cam_o, img_rendered);
+
+    cv::Mat img_ground_truth = cv::imread("./gt_sicad_alien_frame.png");
+
+    if (!utils::compareImages(img_rendered, img_ground_truth))
+    {
+        std::cerr << log_ID << " Rendered and ground truth images are different." << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
+    std::cout << log_ID << " Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
+
+    cv::imwrite("./test_sicad_alien_frame.png", img_rendered);
 
     return EXIT_SUCCESS;
 }

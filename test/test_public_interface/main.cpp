@@ -14,14 +14,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <SuperimposeMesh/SICAD.h>
 
 
 int main()
 {
-    std::string log_ID = "[Test - Public interfaces]";
+    std::string log_ID = "[Test - Public interface]";
     std::cout << log_ID << "This test checks whether SICAD public methods behave as expected." << std::endl;
     std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
 

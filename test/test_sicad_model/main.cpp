@@ -5,6 +5,8 @@
  * BSD 3-Clause license. See the accompanying LICENSE file for details.
  */
 
+#include <utils.h>
+
 #include <cmath>
 #include <exception>
 #include <iostream>
@@ -13,8 +15,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <SuperimposeMesh/SICAD.h>
 
 
@@ -26,6 +27,7 @@ int main()
 
     SICAD::ModelPathContainer obj;
     obj.emplace("alien", "./Space_Invader.obj");
+    obj.emplace("textured_alien", "./Space_Invader_Textured.obj");
 
     const unsigned int cam_width  = 320;
     const unsigned int cam_height = 240;
@@ -34,11 +36,16 @@ int main()
     const float        cam_fy     = 257.34;
     const float        cam_cy     = 120;
 
+    double cam_x[] = { 0, 0, 0 };
+    double cam_o[] = { 1.0, 0, 0, 0 };
+
+
     SICAD si_cad(obj,
                  cam_width, cam_height,
                  cam_fx, cam_fy, cam_cx, cam_cy,
                  1,
                  ".");
+
 
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
@@ -49,20 +56,94 @@ int main()
     obj_pose[5] = 0;
     obj_pose[6] = 0;
 
-    Superimpose::ModelPoseContainer objpose_map;
-    objpose_map.emplace("alien", obj_pose);
 
-    double cam_x[] = { 0, 0, 0 };
-    double cam_o[] = { 1.0, 0, 0, 0 };
+    Superimpose::ModelPoseContainer alien_objpose_map;
+    alien_objpose_map.emplace("alien", obj_pose);
 
-    cv::Mat img_1;
-    si_cad.superimpose(objpose_map, cam_x, cam_o, img_1);
-    cv::imwrite("./test_sicad_1_Space_Invader.jpg", img_1);
+    /* Space invader alien */
+    cv::Mat img_rendered_alien;
 
-    cv::Mat img_2 = cv::imread("./space.png");
+    si_cad.superimpose(alien_objpose_map, cam_x, cam_o, img_rendered_alien);
+
+    cv::imwrite("./test_sicad_alien.png", img_rendered_alien);
+
+    cv::Mat img_ground_truth_alien = cv::imread("./gt_sicad_alien.png");
+
+    if (!utils::compareImages(img_rendered_alien, img_ground_truth_alien))
+    {
+        std::cerr << log_ID << "[Alien] Rendered and ground truth images are different." << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
+    std::cout << log_ID << "[Alien] Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
+    /* ******************* */
+
+
+    /* Space invader alien with space background */
+    cv::Mat img_rendered_alien_space = cv::imread("./space.png");
+
     si_cad.setBackgroundOpt(true);
-    si_cad.superimpose(objpose_map, cam_x, cam_o, img_2);
-    cv::imwrite("./test_sicad_2_Space_Invader.jpg", img_2);
+    si_cad.superimpose(alien_objpose_map, cam_x, cam_o, img_rendered_alien_space);
+
+    cv::imwrite("./test_sicad_alien_space.png", img_rendered_alien_space);
+
+    cv::Mat img_ground_truth_alien_space = cv::imread("./gt_sicad_alien_space.png");
+
+    if (!utils::compareImages(img_rendered_alien_space, img_ground_truth_alien_space))
+    {
+        std::cerr << log_ID << "[Alien + Background] Rendered and ground truth images are different." << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
+    std::cout << log_ID << "[Alien + Background] Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
+    /* ******************************** */
+
+
+    Superimpose::ModelPoseContainer textured_alien_objpose_map;
+    textured_alien_objpose_map.emplace("textured_alien", obj_pose);
+
+    /* Space invader textured alien */
+    cv::Mat img_rendered_textured_alien;
+
+    si_cad.superimpose(textured_alien_objpose_map, cam_x, cam_o, img_rendered_textured_alien);
+
+    cv::imwrite("./test_sicad_textured_alien.png", img_rendered_textured_alien);
+
+    cv::Mat img_ground_truth_textured_alien = cv::imread("./gt_sicad_textured_alien.png");
+
+    if (!utils::compareImages(img_rendered_textured_alien, img_ground_truth_textured_alien))
+    {
+        std::cerr << log_ID << "[Textured alien] Rendered and ground truth images are different." << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
+    std::cout << log_ID << "[Textured alien] Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
+    /* **************************** */
+
+
+    /* Space invader textured alien with space background */
+    cv::Mat img_rendered_textured_alien_space = cv::imread("./space.png");
+
+    si_cad.setBackgroundOpt(true);
+    si_cad.superimpose(textured_alien_objpose_map, cam_x, cam_o, img_rendered_textured_alien_space);
+
+    cv::imwrite("./test_sicad_textured_alien_space.png", img_rendered_textured_alien_space);
+
+    cv::Mat img_ground_truth_textured_alien_space = cv::imread("./gt_sicad_textured_alien_space.png");
+
+    if (!utils::compareImages(img_rendered_textured_alien_space, img_ground_truth_textured_alien_space))
+    {
+        std::cerr << log_ID << "[Textured alien + Background] Rendered and ground truth images are different." << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
+    std::cout << log_ID << "[Textured alien + Background] Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
+    /* ************************************************** */
+
 
     return EXIT_SUCCESS;
 }

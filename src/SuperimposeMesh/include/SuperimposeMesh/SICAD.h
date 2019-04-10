@@ -13,9 +13,10 @@
 #include "Model.h"
 #include "Shader.h"
 
-#include <utility>
+#include <memory>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #include <GL/glew.h>
@@ -364,6 +365,9 @@ public:
 
     int getTilesCols() const;
 
+/* FIXME
+ * Change pointer with smartpointers.
+ */
 private:
     static int class_counter_;
 
@@ -371,7 +375,7 @@ private:
 
     const std::string log_ID_ = "[SI-CAD]";
 
-    GLFWwindow*   window_ = nullptr;
+    GLFWwindow* window_ = nullptr;
 
     GLint tiles_num_ = 0;
 
@@ -409,6 +413,8 @@ private:
 
     Shader* shader_cad_ = nullptr;
 
+    std::unique_ptr<Shader> shader_mesh_texture_;
+
     Shader* shader_frame_ = nullptr;
 
     ModelContainer model_obj_;
@@ -444,7 +450,7 @@ private:
     void pollOrPostEvent();
 
     void renderBackground(const cv::Mat& img) const;
-    
+
     void setWireframe(GLenum mode);
 
     void factorize_int(const GLsizei area, const GLsizei width_limit, const GLsizei height_limit, GLsizei& width, GLsizei& height);

@@ -16,17 +16,32 @@
 class Shader
 {
 public:
-	/* Constructor reads and builds the shader. */
+	/**
+     * Constructor reads and builds the shader.
+     */
 	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
 
-    /* Install (i.e. use) the program object. */
+    /**
+     * Activate the shader program.
+     */
     void install();
 
-    /* Uninstall (i.e. use) the program object. */
+    /**
+     * Deactivate the shader program.
+     */
     void uninstall();
 
-    /* The program ID. */
-    GLuint Program;
+
+    inline const GLuint get_program()
+    {
+        return shader_program_id_;
+    }
+
+private:
+    /**
+     * The program ID.
+     */
+    GLuint shader_program_id_;
 };
 
 #endif /* SHADER_H */

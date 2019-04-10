@@ -7,18 +7,31 @@
  - SICAD objects now always perform off-screen rendering and the constructor's window_visible parameter has been removed.
 
 ##### `CMake`
+ - The CMake target now has namespace SI::.
  - Devel branch will now have +100 on the patch number to differentiate from master branch.
- - Use CONFIG mode for Assimp, fix inclusion of headers and linking to Assimp.
+ - assimp library is now serched using YCM Findassimp.cmake.
+ - glew library is now serched using YCM FindGLEW.cmake.
  - Use CONFIG mode for glfw3.
+ - AddInstallRPATHSupport.cmake is now used from YCM.
+ - InstallBasicPackageFiles.cmake is now used from YCM.
+ - Import AddDependenciesPrintUtils from robotology/YARP - robotology/visual-tracking-control to visualize the status of dependencies.
+ - Removed explicit dependency to OpenGL.
+ - Tests are now correctly generated for Visual Studio generator.
 
 ##### `Feature`
   - Add SICAD::superimpose() methods to render images to Pixel Buffer Objects (PBO).
   - Add SICAD::getPBOs() and SICDAD::getPBO(size_t) to access the allow the user to read the PBOs and manipulate the memory on the GPU.
     As an example, the user may map the PBO on a CUDA/OpenCL-enabled GPU and do some processing on the images directly on the GPU, without wasting CPU time and copy on memory overheads.
   - Add SICAD::setMipmapsOpt(SICAD::MIPMaps) public method to change the type of MIPMaps. Can be MIPMaps::nearest or MIPMaps::linear.
+  - Improved tests.
 
 ##### `Dependencies`
+ - Added mandatory dependency from YCM release `0.10.0` and above.
  - Minimum required version of Assimp is now `3.3.0`.
+ - Minimum required version of OpenCV is now `2.4.9`.
+
+##### `Test`
+  - Fixed both AppVeyor and Travis tests.
 
 
 ## 🔖 Version 0.9.4.0

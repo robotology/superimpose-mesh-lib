@@ -12,28 +12,35 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <glm/glm.hpp>
-// #include <SOIL/SOIL.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgcodecs/imgcodecs.hpp>
 
 
 Model::Model(const GLchar* path)
 {
-    this->loadModel(path);
+    loadModel(path);
 }
 
 
 void Model::Draw(Shader shader)
 {
-    for(GLuint i = 0; i < this->meshes.size(); i++)
+    for(GLuint i = 0; i < meshes_.size(); i++)
     {
-        this->meshes[i].Draw(shader);
+        meshes_[i].Draw(shader);
     }
+}
+
+
+bool Model::has_texture()
+{
+    return (textures_loaded_.size() > 0 ? true : false);
 }
 
 
 void Model::loadModel(std::string path)
 {
     Assimp::Importer import;
-    const aiScene*   scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene* scene = import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
     if(!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -44,37 +51,38 @@ void Model::loadModel(std::string path)
     size_t foundpos = path.find_last_of('/');
     if (foundpos == std::string::npos)
     {
-        this->directory = ".";
+       directory_ = ".";
     }
     else
     {
-        this->directory = path.substr(0, foundpos);
+       directory_ = path.substr(0, foundpos);
     }
 
-    this->processNode(scene->mRootNode, scene);
+    processNode(scene->mRootNode, scene);
 }
 
 
-void Model::processNode(aiNode* node, const aiScene* scene) {
+void Model::processNode(aiNode* node, const aiScene* scene)
+{
     /* Process all the node's meshes (if any). */
     for (GLuint i = 0; i < node->mNumMeshes; ++i)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        this->meshes.push_back(this->processMesh(mesh, scene));
+        meshes_.push_back(processMesh(mesh, scene));
     }
 
     /* Then do the same for each of its children. */
     for (GLuint i = 0; i < node->mNumChildren; ++i)
     {
-        this->processNode(node->mChildren[i], scene);
+        processNode(node->mChildren[i], scene);
     }
 }
 
 
 Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
-    std::vector<Mesh::Vertex>  vertices;
-    std::vector<GLuint>  indices;
+    std::vector<Mesh::Vertex> vertices;
+    std::vector<GLuint> indices;
     std::vector<Mesh::Texture> textures;
 
     /* Process vertices. */
@@ -84,7 +92,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
         /* Process vertex positions, normals and texture coordinates. */
         vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-        vertex.Normal   = glm::vec3(mesh->mNormals[i].x,  mesh->mNormals[i].y,  mesh->mNormals[i].z);
+        vertex.Normal = glm::vec3(mesh->mNormals[i].x,  mesh->mNormals[i].y,  mesh->mNormals[i].z);
 
         /* Does the mesh contain texture coordinates? */
         if (mesh->mTextureCoords[0])
@@ -109,82 +117,80 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         }
     }
 
-//    /* Process textures. */
-//    /* The texture code is taken as-is. The tutorial on texture was skipped. */
-//    if (mesh->mMaterialIndex > 0)
-//    {
-//        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-//
-//        std::vector<Mesh::Texture> diffuseMaps = this->loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-//        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-//
-//        std::vector<Mesh::Texture> specularMaps = this->loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-//        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-//    }
+    /* Process textures. */
+    /* The texture code is taken as-is. The tutorial on texture was skipped. */
+    if (mesh->mMaterialIndex > 0)
+    {
+        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+        std::vector<Mesh::Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+        textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+
+        std::vector<Mesh::Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+    }
 
     return Mesh(vertices, indices, textures);
 }
 
 
-//std::vector<Mesh::Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
-//{
-//    std::vector<Mesh::Texture> textures;
-//    for (GLuint i = 0; i < mat->GetTextureCount(type); ++i)
-//    {
-//        aiString str;
-//        mat->GetTexture(type, i, &str);
-//        GLboolean skip = false;
-//        for (GLuint j = 0; j < textures_loaded.size(); ++j)
-//        {
-//            if (textures_loaded[j].path == str)
-//            {
-//                textures.push_back(textures_loaded[j]);
-//                skip = true;
-//                break;
-//            }
-//        }
-//        /* If texture hasn't been loaded already, load it. */
-//        if (!skip)
-//        {
-//            Mesh::Texture texture;
-//
-//            texture.id = TextureFromFile(str.C_Str(), this->directory);
-//            texture.type = typeName;
-//            texture.path = str;
-//            textures.push_back(texture);
-//
-//            /* Add to loaded textures. */
-//            this->textures_loaded.push_back(texture);
-//        }
-//    }
-//
-//    return textures;
-//}
+std::vector<Mesh::Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
+{
+    std::vector<Mesh::Texture> textures;
+    for (GLuint i = 0; i < mat->GetTextureCount(type); ++i)
+    {
+        aiString str;
+        mat->GetTexture(type, i, &str);
+        GLboolean skip = false;
+        for (GLuint j = 0; j < textures_loaded_.size(); ++j)
+        {
+            if (textures_loaded_[j].path == str)
+            {
+                textures.push_back(textures_loaded_[j]);
+                skip = true;
+                break;
+            }
+        }
+
+        /* If texture hasn't been loaded already, load it. */
+        if (!skip)
+        {
+            Mesh::Texture texture;
+
+            texture.id = TextureFromFile(str.C_Str(), directory_);
+            texture.type = typeName;
+            texture.path = str;
+            textures.push_back(texture);
+
+            /* Add to loaded textures. */
+            textures_loaded_.push_back(texture);
+        }
+    }
+
+    return textures;
+}
 
 
-//GLint Model::TextureFromFile(const char* path, std::string directory)
-//{
-//    /* Generate texture ID and load texture data. */
-//    std::string filename = std::string(path);
-//    filename = directory + "/" + filename;
-//    GLuint textureID;
-//    glGenTextures(1, &textureID);
-//    int width;
-//    int height;
-//    unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
-//
-//    /* Assign texture to ID. */
-//    glBindTexture(GL_TEXTURE_2D, textureID);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-//    glGenerateMipmap(GL_TEXTURE_2D);
-//
-//    /* Parameters. */
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//    glBindTexture(GL_TEXTURE_2D, 0);
-//    SOIL_free_image_data(image);
-//
-//    return textureID;
-//}
+GLint Model::TextureFromFile(const char* path, std::string directory)
+{
+    std::string filename = directory + "/" + std::string(path);
+    cv::Mat image = cv::imread(filename, cv::IMREAD_ANYCOLOR);
+
+    /* Generate texture ID and load texture data. */
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+
+    /* Assign texture to ID. */
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.cols, image.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, image.ptr());
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    /* Parameters. */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return textureID;
+}
