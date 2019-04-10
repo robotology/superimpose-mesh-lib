@@ -22,7 +22,7 @@
 int main()
 {
     std::string log_ID = "[Test - SICAD - Frame]";
-    std::cout << log_ID << "This test checks whether the present machine can render a frame using OpenGL." << std::endl;
+    std::cout << log_ID << "This test checks whether the present machine can render a mesh and a frame using OpenGL." << std::endl;
 
     SICAD::ModelPathContainer objfile_map;
     objfile_map.emplace("alien", "./Space_Invader.obj");

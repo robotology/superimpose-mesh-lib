@@ -28,6 +28,7 @@ int main()
 
     SICAD::ModelPathContainer obj;
     obj.emplace("alien", "./Space_Invader.obj");
+    obj.emplace("textured_alien", "./Space_Invader_Textured.obj");
 
     const unsigned int cam_width  = 320;
     const unsigned int cam_height = 240;
@@ -36,11 +37,16 @@ int main()
     const float        cam_fy     = 257.34;
     const float        cam_cy     = 120;
 
+    double cam_x[] = { 0, 0, 0 };
+    double cam_o[] = { 1.0, 0, 0, 0 };
+
+
     SICAD si_cad(obj,
                  cam_width, cam_height,
                  cam_fx, cam_fy, cam_cx, cam_cy,
                  2,
                  ".");
+
 
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
@@ -51,20 +57,24 @@ int main()
     obj_pose[5] = 0;
     obj_pose[6] = 0;
 
-    Superimpose::ModelPoseContainer objpose_map;
-    objpose_map.emplace("alien", obj_pose);
+
+    Superimpose::ModelPoseContainer alien_objpose_map;
+    alien_objpose_map.emplace("alien", obj_pose);
+
+    Superimpose::ModelPoseContainer textured_alien_objpose_map;
+    textured_alien_objpose_map.emplace("textured_alien", obj_pose);
 
     std::vector<Superimpose::ModelPoseContainer> objposes;
-    objposes.push_back(objpose_map);
-    objposes.push_back(objpose_map);
+    objposes.push_back(alien_objpose_map);
+    objposes.push_back(textured_alien_objpose_map);
 
-    double cam_x[] = { 0, 0, 0 };
-    double cam_o[] = { 1.0, 0, 0, 0 };
 
     cv::Mat img_rendered = cv::imread("./space.png");
 
     si_cad.setBackgroundOpt(true);
     si_cad.superimpose(objposes, cam_x, cam_o, img_rendered);
+
+    cv::imwrite("./test_scissors_background.png", img_rendered);
 
     cv::Mat img_ground_truth = cv::imread("./gt_scissors_background.png");
 
@@ -76,7 +86,6 @@ int main()
     }
 
     std::cout << log_ID << " Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
-    cv::imwrite("./rendered_scissors_background.png", img_rendered);
 
     return EXIT_SUCCESS;
 }
