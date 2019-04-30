@@ -97,7 +97,7 @@ install_basic_package_files(${PROJECT_NAME}
                             VARS_PREFIX ${PROJECT_NAME}
                             NO_CHECK_REQUIRED_COMPONENTS_MACRO
                             UPPERCASE_FILENAMES
-                            DEPENDENCIES YCM assimp GLEW "glfw3 CONFIG" OpenCV)
+                            DEPENDENCIES YCM assimp GLEW "glfw3 CONFIG" GLM OpenCV)
 
 # Add the uninstall target
 include(AddUninstallTarget)

@@ -38,7 +38,6 @@ print_dependency(GLEW)
 find_package(glfw3 REQUIRED CONFIG QUIET)
 print_dependency(glfw3)
 
-set(GLM_VERBOSE 1)
 find_package(GLM REQUIRED QUIET)
 print_dependency(GLM)
 
