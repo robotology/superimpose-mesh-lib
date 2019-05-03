@@ -19,7 +19,7 @@ public:
 	/**
      * Constructor reads and builds the shader.
      */
-	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
+    Shader(const std::string& vertex_shader_path, const std::string& fragment_shader_path);
 
     /**
      * Activate the shader program.

@@ -45,20 +45,7 @@ public:
     };
 
     /**
-     * Create a SICAD object with a dedicated OpenGL window and context.
-     *
-     * For the SICAD object to work properly, the following shaders with this exact names are needed:
-     *
-     *  - shader_model.vert for the vertex shader of the mesh models
-     *  - shader_model.frag for the fragment shader of the mesh models
-     *
-     *  - shader_frame.vert for the vertex shader of the reference frames
-     *  - shader_frame.frag for the fragment shader of the reference frames
-     *
-     *  - shader_background.vert for the vertex shader of the background
-     *  - shader_background.frag for the fragment shader of the background
-     *
-     * It is assumed that the shaders will be placed in the same folder of the executable/library.
+     * Create a SICAD object with a dedicated OpenGL context and default shaders.
      *
      * Only 1 image will be rendered in the OpenGL context.
      *
@@ -71,25 +58,10 @@ public:
      * @param cam_fx focal Length along the x axis in pixels.
      * @param cam_fy focal Length along the y axis in pixels.
      */
-    SICAD(const ModelPathContainer& objfile_map,
-          const GLsizei cam_width, const GLsizei cam_height,
-          const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
+    SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 
     /**
-     * Create a SICAD object with a dedicated OpenGL window and context.
-     *
-     * For the SICAD object to work properly, the following shaders with this exact names are needed:
-     *
-     *  - shader_model.vert for the vertex shader of the mesh models
-     *  - shader_model.frag for the fragment shader of the mesh models
-     *
-     *  - shader_frame.vert for the vertex shader of the reference frames
-     *  - shader_frame.frag for the fragment shader of the reference frames
-     *
-     *  - shader_background.vert for the vertex shader of the background
-     *  - shader_background.frag for the fragment shader of the background
-     *
-     * It is assumed that the shaders will be placed in the same folder of the executable/library.
+     * Create a SICAD object with a dedicated OpenGL context and default shaders.
      *
      * Up to `num_images` images will be rendered in the same OpenGL context and the result of
      * the process will be tiled up in a regular grid. This implies that the total number
@@ -106,26 +78,23 @@ public:
      * @param cam_fy focal Length along the y axis in pixels.
      * @param num_images Number of images (i.e. viewports) rendered in the same GL context.
      */
-    SICAD(const ModelPathContainer& objfile_map,
-          const GLsizei cam_width, const GLsizei cam_height,
-          const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
-          const GLint num_images);
+    SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy, const GLint num_images);
 
     /**
-     * Create a SICAD object with a dedicated OpenGL window and context.
-     *
-     * For the SICAD object to work properly, the following shaders with this exact names are needed:
-     *
-     *  - shader_model.vert for the vertex shader of the mesh models
-     *  - shader_model.frag for the fragment shader of the mesh models
-     *
-     *  - shader_frame.vert for the vertex shader of the reference frames
-     *  - shader_frame.frag for the fragment shader of the reference frames
-     *
-     *  - shader_background.vert for the vertex shader of the background
-     *  - shader_background.frag for the fragment shader of the background
-     *
+     * Create a SICAD object with a dedicated OpenGL context and custom shaders.
      * The folder where the shaders are stored can be specified in `shader_folder`.
+     *
+     * The following shaders with this exact names are needed:
+     *
+     *  - `shader_model.vert` for the vertex shader for mesh models
+     *  - `shader_model.frag` for the fragment shader for mesh models
+     *  - `shader_model_texture.frag` for the fragment shader for textured mesh models
+     *
+     *  - `shader_frame.vert` for the vertex shader for reference frames
+     *  - `shader_frame.frag` for the fragment shader for reference frames
+     *
+     *  - `shader_background.vert` for the vertex shader for background
+     *  - `shader_background.frag` for the fragment shader for background
      *
      * Up to `num_images` images will be rendered in the same OpenGL context and the result of
      * the process will be tiled up in a regular grid. This implies that the total number
@@ -143,27 +112,23 @@ public:
      * @param num_images Number of images (i.e. viewports) rendered in the same GL context.
      * @param shader_folder Path to the folder containing the above-mentioned required shaders.
      */
-    SICAD(const ModelPathContainer& objfile_map,
-          const GLsizei cam_width, const GLsizei cam_height,
-          const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
-          const GLint num_images,
-          const std::string& shader_folder);
+    SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy, const GLint num_images, const std::string& shader_folder);
 
     /**
-     * Create a SICAD object with a dedicated OpenGL window and context.
-     *
-     * For the SICAD object to work properly, the following shaders with this exact names are needed:
-     *
-     *  - shader_model.vert for the vertex shader of the mesh models
-     *  - shader_model.frag for the fragment shader of the mesh models
-     *
-     *  - shader_frame.vert for the vertex shader of the reference frames
-     *  - shader_frame.frag for the fragment shader of the reference frames
-     *
-     *  - shader_background.vert for the vertex shader of the background
-     *  - shader_background.frag for the fragment shader of the background
-     *
+     * Create a SICAD object with a dedicated OpenGL context and custom shaders.
      * The folder where the shaders are stored can be specified in `shader_folder`.
+     *
+     * The following shaders with this exact names are needed:
+     *
+     *  - `shader_model.vert` for the vertex shader for mesh models
+     *  - `shader_model.frag` for the fragment shader for mesh models
+     *  - `shader_model_texture.frag` for the fragment shader for textured mesh models
+     *
+     *  - `shader_frame.vert` for the vertex shader for reference frames
+     *  - `shader_frame.frag` for the fragment shader for reference frames
+     *
+     *  - `shader_background.vert` for the vertex shader for background
+     *  - `shader_background.frag` for the fragment shader for background
      *
      * Up to `num_images` images will be rendered in the same OpenGL context and the result of
      * the process will be tiled up in a regular grid. This implies that the total number
@@ -183,12 +148,7 @@ public:
      * @param shader_folder Path to the folder containing the above-mentioned required shaders.
      * @param ogl_to_cam A 7-component pose vector, (x, y, z) position and a (ux, uy, uz, theta) axis-angle orientation, defining a camera rotation applied to the OpenGL camera.
      */
-    SICAD(const ModelPathContainer& objfile_map,
-          const GLsizei cam_width, const GLsizei cam_height,
-          const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy,
-          const GLint num_images,
-          const std::string& shader_folder,
-          const std::vector<float>& ogl_to_cam);
+    SICAD(const ModelPathContainer& objfile_map, const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy, const GLint num_images, const std::string& shader_folder, const std::vector<float>& ogl_to_cam);
 
     virtual ~SICAD();
 

@@ -9,6 +9,7 @@
 
 set(LIBRARY_TARGET_NAME SuperimposeMesh)
 
+include(CMakeRC)
 
 # List of CPP (source) library files
 set(${LIBRARY_TARGET_NAME}_SRC
@@ -26,6 +27,19 @@ set(${LIBRARY_TARGET_NAME}_HDR
       include/SuperimposeMesh/SICAD.h
       include/SuperimposeMesh/SISkeleton.h
       include/SuperimposeMesh/Superimpose.h)
+# List of shader files
+cmrc_add_resource_library(${LIBRARY_TARGET_NAME}_RCShader
+                          ALIAS SI::RCShader
+                          NAMESPACE shader
+                          PREFIX __prc
+                          shader/shader_background.frag
+                          shader/shader_background.vert
+                          shader/shader_frame.frag
+                          shader/shader_frame.vert
+                          shader/shader_model_texture.frag
+                          shader/shader_model.frag
+                          shader/shader_model.vert
+)
 
 
 # Depndencies
@@ -55,6 +69,8 @@ target_include_directories(${LIBRARY_TARGET_NAME}
                              "$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}>")
 
 target_link_libraries(${LIBRARY_TARGET_NAME}
+                      PRIVATE
+                        SI::RCShader
                       PUBLIC
                         assimp::assimp
                         GLEW::GLEW

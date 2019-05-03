@@ -34,7 +34,7 @@ SICAD::SICAD
     const GLfloat cam_cx,
     const GLfloat cam_cy
 ) :
-    SICAD(objfile_map, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, 1, ".", { 1.0f, 0.0f, 0.0f, 0.0f })
+    SICAD(objfile_map, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, 1, "__prc/shader", { 1.0f, 0.0f, 0.0f, 0.0f })
 { }
 
 
@@ -49,7 +49,7 @@ SICAD::SICAD
     const GLfloat cam_cy,
     const GLint num_images
 ) :
-    SICAD(objfile_map, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, num_images, ".", { 1.0f, 0.0f, 0.0f, 0.0f })
+    SICAD(objfile_map, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, num_images, "__prc/shader", { 1.0f, 0.0f, 0.0f, 0.0f })
 { }
 
 
