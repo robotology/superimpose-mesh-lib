@@ -27,8 +27,8 @@ int main()
     std::cout << log_ID << "The same mesh will be rendered on 2 differente viewport." << std::endl;
 
     SICAD::ModelPathContainer obj;
-    obj.emplace("alien", "./Space_Invader.obj");
-    obj.emplace("textured_alien", "./Space_Invader_Textured.obj");
+    obj.emplace("alien", "./spaceinvader.obj");
+    obj.emplace("textured_alien", "./spaceinvader_textured.obj");
 
     const unsigned int cam_width  = 320;
     const unsigned int cam_height = 240;
@@ -37,11 +37,8 @@ int main()
     const float        cam_fy     = 257.34;
     const float        cam_cy     = 120;
 
-    SICAD si_cad(obj,
-                 cam_width, cam_height,
-                 cam_fx, cam_fy, cam_cx, cam_cy,
-                 2,
-                 ".");
+    SICAD si_cad(obj, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, 2);
+
 
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;

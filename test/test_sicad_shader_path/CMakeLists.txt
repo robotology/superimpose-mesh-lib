@@ -7,7 +7,7 @@
 #
 #===============================================================================
 
-set(TEST_TARGET_NAME test_sicad_model)
+set(TEST_TARGET_NAME test_sicad_shader_path)
 
 set(${TEST_TARGET_NAME}_HDR
       ../common/utils.h

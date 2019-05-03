@@ -25,7 +25,7 @@ int main()
     std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
 
     SICAD::ModelPathContainer obj;
-    obj.emplace("alien", "./Space_Invader.obj");
+    obj.emplace("alien", "./spaceinvader.obj");
 
     const unsigned int cam_width  = 320;
     const unsigned int cam_height = 240;
@@ -34,12 +34,9 @@ int main()
     const float        cam_fy     = 257.34f;
     const float        cam_cy     = 120;
 
-    SICAD si_cad(obj,
-                 cam_width, cam_height,
-                 cam_fx, cam_fy, cam_cx, cam_cy,
-                 1,
-                 ".");
+    SICAD si_cad(obj, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, 1);
 
+    
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
     obj_pose[1] = 0;

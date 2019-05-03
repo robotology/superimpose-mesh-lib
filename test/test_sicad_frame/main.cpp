@@ -33,11 +33,8 @@ int main()
     const float        cam_fy     = 257.34;
     const float        cam_cy     = 120;
 
-    SICAD si_cad(objfile_map,
-                 cam_width, cam_height,
-                 cam_fx, cam_fy, cam_cx, cam_cy,
-                 1,
-                 ".");
+    SICAD si_cad(objfile_map, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, 1, ".");
+    
 
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
