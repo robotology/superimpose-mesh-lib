@@ -9,6 +9,9 @@
 # Author: vector-of-bool <vectorofbool@gmail.com>
 # Date: Thu Nov 15 15:53:43 2018 -0700
 # Merge pull request #12 from yuriisk/improved-reading-of-textual-data
+#
+# Edited by: Claudio Fantacci <claudio.fantacci@gmail.com>, 2019
+# Fork: https://github.com/claudiofantacci/cmrc
 #===============================================================================
 
 # This block is executed when generating an intermediate resource file, not when
@@ -34,11 +37,27 @@ if(_CMRC_GENERATE_MODE)
         string(REGEX REPLACE "${cleanup_re}" "${cleanup_sub}" chars "${chars}")
     endif()
     string(CONFIGURE [[
-        namespace { const char file_array[] = { @chars@ 0 }; }
-        namespace cmrc { namespace @NAMESPACE@ { namespace res_chars {
-        extern const char* const @SYMBOL@_begin = file_array;
-        extern const char* const @SYMBOL@_end = file_array + @n_bytes@;
-        }}}
+namespace {
+
+const char file_array[] = { @chars@ 0 };
+
+}
+
+namespace cmrc {
+
+namespace @NAMESPACE@ {
+
+namespace res_chars {
+
+extern const char* const @SYMBOL@_begin = file_array;
+
+extern const char* const @SYMBOL@_end = file_array + @n_bytes@;
+
+}
+
+}
+
+}
     ]] code)
     file(WRITE "${OUTPUT_FILE}" "${code}")
     # Exit from the script. Nothing else needs to be processed
