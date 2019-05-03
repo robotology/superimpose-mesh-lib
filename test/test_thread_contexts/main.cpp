@@ -58,7 +58,7 @@ int main()
     std::cout << log_ID << "Note that this test creates contexts on a thread which is different than the ones using them." << std::endl;
 
     SICAD::ModelPathContainer obj;
-    obj.emplace("alien", "./Space_Invader.obj");
+    obj.emplace("alien", "./spaceinvader.obj");
 
     const unsigned int cam_width  = 320;
     const unsigned int cam_height = 240;
@@ -71,17 +71,9 @@ int main()
     SICAD* si_cad_2;
     try
     {
-        si_cad_1 = new SICAD(obj,
-                             cam_width, cam_height,
-                             cam_fx, cam_fy, cam_cx, cam_cy,
-                             1,
-                             ".");
+        si_cad_1 = new SICAD(obj, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, 1);
 
-        si_cad_2 = new SICAD(obj,
-                             cam_width, cam_height,
-                             cam_fx, cam_fy, cam_cx, cam_cy,
-                             1,
-                             ".");
+        si_cad_2 = new SICAD(obj, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, 1);
     }
     catch (const std::runtime_error& e)
     {

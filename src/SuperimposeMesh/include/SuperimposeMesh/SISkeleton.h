@@ -31,7 +31,7 @@ protected:
     glm::vec2 getWorldToPixel(const double* world_point);
 
 private:
-    const std::string log_ID_ = "[SI-Skeleton]";
+    const std::string log_ID_ = "[SI::SISkeleton]";
 
     std::list<std::string> skeleton_part_;
 

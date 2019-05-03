@@ -18,7 +18,6 @@ uniform mat4 projection;
 
 void main()
 {
-    //gl_Position = vec4(position, 0.99, 1.0f);
     gl_Position = projection * vec4(position, -99999.99, 1.0f);
     ourColor = color;
     TexCoord = vec2(texCoord.x, 1.0f - texCoord.y);

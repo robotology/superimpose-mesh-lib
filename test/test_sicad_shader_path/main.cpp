@@ -21,13 +21,13 @@
 
 int main()
 {
-    std::string log_ID = "[Test - SICAD]";
-    std::cout << log_ID << "This test checks whether the present machine can render properly using OpenGL." << std::endl;
+    std::string log_ID = "[Test - SICAD - Shader path]";
+    std::cout << log_ID << "This test checks whether the present machine can render with user-provided shaders." << std::endl;
     std::cout << log_ID << "A single mesh will be rendered on 1 viewport." << std::endl;
 
     SICAD::ModelPathContainer obj;
-    obj.emplace("alien", "./Space_Invader.obj");
-    obj.emplace("textured_alien", "./Space_Invader_Textured.obj");
+    obj.emplace("alien", "./spaceinvader.obj");
+    obj.emplace("textured_alien", "./spaceinvader_textured.obj");
 
     const unsigned int cam_width  = 320;
     const unsigned int cam_height = 240;
@@ -39,12 +39,7 @@ int main()
     double cam_x[] = { 0, 0, 0 };
     double cam_o[] = { 1.0, 0, 0, 0 };
 
-
-    SICAD si_cad(obj,
-                 cam_width, cam_height,
-                 cam_fx, cam_fy, cam_cx, cam_cy,
-                 1,
-                 ".");
+    SICAD si_cad(obj, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, 1, ".");
 
 
     Superimpose::ModelPose obj_pose(7);
@@ -65,7 +60,7 @@ int main()
 
     si_cad.superimpose(alien_objpose_map, cam_x, cam_o, img_rendered_alien);
 
-    cv::imwrite("./test_sicad_alien.png", img_rendered_alien);
+    cv::imwrite("./test_sicad_customshader_alien.png", img_rendered_alien);
 
     cv::Mat img_ground_truth_alien = cv::imread("./gt_sicad_alien.png");
 
@@ -86,7 +81,7 @@ int main()
     si_cad.setBackgroundOpt(true);
     si_cad.superimpose(alien_objpose_map, cam_x, cam_o, img_rendered_alien_space);
 
-    cv::imwrite("./test_sicad_alien_space.png", img_rendered_alien_space);
+    cv::imwrite("./test_sicad_customshader_alien_space.png", img_rendered_alien_space);
 
     cv::Mat img_ground_truth_alien_space = cv::imread("./gt_sicad_alien_space.png");
 
@@ -109,7 +104,7 @@ int main()
 
     si_cad.superimpose(textured_alien_objpose_map, cam_x, cam_o, img_rendered_textured_alien);
 
-    cv::imwrite("./test_sicad_textured_alien.png", img_rendered_textured_alien);
+    cv::imwrite("./test_sicad_customshader_textured_alien.png", img_rendered_textured_alien);
 
     cv::Mat img_ground_truth_textured_alien = cv::imread("./gt_sicad_textured_alien.png");
 
@@ -130,7 +125,7 @@ int main()
     si_cad.setBackgroundOpt(true);
     si_cad.superimpose(textured_alien_objpose_map, cam_x, cam_o, img_rendered_textured_alien_space);
 
-    cv::imwrite("./test_sicad_textured_alien_space.png", img_rendered_textured_alien_space);
+    cv::imwrite("./test_sicad_customshader_textured_alien_space.png", img_rendered_textured_alien_space);
 
     cv::Mat img_ground_truth_textured_alien_space = cv::imread("./gt_sicad_textured_alien_space.png");
 
