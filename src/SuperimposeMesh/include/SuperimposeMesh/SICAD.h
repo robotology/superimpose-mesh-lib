@@ -25,8 +25,8 @@
 
 
 /**
- * A Superimpose derived class to superimpose mesh models on top of images.
- **/
+ * A Superimpose derived class to superimpose mesh models on images.
+ */
 class SICAD : public Superimpose
 {
 public:
@@ -333,7 +333,7 @@ private:
 
     static GLsizei renderbuffer_size_;
 
-    const std::string log_ID_ = "[SI-CAD]";
+    const std::string log_ID_ = "[SI::SICAD]";
 
     GLFWwindow* window_ = nullptr;
 

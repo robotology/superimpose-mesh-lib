@@ -14,8 +14,9 @@
 #include <vector>
 #include <string>
 
-#include <GL/glew.h>
 #include <assimp/scene.h>
+
+#include <GL/glew.h>
 
 
 class Model

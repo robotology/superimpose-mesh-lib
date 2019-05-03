@@ -14,6 +14,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -329,7 +330,7 @@ SICAD::SICAD
     }
     catch (const std::runtime_error& e)
     {
-        throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\t3D model shader source file not found!\n" + std::string(e.what()));
+        throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\tFailed to create shader program for textured meshes.\n" + std::string(e.what()));
     }
 
     std::cout << log_ID_ << "Shader for textured mesh models succesfully set up!" << std::endl;
