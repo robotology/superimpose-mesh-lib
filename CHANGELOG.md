@@ -19,21 +19,26 @@
  - Tests are now correctly generated for Visual Studio generator.
 
 ##### `Feature`
-  - Add SICAD::superimpose() methods to render images to Pixel Buffer Objects (PBO).
-  - Add SICAD::getPBOs() and SICDAD::getPBO(size_t) to access the allow the user to read the PBOs and manipulate the memory on the GPU.
+ - SICAD class now provide default OpenGL shaders. The behaviour is the following:
+   - By not providing a shader folder path to SICAD constructor, the default shaders will be used.
+   - By providing a shader folder path to SICAD constructor, the default shaders will be bypassed.
+   Please read the updated documentation of the SICAD class constructors to have a full understanding of this new capability.
+ - Add SICAD::superimpose() methods to render images to Pixel Buffer Objects (PBO).
+ - Add SICAD::getPBOs() and SICDAD::getPBO(size_t) to access the allow the user to read the PBOs and manipulate the memory on the GPU.
     As an example, the user may map the PBO on a CUDA/OpenCL-enabled GPU and do some processing on the images directly on the GPU, without wasting CPU time and copy on memory overheads.
-  - Add SICAD::setMipmapsOpt(SICAD::MIPMaps) public method to change the type of MIPMaps. Can be MIPMaps::nearest or MIPMaps::linear.
-  - Improved tests.
-  - SICAD will now automatically find mesh textures and select the proper shader program to render them.
+ - Add SICAD::setMipmapsOpt(SICAD::MIPMaps) public method to change the type of MIPMaps. Can be MIPMaps::nearest or MIPMaps::linear.
+ - Improved tests.
+ - SICAD will now automatically find mesh textures and select the proper shader program to render them.
 
 ##### `Dependencies`
- - Added mandatory dependency from YCM release `0.10.1` and above.
+ - Added mandatory dependency from YCM release `0.10.2` and above.
  - Minimum required version of Assimp is now `3.3.0`.
  - Minimum required version of OpenCV is now `2.4.9`.
 
 ##### `Test`
-  - Fixed both AppVeyor and Travis tests.
-  - Added tests for mesh with textures.
+ - Fixed both AppVeyor and Travis tests.
+ - Added tests for mesh with textures.
+ - Added tests to use custom, user-provided, OpenGL shaders.
 
 
 ## 🔖 Version 0.9.4.0
