@@ -17,7 +17,7 @@ endif()
 ### Define the project
 project(SuperimposeMesh
         LANGUAGES CXX
-        VERSION 0.10.100)
+        VERSION 0.10.0)
 
 
 ### Define project specific options

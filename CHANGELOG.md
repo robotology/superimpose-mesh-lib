@@ -1,6 +1,6 @@
 # 📜 SuperimposeMesh changelog
 
-## 🔖 Version 0.10.100
+## 🔖 Version 0.10.0
 ##### `Changed behavior`
  - SICAD constructs now always require the intrinsic camera parameters.
  - SICAD object construction cannot be procrastinated to a later call of SICAD::initSICAD().
