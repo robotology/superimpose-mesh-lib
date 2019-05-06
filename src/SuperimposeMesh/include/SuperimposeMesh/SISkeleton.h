@@ -19,9 +19,7 @@
 class SISkeleton : public Superimpose
 {
 public:
-    SISkeleton();
-
-    SISkeleton(const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
+    SISkeleton(const std::list<std::string>& skeleton_part, const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
 
     ~SISkeleton();
 
@@ -30,15 +28,18 @@ public:
     bool setProjectionMatrix(const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy);
 
 protected:
-    glm::vec2              getWorldToPixel(const double* world_point);
+    glm::vec2 getWorldToPixel(const double* world_point);
 
 private:
-    const std::string      log_ID_ = "[SI-Skeleton]";
+    const std::string log_ID_ = "[SI::SISkeleton]";
 
-    std::list<std::string> hand_part_;
-    glm::mat3              projection_;
-    glm::mat3              root_to_eye_;
-    glm::vec3              cam_pos_;
+    std::list<std::string> skeleton_part_;
+
+    glm::mat3 projection_;
+
+    glm::mat3 root_to_eye_;
+    
+    glm::vec3 cam_pos_;
 };
 
 #endif /* SUPERIMPOSESKELETON_H */

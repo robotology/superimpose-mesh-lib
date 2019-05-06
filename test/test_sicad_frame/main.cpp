@@ -5,6 +5,8 @@
  * BSD 3-Clause license. See the accompanying LICENSE file for details.
  */
 
+#include <utils.h>
+
 #include <cmath>
 #include <exception>
 #include <iostream>
@@ -13,8 +15,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <SuperimposeMesh/SICAD.h>
 
 
@@ -25,18 +26,15 @@ int main()
 
     SICAD::ModelPathContainer objfile_map;
 
-    const unsigned int cam_width_  = 320;
-    const unsigned int cam_height_ = 240;
-    const float        cam_fx_     = 257.34;
-    const float        cam_cx_     = 160;
-    const float        cam_fy_     = 257.34;
-    const float        cam_cy_     = 120;
+    const unsigned int cam_width  = 320;
+    const unsigned int cam_height = 240;
+    const float        cam_fx     = 257.34;
+    const float        cam_cx     = 160;
+    const float        cam_fy     = 257.34;
+    const float        cam_cy     = 120;
 
-    SICAD si_cad(objfile_map,
-                 cam_width_, cam_height_, cam_fx_, cam_fy_, cam_cx_, cam_cy_,
-                 1,
-                 ".",
-                 true);
+    SICAD si_cad(objfile_map, cam_width, cam_height, cam_fx, cam_fy, cam_cx, cam_cy, 1, ".");
+    
 
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
@@ -50,12 +48,24 @@ int main()
     Superimpose::ModelPoseContainer objpose_map;
     objpose_map.emplace("frame", obj_pose);
 
-    double cam_x[] = { 0, 0,  0 };
-    double cam_o[] = { 1.0, 0,  0, 0 };
+    double cam_x[] = { 0, 0, 0 };
+    double cam_o[] = { 1.0, 0, 0, 0 };
 
-    cv::Mat img_1;
-    si_cad.superimpose(objpose_map, cam_x, cam_o, img_1);
-    cv::imwrite("./test_sicad_frame.jpg", img_1);
+    cv::Mat img_rendered;
+
+    si_cad.superimpose(objpose_map, cam_x, cam_o, img_rendered);
+
+    cv::Mat img_ground_truth = cv::imread("./gt_sicad_frame.png");
+
+    if (!utils::compareImages(img_rendered, img_ground_truth))
+    {
+        std::cerr << log_ID << " Rendered and ground truth images are different." << std::endl;
+
+        return EXIT_FAILURE;
+    }
+
+    std::cout << log_ID << " Rendered and ground truth images are identical. Saving rendered image for visual inspection." << std::endl;
+    cv::imwrite("./test_sicad_frame.png", img_rendered);
 
     return EXIT_SUCCESS;
 }

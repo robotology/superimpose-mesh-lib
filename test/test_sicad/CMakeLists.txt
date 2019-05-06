@@ -7,15 +7,24 @@
 #
 #===============================================================================
 
-set(TEST_TARGET_NAME test_initialization_control)
+set(TEST_TARGET_NAME test_sicad)
 
-set(${TEST_TARGET_NAME}_SRC
-        main.cpp
+set(${TEST_TARGET_NAME}_HDR
+      ../common/utils.h
 )
 
-add_executable(${TEST_TARGET_NAME} ${${TEST_TARGET_NAME}_SRC})
+set(${TEST_TARGET_NAME}_SRC
+      main.cpp
+)
 
-target_link_libraries(${TEST_TARGET_NAME} SuperimposeMesh)
+
+add_executable(${TEST_TARGET_NAME} ${${TEST_TARGET_NAME}_HDR} ${${TEST_TARGET_NAME}_SRC})
+
+target_link_libraries(${TEST_TARGET_NAME} SI::SuperimposeMesh)
+
+target_include_directories(${TEST_TARGET_NAME}
+                           PRIVATE
+                             ${PROJECT_SOURCE_DIR}/test/common)
 
 add_test(NAME ${TEST_TARGET_NAME}
          COMMAND ${TEST_TARGET_NAME}

@@ -9,6 +9,7 @@
 #define SHADER_H
 
 #include <exception>
+#include <string>
 
 #include <GL/glew.h>
 
@@ -16,17 +17,32 @@
 class Shader
 {
 public:
-	/* Constructor reads and builds the shader. */
-	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
+    /**
+     * Create a shader program with given vertex and fragment shader paths.
+     */
+    Shader(const std::string& vertex_shader_path, const std::string& fragment_shader_path);
 
-    /* Install (i.e. use) the program object. */
+    /**
+     * Activate the shader program.
+     */
     void install();
 
-    /* Uninstall (i.e. use) the program object. */
+    /**
+     * Deactivate the shader program.
+     */
     void uninstall();
 
-    /* The program ID. */
-    GLuint Program;
+
+    inline const GLuint get_program()
+    {
+        return shader_program_id_;
+    }
+
+private:
+    /**
+     * The program ID.
+     */
+    GLuint shader_program_id_;
 };
 
 #endif /* SHADER_H */

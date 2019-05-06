@@ -7,93 +7,117 @@
 
 #include "SuperimposeMesh/Shader.h"
 
-#include <string>
+#include <cmrc/cmrc.hpp>
+CMRC_DECLARE(shader);
+
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
 
-Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
+Shader::Shader(const std::string& vertex_shader_path, const std::string& fragment_shader_path)
 {
-    /* Retrieve the vertex/fragment source code from filePath. */
-    std::string   vertexCode;
-    std::string   fragmentCode;
-    std::ifstream vShaderFile;
-    std::ifstream fShaderFile;
+    std::string sourcecode_vertex_shader;
+    std::string sourcecode_fragmentshader;
 
-    /* Ensures ifstream objects can throw exceptions */
-    vShaderFile.exceptions(std::ifstream::badbit);
-    fShaderFile.exceptions(std::ifstream::badbit);
-
+    /* Retrieve the vertex/fragment source code from path. */
     try
     {
-        vShaderFile.open(vertexPath);
-        fShaderFile.open(fragmentPath);
+        auto cmrc_fs = cmrc::shader::get_filesystem();
 
-        std::stringstream vShaderStream;
-        std::stringstream fShaderStream;
+        if (cmrc_fs.exists(vertex_shader_path)   && cmrc_fs.is_file(vertex_shader_path) &&
+            cmrc_fs.exists(fragment_shader_path) && cmrc_fs.is_file(fragment_shader_path))
+        {
+            auto vertex_shader_cmrc_file = cmrc_fs.open(vertex_shader_path);
+            sourcecode_vertex_shader.assign(vertex_shader_cmrc_file.cbegin(), vertex_shader_cmrc_file.cend());
 
-        vShaderStream << vShaderFile.rdbuf();
-        fShaderStream << fShaderFile.rdbuf();
 
-        vShaderFile.close();
-        fShaderFile.close();
+            auto fragment_shader_cmrc_file = cmrc_fs.open(fragment_shader_path);
+            sourcecode_fragmentshader.assign(fragment_shader_cmrc_file.cbegin(), fragment_shader_cmrc_file.cend());
+        }
+        else
+        {
+            std::ifstream file_vertex_shader;
+            file_vertex_shader.exceptions(std::ifstream::badbit);
 
-        vertexCode = vShaderStream.str();
-        fragmentCode = fShaderStream.str();
+            file_vertex_shader.open(vertex_shader_path);
+
+            std::stringstream vertex_shader_stream;
+            vertex_shader_stream << file_vertex_shader.rdbuf();
+
+            file_vertex_shader.close();
+
+
+            std::ifstream file_fragment_shader;
+            file_fragment_shader.exceptions(std::ifstream::badbit);
+
+            file_fragment_shader.open(fragment_shader_path);
+
+            std::stringstream fragment_shader_stream;
+            fragment_shader_stream << file_fragment_shader.rdbuf();
+
+            file_fragment_shader.close();
+
+
+            sourcecode_vertex_shader = vertex_shader_stream.str();
+            sourcecode_fragmentshader = fragment_shader_stream.str();
+        }
     }
     catch (const std::ifstream::failure& e)
     {
-        throw std::runtime_error("ERROR::IFSTREAM::FAILURE\n" + std::string(e.what()) +
-                                 "\nERROR::SHADER::FILE_NOT_SUCCESFULLY_READ");
+        throw std::runtime_error("ERROR::SHADER::CTOR\nERROR:\n\tCould not read shader source code.\n" + std::string(e.what()));
     }
-    const GLchar* vShaderCode = vertexCode.c_str();
-    const GLchar* fShaderCode = fragmentCode.c_str();
+
 
     /* Compile shaders. */
+    const GLchar* ptr_sourcecode_vertex_shader = sourcecode_vertex_shader.c_str();
+    const GLchar* ptr_sourcecode_fragment_shader = sourcecode_fragmentshader.c_str();
+
     GLuint vertex;
     GLuint fragment;
     GLint success;
-    GLchar infoLog[512];
+    GLchar info_log[512];
 
     /* Vertex Shader. */
     vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vShaderCode, NULL);
+    glShaderSource(vertex, 1, &ptr_sourcecode_vertex_shader, NULL);
     glCompileShader(vertex);
 
     /* Print compile errors if any. */
     glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-        glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        throw std::runtime_error("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" + std::string(infoLog));
+        glGetShaderInfoLog(vertex, 512, NULL, info_log);
+        throw std::runtime_error("ERROR::SHADER::CTOR\nERROR:\n\tVertex shader program compilation error.\nLOG:\n\t" + std::string(info_log));
     };
+
 
     /* Fragment Shader. */
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fShaderCode, NULL);
+    glShaderSource(fragment, 1, &ptr_sourcecode_fragment_shader, NULL);
     glCompileShader(fragment);
 
     /* Print compile errors if any. */
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
     if (!success)
     {
-        glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        throw std::runtime_error("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" + std::string(infoLog));
+        glGetShaderInfoLog(vertex, 512, NULL, info_log);
+        throw std::runtime_error("ERROR::SHADER::CTOR\nERROR:\n\tFragment shader program compilation error.\nLOG:\n\t" + std::string(info_log));
     };
 
+
     /* Shader Program. */
-    this->Program = glCreateProgram();
-    glAttachShader(this->Program, vertex);
-    glAttachShader(this->Program, fragment);
-    glLinkProgram(this->Program);
+    shader_program_id_ = glCreateProgram();
+    glAttachShader(shader_program_id_, vertex);
+    glAttachShader(shader_program_id_, fragment);
+    glLinkProgram(shader_program_id_);
 
     /* Print linking errors if any. */
-    glGetProgramiv(this->Program, GL_LINK_STATUS, &success);
+    glGetProgramiv(shader_program_id_, GL_LINK_STATUS, &success);
     if (!success)
     {
-        glGetProgramInfoLog(this->Program, 512, NULL, infoLog);
-        throw std::runtime_error("ERROR::SHADER::PROGRAM::LINKING_FAILED\n" + std::string(infoLog));
+        glGetProgramInfoLog(shader_program_id_, 512, NULL, info_log);
+        throw std::runtime_error("ERROR::SHADER::CTOR\nERROR:\n\tShader program link fail.\nLOG:\n\t" + std::string(info_log));
     }
 
     /* Delete the shaders as they're linked into our program now and no longer necessery. */
@@ -104,7 +128,7 @@ Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath)
 
 void Shader::install()
 {
-    glUseProgram(this->Program);
+    glUseProgram(shader_program_id_);
 }
 
 

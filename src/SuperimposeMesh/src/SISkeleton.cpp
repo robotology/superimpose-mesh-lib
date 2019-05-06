@@ -11,18 +11,21 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
-SISkeleton::SISkeleton() :
-    hand_part_({ "palm", "thumb", "index", "medium" })
-{
-    std::cout << log_ID_ << "Initialization completed!" << std::endl;
-}
 
-SISkeleton::SISkeleton(const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy) :
-    SISkeleton()
+SISkeleton::SISkeleton
+(
+    const std::list<std::string>& skeleton_part,
+    const float cam_fx,
+    const float cam_fy,
+    const float cam_cx,
+    const float cam_cy
+ ) :
+    skeleton_part_(skeleton_part)
 {
     std::cout << log_ID_ << "Setting up default projection matrix." << std::endl;
 
@@ -34,17 +37,23 @@ SISkeleton::~SISkeleton()
 { }
 
 
-bool SISkeleton::superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img)
+bool SISkeleton::superimpose
+(
+    const ModelPoseContainer& objpos_map,
+    const double* cam_x,
+    const double* cam_o,
+    cv::Mat& img
+)
 {
     cam_pos_ = glm::make_vec3(cam_x);
     root_to_eye_ = glm::transpose(glm::mat3(glm::rotate(glm::mat4(1.0f), static_cast<float>(cam_o[3]), glm::vec3(static_cast<float>(cam_o[0]), static_cast<float>(cam_o[1]), static_cast<float>(cam_o[2])))));
 
-    glm::vec2 ee_px = getWorldToPixel((objpos_map.find(hand_part_.front())->second).data());
+    glm::vec2 ee_px = getWorldToPixel((objpos_map.find(skeleton_part_.front())->second).data());
 
     cv::Point endeffector_point(static_cast<int>(ee_px.x), static_cast<int>(ee_px.y));
     cv::circle(img, endeffector_point, 4, cv::Scalar(0, 255, 0), 4);
 
-    for (auto part = ++hand_part_.cbegin(); part != hand_part_.cend(); ++part)
+    for (auto part = ++skeleton_part_.cbegin(); part != skeleton_part_.cend(); ++part)
     {
         cv::Point base_line = endeffector_point;
         for (auto map = objpos_map.equal_range(*part).first; map != objpos_map.equal_range(*part).second; ++map)
@@ -64,7 +73,13 @@ bool SISkeleton::superimpose(const ModelPoseContainer& objpos_map, const double*
 }
 
 
-bool SISkeleton::setProjectionMatrix(const float cam_fx, const float cam_fy, const float cam_cx, const float cam_cy)
+bool SISkeleton::setProjectionMatrix
+(
+    const float cam_fx,
+    const float cam_fy,
+    const float cam_cx,
+    const float cam_cy
+)
 {
 
     /* Projection matrix. */

@@ -8,50 +8,50 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "Shader.h"
+#include <SuperimposeMesh/Shader.h>
 
 #include <vector>
 
-#include <GL/glew.h>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include <assimp/scene.h>
 
+#include <GL/glew.h>
 
-struct Vertex {
-    glm::vec3 Position;
-    glm::vec3 Normal;
-    glm::vec2 TexCoords;
-};
-
-
-struct Texture {
-    GLuint      id;
-    std::string type;
-    aiString    path;
-};
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
 
 class Mesh {
 public:
-    /* Functions */
+    struct Vertex
+    {
+        glm::vec3 Position;
+        glm::vec3 Normal;
+        glm::vec2 TexCoords;
+    };
+
+    struct Texture
+    {
+        GLuint id;
+        std::string type;
+        aiString path;
+    };
+
     Mesh(std::vector<Vertex> vertices, std::vector<GLuint> indices, std::vector<Texture> textures);
 
     void Draw(Shader shader);
 
-    /* Mesh Data */
-    std::vector<Vertex>  vertices;
-    std::vector<GLuint>  indices;
-    std::vector<Texture> textures;
-
 private:
-    /* Render data */
-    GLuint VAO;
-    GLuint VBO;
-    GLuint EBO;
+    GLuint VAO_;
 
-    /* Functions */
-    void setupMesh();
+    GLuint VBO_;
+
+    GLuint EBO_;
+
+    std::vector<Vertex> vertices_;
+
+    std::vector<GLuint> indices_;
+
+    std::vector<Texture> textures_;
 };
 
 #endif /* MESH_H */
