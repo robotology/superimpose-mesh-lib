@@ -5,7 +5,14 @@ A modern C++ augmented-reality library to superimpose 3D objects on images.
 |![Space!](doc/images/space.png) <img width="320" height="240" src="doc/images/alien_mesh.png">  ![Space Invader fiend in space!](doc/images/alien_space.jpg)|
 |------------|
 
-[![SuperimposeMesh home](https://img.shields.io/badge/SuperimposeMesh-Home%20%26%20Doc-E0C57F.svg?style=flat-square)](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html) [![Latest Release](https://img.shields.io/github/release/robotology/superimpose-mesh-lib.svg?style=flat-square&label=Latest%20Release)](https://github.com/robotology/superimpose-mesh-lib/releases) [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-brightgreen.svg?style=flat-square)](http://semver.org/) [![ZenHub](https://img.shields.io/badge/Shipping_faster_with-ZenHub-blue.svg?style=flat-square)](https://zenhub.com)
+[![SuperimposeMesh home](https://img.shields.io/badge/SuperimposeMesh-Home%20%26%20Doc-E0C57F.svg?style=flat-square)](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html) [![Latest Release](https://img.shields.io/github/release/robotology/superimpose-mesh-lib.svg?style=flat-square&label=Latest%20Release)](https://github.com/robotology/superimpose-mesh-lib/releases)
+
+[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-brightgreen.svg?style=flat-square)](http://semver.org/) [![ZenHub](https://img.shields.io/badge/Shipping_faster_with-ZenHub-blue.svg?style=flat-square)](https://zenhub.com)
+
+[![Travis Linux master](https://img.shields.io/travis/robotology/superimpose-mesh-lib/master.svg?label=Build&logo=linux&logoColor=black&style=popout-square)](https://travis-ci.org/robotology/superimpose-mesh-lib)
+[![Travis macOS master](https://img.shields.io/travis/robotology/superimpose-mesh-lib/master.svg?label=Build&logo=apple&style=popout-square)](https://travis-ci.org/robotology/superimpose-mesh-lib)
+[![AppVeyor Windows master](https://img.shields.io/appveyor/ci/robotology/superimpose-mesh-lib/master.svg?label=Build&logo=windows&logoColor=blue&style=popout-square)](https://ci.appveyor.com/project/robotology/superimpose-mesh-lib)
+[![Codacy master grade](https://img.shields.io/codacy/grade/b5b72dc7c9204c03ad37bd9c1ee4460c/master.svg?label=Code%20quality&logo=codacy&logoColor=black&style=popout-square)](https://www.codacy.com/app/robotology/superimpose-mesh-lib?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=robotology/superimpose-mesh-lib&amp;utm_campaign=Badge_Grade)
 
 # Overview
 - [⚠️ About versioning](#️-about-versioning)
