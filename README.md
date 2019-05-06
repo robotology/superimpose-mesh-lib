@@ -2,10 +2,10 @@
 
 A modern C++ augmented-reality library to superimpose 3D objects on images.
 
-[![SuperimposeMesh home](https://img.shields.io/badge/SuperimposeMesh-Home%20%26%20Doc-E0C57F.svg?style=flat-square)](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html) [![Latest Release](https://img.shields.io/github/release/robotology/superimpose-mesh-lib.svg?style=flat-square&label=Latest%20Release)](https://github.com/robotology/superimpose-mesh-lib/releases) [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-brightgreen.svg?style=flat-square)](http://semver.org/) [![ZenHub](https://img.shields.io/badge/Shipping_faster_with-ZenHub-blue.svg?style=flat-square)](https://zenhub.com)
-
-|![Space!](doc/images/space.png) <img width="320" height="240" src="doc/images/alien_mesh.png"> ![Space Invader fiend in space!](doc/images/alien_space.jpg)|
+|![Space!](doc/images/space.png) <img width="320" height="240" src="doc/images/alien_mesh.png">  ![Space Invader fiend in space!](doc/images/alien_space.jpg)|
 |------------|
+
+[![SuperimposeMesh home](https://img.shields.io/badge/SuperimposeMesh-Home%20%26%20Doc-E0C57F.svg?style=flat-square)](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html) [![Latest Release](https://img.shields.io/github/release/robotology/superimpose-mesh-lib.svg?style=flat-square&label=Latest%20Release)](https://github.com/robotology/superimpose-mesh-lib/releases) [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-brightgreen.svg?style=flat-square)](http://semver.org/) [![ZenHub](https://img.shields.io/badge/Shipping_faster_with-ZenHub-blue.svg?style=flat-square)](https://zenhub.com)
 
 # Overview
 - [⚠️ About versioning](#️-about-versioning)
@@ -87,6 +87,3 @@ Tests are also well-designed **starting points** to learn how to use the library
 
 # 📝 API documentation and example code
 Doxygen-generated documentation is available [here](https://robotology.github.io/superimpose-mesh-lib/doxygen/doc/html/index.html).
-
-
----
