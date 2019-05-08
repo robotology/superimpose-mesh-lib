@@ -49,7 +49,7 @@ endif()
 
 
 ### Use YCM to improve and simplify CMake maintenence
-find_package(YCM 0.10.1 REQUIRED QUIET)
+find_package(YCM 0.10.2 REQUIRED QUIET)
 print_dependency(YCM)
 
 
