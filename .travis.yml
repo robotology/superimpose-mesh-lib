@@ -59,7 +59,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew install glfw --HEAD; fi
   - git clone https://github.com/robotology/ycm.git
   - cd ycm
-  - git checkout devel
+  - git checkout v0.10.2
   - mkdir build
   - cd build
   - cmake .. -DCMAKE_BUILD_TYPE=${TRAVIS_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=$(pwd)/../install
