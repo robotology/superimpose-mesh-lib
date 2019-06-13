@@ -63,10 +63,12 @@ int main()
     double cam_o[] = { 1.0, 0, 0, 0 };
 
     cv::Mat img_rendered;
+    cv::Mat img_rendered_depth;
 
-    si_cad.superimpose(objposes, cam_x, cam_o, img_rendered);
+    si_cad.superimpose(objposes, cam_x, cam_o, img_rendered, img_rendered_depth);
 
     cv::imwrite("./test_scissors.png", img_rendered);
+    cv::imwrite("./test_scissors_depth.tiff", img_rendered_depth);
 
     cv::Mat img_ground_truth = cv::imread("./gt_scissors.png");
 

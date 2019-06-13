@@ -172,6 +172,8 @@ public:
      **/
     bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img) override;
 
+    bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img, cv::Mat& depth);
+
     /**
      * Render the mesh models in the pose specified in each element of `objpos_multimap` and move the virtual camera in
      * `cam_x` position with orientation `cam_o`. Each group of meshes specified by the elements of `objpos_multimap` are rendered in a
@@ -191,6 +193,8 @@ public:
      * @return true upon success, false otherswise.
      **/
     virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img);
+
+    virtual bool superimpose(const std::vector<ModelPoseContainer>& objpos_multimap, const double* cam_x, const double* cam_o, cv::Mat& img, cv::Mat& dept);
 
     virtual bool superimpose(const ModelPoseContainer& objpos_map, const double* cam_x, const double* cam_o, cv::Mat& img,
                              const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
@@ -346,6 +350,14 @@ private:
     GLsizei image_width_ = 0;
 
     GLsizei image_height_ = 0;
+
+    GLfloat cam_fx_;
+
+    GLfloat cam_fy_;
+
+    GLfloat cam_cx_;
+
+    GLfloat cam_cy_;
 
     glm::mat3 ogl_to_cam_ = glm::mat3(1.0f);
 

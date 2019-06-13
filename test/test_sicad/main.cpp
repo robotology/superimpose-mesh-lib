@@ -45,7 +45,7 @@ int main()
     Superimpose::ModelPose obj_pose(7);
     obj_pose[0] = 0;
     obj_pose[1] = 0;
-    obj_pose[2] = -0.1;
+    obj_pose[2] = -0.10;
     obj_pose[3] = 0;
     obj_pose[4] = 1.0;
     obj_pose[5] = 0;
@@ -57,10 +57,17 @@ int main()
 
     /* Space invader alien */
     cv::Mat img_rendered_alien;
+    cv::Mat img_rendered_alien_depth;
 
-    si_cad.superimpose(alien_objpose_map, cam_x, cam_o, img_rendered_alien);
+    si_cad.superimpose(alien_objpose_map, cam_x, cam_o, img_rendered_alien, img_rendered_alien_depth);
 
     cv::imwrite("./test_sicad_alien.png", img_rendered_alien);
+    cv::imwrite("./test_sicad_alien_depth.tiff", img_rendered_alien_depth);
+
+    std::cout << "Pos (120, 120) " << img_rendered_alien_depth.at<float>(119, 119) << std::endl;
+    std::cout << "Pos (120, 160) " << img_rendered_alien_depth.at<float>(119, 159) << std::endl;
+    std::cout << "Pos (120, 300) " << img_rendered_alien_depth.at<float>(119, 199) << std::endl;
+    std::cout << "Pos (1, 1) " << img_rendered_alien_depth.at<float>(0, 0) << std::endl;
 
     cv::Mat img_ground_truth_alien = cv::imread("./gt_sicad_alien.png");
 
