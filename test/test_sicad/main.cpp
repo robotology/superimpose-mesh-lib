@@ -67,7 +67,7 @@ int main()
     std::cout << "Pos (120, 120) " << img_rendered_alien_depth.at<float>(119, 119) << std::endl;
     std::cout << "Pos (120, 160) " << img_rendered_alien_depth.at<float>(119, 159) << std::endl;
     std::cout << "Pos (120, 300) " << img_rendered_alien_depth.at<float>(119, 199) << std::endl;
-    std::cout << "Pos (1, 1) " << img_rendered_alien_depth.at<float>(0, 0) << std::endl;
+    std::cout << "Pos (1, 1) "	   << img_rendered_alien_depth.at<float>(0, 0)	   << std::endl;
 
     cv::Mat img_ground_truth_alien = cv::imread("./gt_sicad_alien.png");
 

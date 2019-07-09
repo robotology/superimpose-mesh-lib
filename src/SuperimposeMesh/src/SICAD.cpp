@@ -173,10 +173,11 @@ SICAD::SICAD
     ogl_to_cam_ = glm::mat3(glm::rotate(glm::mat4(1.0f), ogl_to_cam[3], glm::make_vec3(ogl_to_cam.data())));
 
 
-    /* Create a framebuffer color texture. */
+	/* Create a framebuffer object. */
     glGenFramebuffers(1, &fbo_);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-
+    
+	/* Create a framebuffer color texture. */
     glGenTextures(1, &texture_color_buffer_);
     glBindTexture(GL_TEXTURE_2D, texture_color_buffer_);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, framebuffer_width_, framebuffer_height_, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
@@ -186,15 +187,27 @@ SICAD::SICAD
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_color_buffer_, 0);
 
-    /* Create a framebuffer depth texture. */
-    glGenTextures(1, &texture_depth_buffer_);
-    glBindTexture(GL_TEXTURE_2D, texture_depth_buffer_);
+	/* Create a framebuffer depth texture. */
+	glGenTextures(1, &texture_depth_buffer_);
+	glBindTexture(GL_TEXTURE_2D, texture_depth_buffer_);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, framebuffer_width_, framebuffer_height_, 0, GL_RED, GL_FLOAT, NULL);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, texture_depth_buffer_, 0);
+
+	/* Instruct OpenGL to render to both framebuffer color attachments. */
+	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachments);
+
+    /* Create a framebuffer depth texture for depth test. */
+    glGenTextures(1, &texture_depthtest_buffer_);
+    glBindTexture(GL_TEXTURE_2D, texture_depthtest_buffer_);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, framebuffer_width_, framebuffer_height_, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depth_buffer_, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture_depthtest_buffer_, 0);
 
     /* Check whether the framebuffer has been completely created or not. */
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -415,8 +428,9 @@ SICAD::~SICAD()
     }
 
 
-    glDeleteTextures(1, &texture_color_buffer_);
-    glDeleteTextures(1, &texture_depth_buffer_);
+	glDeleteTextures(1, &texture_color_buffer_);
+	glDeleteTextures(1, &texture_depth_buffer_);
+    glDeleteTextures(1, &texture_depthtest_buffer_);
     glDeleteFramebuffers(1, &fbo_);
     glDeleteVertexArrays(1, &vao_background_);
     glDeleteBuffers(1, &ebo_background_);
@@ -677,16 +691,22 @@ bool SICAD::superimpose
     cv::flip(ogl_pixel, img, 0);
 
 
-    cv::Mat ogl_depth(framebuffer_height_, framebuffer_width_, CV_32FC1);
-    glReadBuffer(GL_DEPTH_ATTACHMENT);
-    glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_DEPTH_COMPONENT, GL_FLOAT, ogl_depth.ptr<float>());
+    //cv::Mat ogl_depth(framebuffer_height_, framebuffer_width_, CV_32FC1);
+    //glReadBuffer(GL_DEPTH_ATTACHMENT);
+    //glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_DEPTH_COMPONENT, GL_FLOAT, ogl_depth.ptr<float>());
 
-    cv::flip(ogl_depth, depth, 0);
+    //cv::flip(ogl_depth, depth, 0);
 
-    /* Math-reworked version of the fragment code of https://learnopengl.com/Advanced-OpenGL/Depth-testing, section "Visualizing the depth buffer". */
-    const float iv1 = near_ * far_;
-    const float iv2 = near_ - far_;
-    depth.forEach<float>([&iv1, &iv2, this](float& p, const int* pos) -> void { p = iv1 / (far_ + p * iv2); });
+    ///* Math-reworked version of the fragment code of https://learnopengl.com/Advanced-OpenGL/Depth-testing, section "Visualizing the depth buffer". */
+    //const float iv1 = near_ * far_;
+    //const float iv2 = near_ - far_;
+    //depth.forEach<float>([&iv1, &iv2, this](float& p, const int* pos) -> void { p = iv1 / (far_ + p * iv2); });
+
+	cv::Mat ogl_depth(framebuffer_height_, framebuffer_width_, CV_32FC1);
+	glReadBuffer(GL_COLOR_ATTACHMENT1);
+	glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_RED, GL_FLOAT, ogl_depth.ptr<float>());
+
+	cv::flip(ogl_depth, depth, 0);
 
 
     /* Swap the buffers. */
@@ -942,26 +962,21 @@ bool SICAD::superimpose
     cv::flip(ogl_pixel, img, 0);
 
 
-    cv::Mat ogl_depth(framebuffer_height_, framebuffer_width_, CV_32FC1);
-    glReadBuffer(GL_DEPTH_ATTACHMENT);
-    glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_DEPTH_COMPONENT, GL_FLOAT, ogl_depth.ptr<float>());
+    //cv::Mat ogl_depth(framebuffer_height_, framebuffer_width_, CV_32FC1);
+    //glReadBuffer(GL_DEPTH_ATTACHMENT);
+    //glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_DEPTH_COMPONENT, GL_FLOAT, ogl_depth.ptr<float>());
 
-    cv::flip(ogl_depth, depth, 0);
+    //cv::flip(ogl_depth, depth, 0);
 
     //const float iv1 = near_ * far_;
     //const float iv2 = near_ - far_;
-    //depth.forEach<float>([&iv1, &iv2, this](float& p, const int* pos) -> void
-    //                     {
-    //                         float z = iv1 / (far_ + p * iv2);
-    //                         float x = z * ((pos[1] + 1) - cam_cx_) / cam_fx_;
-    //                         float y = z * ((pos[0] + 1) - cam_cy_) / cam_fy_;
+    //depth.forEach<float>([&iv1, &iv2, this](float& p, const int* pos) -> void { p = iv1 / (far_ + p * iv2); });
 
-    //                         p = std::sqrtf(powf(x, 2.0f) + powf(y, 2.0f) + powf(z, 2.0f));
-    //                     });
+	cv::Mat ogl_depth(framebuffer_height_, framebuffer_width_, CV_32FC1);
+	glReadBuffer(GL_COLOR_ATTACHMENT1);
+	glReadPixels(0, 0, framebuffer_width_, framebuffer_height_, GL_RED, GL_FLOAT, ogl_depth.ptr<float>());
 
-    const float iv1 = near_ * far_;
-    const float iv2 = near_ - far_;
-    depth.forEach<float>([&iv1, &iv2, this](float& p, const int* pos) -> void { p = iv1 / (far_ + p * iv2); });
+	cv::flip(ogl_depth, depth, 0);
 
 
     /* Swap the buffers. */

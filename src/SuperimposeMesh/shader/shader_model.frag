@@ -7,9 +7,26 @@
 
 #version 330 core
 
-out vec4 color;
+layout (location = 0) out vec4 color;
+layout (location = 1) out float depth;
+
+float near = 0.001f;
+float far = 1000.0f;
+
+float linearize_depth(float coord_z)
+{
+    /* Back to NDC. */
+    float z = coord_z * 2.0 - 1.0;
+
+    /* Evaluate real depth. */
+    return (2.0 * near * far) / (far + near - z * (far - near));
+}
 
 void main()
 {
-    color = vec4(0.2f, 0.5f, 1.0f, 1.0f); // BGR orange-like color
+    /* BGR orange-like color. */
+    color = vec4(0.2f, 0.5f, 1.0f, 1.0f);
+
+    /* Real depth. */
+    depth = linearize_depth(gl_FragCoord.z);
 }

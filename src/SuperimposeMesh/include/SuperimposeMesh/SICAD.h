@@ -395,7 +395,9 @@ private:
 
     GLuint texture_color_buffer_;
 
-    GLuint texture_depth_buffer_;
+	GLuint texture_depth_buffer_;
+
+    GLuint texture_depthtest_buffer_;
 
     GLuint texture_background_;
 
