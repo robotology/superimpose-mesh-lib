@@ -40,6 +40,7 @@ In particular, this library provides classes to superimpose 3D mesh model on top
 
 # 🎛 Dependencies
 SuperimposeMesh library depends on
+- [YCM](https://github.com/robotology/ycm) - `version >= 0.10.2`
 - [GLFW](http://www.glfw.org) - `version >= 3.1`, macOS: `brew --HEAD`
 - [Open Asset Import Library, ASSIMP](http://assimp.org) - `version >= 3.3.0`
 - [OpenGL Extension Wrangler, GLEW](http://glew.sourceforge.net) - `version >= 2.0`
