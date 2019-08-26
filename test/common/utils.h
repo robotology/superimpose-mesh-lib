@@ -20,8 +20,8 @@ bool compareImages(const cv::Mat& img, const cv::Mat& ground_truth)
     if (size_img != size_img)
     {
         std::cerr << "[Utils][compareImages] Image size is different." << std::endl;
-        std::cerr << "[Utils][compareImages] Image size is is (" << size_img.width << ", " << size_img.height << ")." << std::endl;
-        std::cerr << "[Utils][compareImages] Should be(" << size_ground_truth.width << ", " << size_ground_truth.height << ")." << std::endl;
+        std::cerr << "[Utils][compareImages] Image size is (" << size_img.width << ", " << size_img.height << ")." << std::endl;
+        std::cerr << "[Utils][compareImages] Should be (" << size_ground_truth.width << ", " << size_ground_truth.height << ")." << std::endl;
 
         return false;
     }
@@ -35,9 +35,9 @@ bool compareImages(const cv::Mat& img, const cv::Mat& ground_truth)
 
             if (pixel_img != pixel_ground_truth)
             {
-                std::cerr << "[Utils][compareImages] Found non-equal pixel." << std::endl;
-                std::cerr << "[Utils][compareImages] Pixel at (" << i << "," << j << ") is [" << static_cast<unsigned int>(pixel_img.x) << ", " << static_cast<unsigned int>(pixel_img.y) << ", " << static_cast<unsigned int>(pixel_img.z) << "]." << std::endl;
-                std::cerr << "[Utils][compareImages] Should be [" << static_cast<unsigned int>(pixel_ground_truth.x) << ", " << static_cast<unsigned int>(pixel_ground_truth.y) << ", " << static_cast<unsigned int>(pixel_ground_truth.z) << "]." << std::endl;
+                std::cerr << "[Utils][compareImages] Found non-equal pixel at (" << i << ", " << j << ")." << std::endl;
+                std::cerr << "[Utils][compareImages] Input pixel is [" << static_cast<unsigned int>(pixel_img.x) << ", " << static_cast<unsigned int>(pixel_img.y) << ", " << static_cast<unsigned int>(pixel_img.z) << "]." << std::endl;
+                std::cerr << "[Utils][compareImages] Ground truth is [" << static_cast<unsigned int>(pixel_ground_truth.x) << ", " << static_cast<unsigned int>(pixel_ground_truth.y) << ", " << static_cast<unsigned int>(pixel_ground_truth.z) << "]." << std::endl;
 
                 return false;
             }
