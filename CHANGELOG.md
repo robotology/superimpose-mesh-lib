@@ -1,7 +1,8 @@
 # 📜 SuperimposeMesh changelog
 
 ## 🔖 Version 0.11.100
-
+##### `Changed behavior`
+ - SICAD sets the number of screen updates to wait from the time glfwSwapBuffers was called before swapping the buffers and returning to 0
 
 ## 🔖 Version 0.10.0
 ##### `Changed behavior`
