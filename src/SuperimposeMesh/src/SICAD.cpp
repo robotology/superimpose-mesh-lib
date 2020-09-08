@@ -153,6 +153,8 @@ SICAD::SICAD
     if (glewInit() != GLEW_OK)
         throw std::runtime_error("ERROR::SICAD::CTOR\nERROR:\n\tFailed to initialize GLEW.");
 
+    /* Swap buffers immediately when calling glfwSwapBuffers, without waiting for a refresh. */
+    glfwSwapInterval(0);
 
     /* Set GL property. */
     glfwPollEvents();
