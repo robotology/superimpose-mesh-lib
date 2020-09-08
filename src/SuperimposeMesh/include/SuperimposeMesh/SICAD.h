@@ -50,7 +50,7 @@ public:
      * Only 1 image will be rendered in the OpenGL context.
      *
      * The reference frame of the OpenGL virtual camera is the standard right-handed system and can be
-     * changed by means of `ogl_to_cam` parameter.
+     * changed by means of `setOglToCam()' method.
      *
      * @param objfile_map A (tag, path) container to associate a 'tag' to the mesh file specified in 'path'.
      * @param cam_width Camera or image width.
@@ -69,7 +69,8 @@ public:
      * number of rendered images is chosen to optimize performance and accessibility and can be
      * accessed through `SICAD::getTilesNumber()`.
      *
-     * The reference frame of the OpenGL virtual camera is the standard right-handed system.
+     * The reference frame of the OpenGL virtual camera is the standard right-handed system and can be
+     * changed by means of `setOglToCam()' method.
      *
      * @param objfile_map A (tag, path) container to associate a 'tag' to the mesh file specified in 'path'.
      * @param cam_width Camera or image width.
@@ -137,7 +138,7 @@ public:
      * accessed through `SICAD::getTilesNumber()`.
      *
      * The reference frame of the OpenGL virtual camera is the standard right-handed system and can be
-     * changed by means of `ogl_to_cam`.
+     * changed by means of `ogl_to_cam` or using the `setOglToCam()` method.
      *
      * @param objfile_map A (tag, path) container to associate a 'tag' to the mesh file specified in 'path'.
      * @param cam_width Camera or image width.
@@ -304,6 +305,13 @@ public:
      * @return (true, PBO) if `pbo_index` exists, (false, 0) otherwise.
      */
     std::pair<bool, GLuint> getPBO(const size_t pbo_index) const;
+
+    /**
+     * Sets the static transformation between the camera coordinate system and the OpenGL camera coordinate system.
+     *
+     * @param ogl_to_cam A 4-sized vector containing the axis-angle representation of the transformation.
+     */
+    void setOglToCam(const std::vector<float>& ogl_to_cam);
 
     bool setProjectionMatrix(const GLsizei cam_width, const GLsizei cam_height, const GLfloat cam_fx, const GLfloat cam_fy, const GLfloat cam_cx, const GLfloat cam_cy);
 

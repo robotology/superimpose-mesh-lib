@@ -1290,6 +1290,15 @@ bool SICAD::setProjectionMatrix
 }
 
 
+void SICAD::setOglToCam(const std::vector<float>& ogl_to_cam)
+{
+    if (ogl_to_cam.size() != 4)
+        throw std::runtime_error("ERROR::SICAD::setOglToCam\nERROR:\n\tWrong input size.\n\tShould be 4, was given " + std::to_string(ogl_to_cam.size()) + ".");
+
+    ogl_to_cam_ = glm::mat3(glm::rotate(glm::mat4(1.0f), ogl_to_cam[3], glm::make_vec3(ogl_to_cam.data())));
+}
+
+
 void SICAD::setBackgroundOpt(bool show_background)
 {
     show_background_ = show_background;

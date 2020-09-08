@@ -1,8 +1,13 @@
 # 📜 SuperimposeMesh changelog
 
 ## 🔖 Version 0.11.100
+
+##### `Feature`
+ - SICAD now provides a setter `setOglToCam()` for the static transformation between the OpenGL camera and the desired reference frame.
+
 ##### `Changed behavior`
  - SICAD sets the number of screen updates to wait from the time glfwSwapBuffers was called before swapping the buffers and returning to 0
+
 
 ## 🔖 Version 0.10.0
 ##### `Changed behavior`
